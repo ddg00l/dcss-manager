@@ -101,8 +101,7 @@ export function renderHeroes(){
     }
     const eqB=document.createElement('button');
     eqB.className='blue';eqB.textContent=t('Equipment');
-    eqB.onclick=()=>{window.__openEquip(h.id);
-      document.querySelector('#nav .tb[data-p="pForge"]').click()};
+    eqB.onclick=()=>{window.__openEquip(h.id)};
     row.appendChild(eqB);
     if(save.heroes.filter(x=>x.state==='camp').length>0&&
        save.heroes.filter(x=>x.state==='run').length>=maxSlots(save)&&h.state==='camp'){
