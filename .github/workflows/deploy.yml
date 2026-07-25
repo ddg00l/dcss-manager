@@ -26,6 +26,10 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npx vite build
+      - name: Inject Cloudflare Web Analytics (Pages build only)
+        env:
+          CF_TOKEN: ${{ vars.CF_ANALYTICS_TOKEN }}
+        run: node tools/inject-analytics.mjs
       - uses: actions/configure-pages@v5
         with:
           enablement: true
