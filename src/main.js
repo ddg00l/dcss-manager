@@ -62,7 +62,7 @@ function renderAll() {
 /* main loop.
    The sim runs on a real-time clock (Date.now), not on rAF deltas: rAF stops in
    background tabs, so elapsed hidden time must be caught up, not thrown away. */
-let last = 0, autoT = 0;
+let last = 0;
 let lastSim = Date.now();
 function simCatchUp() {
   const now = Date.now();
@@ -79,17 +79,6 @@ function frame(ts) {
   if (document.querySelector('#pDun.active')) renderWatch();
   maybeShowDeath();
   ftueTick(switchPane);
-  /* "Auto-summon" keystone */
-  autoT += dt;
-  if (autoT > 3) {
-    autoT = 0;
-    if (memHas(save, 'k_autosummon') &&
-        save.heroes.filter(x => x.state === 'run').length < maxSlots(save)) {
-      const idle = save.heroes.find(x => x.state === 'camp' && !x.rest);
-      if (idle) startRun(idle, save);
-      else if (save.gold >= 2 * rollCost(save)) doRoll(false);
-    }
-  }
   updTop();
 }
 setInterval(() => {

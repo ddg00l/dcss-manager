@@ -1,11 +1,11 @@
 import {RACES} from '../data/races.js';
 import {effSkill,speedMul} from '../data/skills.js';
 import {CLASSES} from '../data/classes.js';
-import {comboKey,RARMUL} from '../data/combos.js';
+import {comboKey,RARMUL,SHARDS_PER} from '../data/combos.js';
 import {WEP_BASES,ARM_BASES,SH_BASES,itemInfo} from '../data/items.js';
 import {GODS} from '../data/gods.js';
 import {HERO_NAMES} from '../data/names.js';
-import {gHp,gAtk,gSpd} from '../core/economy.js';
+import {gHp,gAtk,gSpd,freeRollAvailable,rollCost,PITY_AT,rollCombo,pickComboOfTier,shardMul} from '../core/economy.js';
 import {memEff,memHas} from '../data/memtree.js';
 
 export function newHero(race,cls,rarity,s){
@@ -169,4 +169,27 @@ export function heroStats(h,s){
   return {ac,ev,dmg,hpMax:Math.floor(hpMax),aspd,acc,leech,critc,regen,resAll,retal,dodge,chill,
     vsUndead,venom,rPois,twoHanded,
     style,school,rng:style!=='melee'?5:(wep&&wep.reach?2:1),spd:rd.spd*gSpd(s)};
+}
+
+/** One gacha roll, pure state logic (UI adds sounds/animation on top).
+    Returns {kind:'dup',res,sh} | {kind:'hero',res,h} | null when unaffordable. */
+export function rollHero(s,premium,rng=Math.random){
+  if(premium){if(s.runes<1)return null;s.runes--}
+  else if(freeRollAvailable(s)){/* the guild pays when the party is gone */}
+  else{const c=rollCost(s);if(s.gold<c)return null;s.gold-=c;s.rolls++}
+  s.pity++;
+  let res=rollCombo(s,premium,rng);
+  if(s.pity>=PITY_AT)res=pickComboOfTier(3,rng);
+  if(res.rarity===3)s.pity=0;
+  const ck=comboKey(res.race,res.cls);
+  const dup=s.seen[ck];
+  s.seen[ck]=(s.seen[ck]||0)+1;
+  if(dup&&s.heroes.some(x=>x.race===res.race&&x.cls===res.cls&&x.state!=='dead'&&x.state!=='victor')){
+    const sh=Math.floor(SHARDS_PER[res.rarity]*3*shardMul(s));
+    s.shards[ck]=(s.shards[ck]||0)+sh;
+    return {kind:'dup',res,sh};
+  }
+  const h=newHero(res.race,res.cls,res.rarity,s);
+  s.heroes.push(h);
+  return {kind:'hero',res,h};
 }

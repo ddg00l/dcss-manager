@@ -896,3 +896,34 @@ describe('caster auto-equip does not dress up as a warrior (regression)', () => 
     expect(scoreItem(scale, h)).toBeGreaterThan(scoreItem(robe, h));
   });
 });
+
+describe('Auto-summon keystone runs inside the sim (offline too)', () => {
+  it('offline catch-up summons and dispatches heroes on its own', async () => {
+    const { advanceHeroes } = await import('../src/sim/tick.js');
+    const s = makeState();
+    s.tree.k_autosummon = 1;
+    s.gold = 100000;
+    expect(s.heroes.length).toBe(0);
+    advanceHeroes(s, 600, true); // 10 offline minutes, nobody around
+    const active = s.heroes.filter(h => h.state === 'run' || h.state === 'dead' || h.state === 'victor');
+    expect(active.length).toBeGreaterThan(0); // summoned AND sent delving
+    expect(s.heroes.some(h => h.turn > 0 || h.state !== 'camp')).toBe(true);
+  });
+  it('an idle camp hero gets dispatched without the UI', async () => {
+    const { advanceHeroes } = await import('../src/sim/tick.js');
+    const s = makeState();
+    s.tree.k_autosummon = 1;
+    const h = newHero('minotaur', 'fighter', 2, s);
+    s.heroes.push(h);
+    expect(h.state).toBe('camp');
+    advanceHeroes(s, 10, true);
+    expect(h.state).not.toBe('camp');
+  });
+  it('without the keystone nothing happens', async () => {
+    const { advanceHeroes } = await import('../src/sim/tick.js');
+    const s = makeState();
+    s.gold = 100000;
+    advanceHeroes(s, 600, true);
+    expect(s.heroes.length).toBe(0);
+  });
+});

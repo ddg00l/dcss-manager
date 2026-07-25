@@ -10,37 +10,21 @@ import {GODS} from '../data/gods.js';
 import {BRANCHES,brTag} from '../data/branches.js';
 import {itemName,itemTile,randomItem,itemInfo} from '../data/items.js';
 import {zupg,maxSlots,rollCost,PITY_AT,rollCombo,pickComboOfTier,shardMul as shardMulF,freeRollAvailable,effectiveRollCost} from '../core/economy.js';
-import {newHero,heroStats} from '../sim/hero.js';
+import {newHero,heroStats,rollHero} from '../sim/hero.js';
 import {startRun,tryAutoEquip} from '../sim/tick.js';
 import { t } from '../i18n/index.js';
 /* ===================== gacha ===================== */
 
 export function doRoll(premium){
-  if(premium){if(save.runes<1)return;save.runes--}
-  else if(freeRollAvailable(save)){
-    /* free summon: cost is 0, the price counter doesn't grow */
-  }else{const c=rollCost(save);if(save.gold<c)return;save.gold-=c;save.rolls++}
-  save.pity++;
-  let res=rollCombo(save,premium,Math.random);
-  if(save.pity>=PITY_AT)res=pickComboOfTier(3,Math.random);
-  if(res.rarity===3)save.pity=0;
-  const ck=comboKey(res.race,res.cls);
-  const dup=save.seen[ck];
-  save.seen[ck]=(save.seen[ck]||0)+1;
-  let dupTxt='';
-  if(dup&&save.heroes.some(x=>x.race===res.race&&x.cls===res.cls&&x.state!=='dead'&&x.state!=='victor')){
-    /* duplicate of a living hero → shards */
-    const sh=Math.floor(SHARDS_PER[res.rarity]*3*shardMulF(save));
-    save.shards[ck]=(save.shards[ck]||0)+sh;
-    dupTxt=t('Duplicate! +')+sh+t(' shards');
-    revealGacha(res,dupTxt);
+  const r=rollHero(save,premium,Math.random);
+  if(!r)return;
+  if(r.kind==='dup'){
+    revealGacha(r.res,t('Duplicate! +')+r.sh+t(' shards'));
     persist();renderGacha();updTop();
     return;
   }
-  const h=newHero(res.race,res.cls,res.rarity,save);
-  save.heroes.push(h);
-  revealGacha(res,'');
-  if(res.rarity===3)sfx.leg();else sfx.roll();
+  revealGacha(r.res,'');
+  if(r.res.rarity===3)sfx.leg();else sfx.roll();
   persist();window.__renderAll&&window.__renderAll();
 }
 export function revealGacha(res,extra){

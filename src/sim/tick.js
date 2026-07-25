@@ -1,7 +1,7 @@
-import {gXp,gGold,gDrop,gSpd,shardMul as shardMulF} from '../core/economy.js';
+import {gXp,gGold,gDrop,gSpd,shardMul as shardMulF,maxSlots,rollCost,freeRollAvailable} from '../core/economy.js';
 import {gainMem,memEff,memHas} from '../data/memtree.js';
 import {clamp,fmt} from '../core/fmt.js';
-import {heroStats} from './hero.js';
+import {heroStats,rollHero} from './hero.js';
 import {genFloor,reveal,los,MW,MH} from './mapgen.js';
 import {BRANCHES,buildRoute,brDepth,brTag} from '../data/branches.js';
 import {RACES,aptMul} from '../data/races.js';
@@ -674,14 +674,35 @@ export function heroTps(h,s){
   return 1.4*(RACES[h.race].spd||1)*gSpd(s);
 }
 let simAcc={};
+/* the "Auto-summon" keystone: fills a free slot with an idle hero, or buys a
+   summon when the treasury holds at least twice the price; runs inside the sim
+   so it works identically online, in background tabs and in offline catch-up */
+function autoSummonStep(s){
+  if(s.heroes.filter(x=>x.state==='run').length>=maxSlots(s))return;
+  const idle=s.heroes.find(x=>x.state==='camp'&&!x.rest);
+  if(idle){startRun(idle,s);return}
+  if(!freeRollAvailable(s)&&s.gold<2*rollCost(s))return;
+  rollHero(s,false); /* the fresh hero is dispatched on the next step */
+}
 export function advanceHeroes(s,dtSec,silent){
-  for(const h of s.heroes){
-    if(h.state!=='run')continue;
-    simAcc[h.id]=(simAcc[h.id]||0)+dtSec*heroTps(h,s);
-    let n=Math.floor(simAcc[h.id]);
-    simAcc[h.id]-=n;
-    if(silent)n=Math.min(n,200000);
-    while(n-->0&&h.state==='run')simTick(h,s);
+  const auto=memHas(s,'k_autosummon');
+  let left=dtSec;
+  while(left>0){
+    /* chunked so offline auto-summoned heroes get simulated for the rest of the span */
+    const step=Math.min(left,60);
+    for(const h of s.heroes){
+      if(h.state!=='run')continue;
+      simAcc[h.id]=(simAcc[h.id]||0)+step*heroTps(h,s);
+      let n=Math.floor(simAcc[h.id]);
+      simAcc[h.id]-=n;
+      if(silent)n=Math.min(n,200000);
+      while(n-->0&&h.state==='run')simTick(h,s);
+    }
+    if(auto){
+      s.autoT=(s.autoT||0)+step;
+      if(s.autoT>=3){s.autoT=0;autoSummonStep(s)}
+    }
+    left-=step;
   }
 }
 
