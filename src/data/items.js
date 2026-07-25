@@ -210,12 +210,15 @@ export function scoreItem(it,h){
   }
   if(h&&CLASSES[h.cls].style==='magic'){
     if(it.slot==='weapon'){
+      /* a caster only values a mage staff; a warrior's axe is dead weight in his hands */
       const b=WEP_BASES.find(w=>w.k===it.base);
-      sc=(b&&b.mag?40:0)+(i.dmgP||0)*40+(it.plus||0)*2+(i.mul?10:0);
+      sc=b&&b.mag?40+(i.dmgP||0)*40+(it.plus||0)*2+(i.mul?10:0):-1;
     }
+    /* spell damage is everything to a caster: weight the encumbrance cast
+       penalty accordingly, so heavy armour needs real Armour skill to pay off */
     const eb=it.slot==='armour'?ARM_BASES.find(a=>a.k===it.base):
              it.slot==='shield'?SH_BASES.find(a=>a.k===it.base):null;
-    if(eb&&eb.enc)sc-=Math.max(0,eb.enc*.08-(h.skills.armour||0)*.006)*40;
+    if(eb&&eb.enc)sc-=Math.max(0,eb.enc*.08-(h.skills.armour||0)*.006)*120;
   }
   return sc;
 }

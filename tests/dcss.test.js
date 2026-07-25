@@ -865,3 +865,34 @@ describe('racial immunities (DCSS)', () => {
     expect(h.gear.armour).toBeFalsy();
   });
 });
+
+describe('caster auto-equip does not dress up as a warrior (regression)', () => {
+  const mk = (slot, base, plus, ego, id) => ({ slot, base, plus, ego, rar: 1, rand: null, id });
+  it('spriggan conjurer skips the +9 war axe, +4 scale mail and tower shield', async () => {
+    const { equipBestFromArmory } = await import('../src/sim/tick.js');
+    const s = makeState();
+    const h = newHero('spriggan', 'conjurer', 2, s);
+    h.gear.armour = null; h.gear.weapon = null; h.gear.shield = null;
+    s.armory = [
+      mk('weapon', 'war_axe', 9, 'electro', 'wa'),
+      mk('armour', 'scale_mail', 4, 'regen', 'sm'),
+      mk('shield', 'tower', 4, null, 'ts'),
+      mk('armour', 'robe', 0, null, 'rb'),
+      mk('weapon', 'quarterstaff', 0, null, 'qs'),
+    ];
+    equipBestFromArmory(h, s);
+    expect(h.gear.weapon.base).toBe('quarterstaff'); // staff over the shiny axe
+    expect(h.gear.armour.base).toBe('robe');         // robe over enchanted scale mail
+    expect(h.gear.shield).toBeFalsy();               // no tower shield, thanks
+  });
+  it('a caster with real Armour skill may graduate into scale mail', async () => {
+    const { scoreItem } = await import('../src/data/items.js');
+    const s = makeState();
+    const h = newHero('human', 'conjurer', 0, s);
+    const scale = mk('armour', 'scale_mail', 4, null, 'sm2');
+    const robe = mk('armour', 'robe', 0, null, 'rb2');
+    expect(scoreItem(scale, h)).toBeLessThan(scoreItem(robe, h));
+    h.skills.armour = 22; // trained: encumbrance penalty melts away
+    expect(scoreItem(scale, h)).toBeGreaterThan(scoreItem(robe, h));
+  });
+});
