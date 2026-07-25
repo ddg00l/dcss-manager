@@ -453,7 +453,11 @@ describe('racial fidelity: aptitudes, minuses, synergy is real', () => {
     startRun(h, s);
     const mo = h.map.monsters[0];
     if (!mo) return;
-    mo.x = h.map.px + 2; mo.y = h.map.py; mo.awake = true;
+    /* breath requires LOS since the wall-shooting fix: carve the cells between
+       the hero and the target so the random map cannot block the line */
+    const m = h.map;
+    m.g[m.py][m.px + 1] = 0; m.g[m.py][m.px + 2] = 0;
+    mo.x = m.px + 2; mo.y = m.py; mo.awake = true;
     mo.hp = mo.maxHp = 1e6;
     h.breathT = -100;
     simTick(h, s);
