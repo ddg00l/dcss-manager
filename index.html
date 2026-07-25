@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DCSS Manager — idle roguelike gacha</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+</head>
+<body>
+<div id="topbar">
+  <b id="goldTxt">0</b><b id="memTxt">0 🕯</b><b id="runeTxt">0 ᚱ</b><b id="zotTxt" style="display:none">0 ⚛</b><b id="scrapTxt">0 ⚙</b>
+  <span class="sp"></span>
+  <button id="btnSettings">⚙</button>
+</div>
+
+<div id="main">
+  <div id="pDun" class="pane active">
+    <div id="watchChips"></div>
+    <canvas id="watchCv"></canvas>
+    <div id="watchInfo"></div>
+    <div id="wlog"></div>
+  </div>
+  <div id="pHeroes" class="pane">
+    <div id="gachaStage"><span class="label" data-i18n>Summon a seeker</span>
+      <div id="gachaResult"><img src="" style="display:none" alt=""><div class="big"></div><div class="sub"></div></div>
+    </div>
+    <div class="rowBtns" style="margin-top:10px">
+      <button id="btnRoll1"><span data-i18n>Summon ·</span> <span id="rollCost"></span> 🜚</button>
+      <button id="btnRollRune" class="purple" data-i18n>Dark summon · 1 ᚱ</button>
+    </div>
+    <div class="pityTxt" id="pityTxt" style="margin-top:8px"></div>
+    <h3 data-i18n>Seekers</h3>
+    <div id="heroList" class="grid"></div>
+    <div class="hint" data-i18n>Death in the dungeon is forever (shards and gear return). Heroes train the skills they fight with. Strategy sets the route and caution.</div>
+    <h3 data-i18n>Combo collection</h3>
+    <div id="comboList"></div>
+  </div>
+  <div id="pForge" class="pane">
+    <h3 data-i18n>Forging (item gacha)</h3>
+    <div class="rowBtns" id="forgeBtns"></div>
+    <div id="forgeResult"></div>
+    <h3 data-i18n>Armory</h3>
+    <div id="armoryList"></div>
+  </div>
+  <div id="pUpg" class="pane">
+    <div id="memBal"></div>
+    <div id="memWrap"><div id="memTree"></div></div>
+    <div class="nodeInfo" id="memInfo"></div>
+  </div>
+  <div id="pFame" class="pane">
+    <div id="fameSummary"></div>
+    <h3 data-i18n>Elite upgrades (⚛ Zot essence)</h3>
+    <div id="zotUpgList"></div>
+    <h3 data-i18n>The fallen and the victorious</h3>
+    <div id="fameList"></div>
+  </div>
+</div>
+
+<div id="nav">
+  <button class="tb active" data-p="pDun"><i>🗺</i><span data-i18n>Dungeon</span></button>
+  <button class="tb" data-p="pHeroes"><i>🧙</i><span data-i18n>Heroes</span></button>
+  <button class="tb" data-p="pForge"><i>⚒</i><span data-i18n>Forge</span></button>
+  <button class="tb" data-p="pUpg"><i>🕯</i><span data-i18n>Memory</span></button>
+  <button class="tb" data-p="pFame"><i>🏆</i><span data-i18n>Fame</span></button>
+</div>
+
+<div id="offline" class="overlay"><div class="panelBox">
+  <h2 data-i18n>Expedition report</h2>
+  <div class="label" id="offTime" style="margin-top:6px"></div>
+  <div id="offBody"></div>
+  <button id="btnOff" style="width:100%" data-i18n>Accept</button>
+</div></div>
+
+<div id="sheet" class="overlay"><div class="panelBox" id="sheetBox"></div></div>
+<div id="death" class="overlay"><div class="panelBox" id="deathBox"></div></div>
+<div id="equip" class="overlay"><div class="panelBox" id="equipBox"></div></div>
+<div id="settings" class="overlay"><div class="panelBox" id="settingsBox"></div></div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

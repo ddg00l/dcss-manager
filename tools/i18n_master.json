@@ -1,0 +1,4694 @@
+{
+"крыса": [
+"rat",
+"Ratte",
+"rata",
+"щур"
+],
+"летучая мышь": [
+"bat",
+"Fledermaus",
+"murciélago",
+"кажан"
+],
+"кобольд": [
+"kobold",
+"Kobold",
+"kobold",
+"кобольд"
+],
+"гоблин": [
+"goblin",
+"Goblin",
+"goblin",
+"гоблін"
+],
+"хобгоблин": [
+"hobgoblin",
+"Hobgoblin",
+"hobgoblin",
+"хобгоблін"
+],
+"шакал": [
+"jackal",
+"Schakal",
+"chacal",
+"шакал"
+],
+"гадюка": [
+"adder",
+"Natter",
+"víbora",
+"гадюка"
+],
+"гнолл": [
+"gnoll",
+"Gnoll",
+"gnoll",
+"гнол"
+],
+"орк": [
+"orc",
+"Ork",
+"orco",
+"орк"
+],
+"скелет": [
+"skeleton",
+"Skelett",
+"esqueleto",
+"скелет"
+],
+"зомби": [
+"zombie",
+"Zombie",
+"zombi",
+"зомбі"
+],
+"пчела-убийца": [
+"killer bee",
+"Killerbiene",
+"abeja asesina",
+"бджола-вбивця"
+],
+"скорпион": [
+"scorpion",
+"Skorpion",
+"escorpión",
+"скорпіон"
+],
+"огр": [
+"ogre",
+"Oger",
+"ogro",
+"огр"
+],
+"кентавр": [
+"centaur",
+"Zentaur",
+"centauro",
+"кентавр"
+],
+"вайт": [
+"wight",
+"Wiedergänger",
+"tumulario",
+"вайт"
+],
+"орк-воин": [
+"orc warrior",
+"Ork-Krieger",
+"orco guerrero",
+"орк-воїн"
+],
+"волчий паук": [
+"wolf spider",
+"Wolfsspinne",
+"araña lobo",
+"вовчий павук"
+],
+"призрак": [
+"wraith",
+"Gespenst",
+"espectro",
+"привид"
+],
+"двухголовый огр": [
+"two-headed ogre",
+"zweiköpfiger Oger",
+"ogro bicéfalo",
+"двоголовий огр"
+],
+"циклоп": [
+"cyclops",
+"Zyklop",
+"cíclope",
+"циклоп"
+],
+"тролль": [
+"troll",
+"Troll",
+"trol",
+"троль"
+],
+"минотавр": [
+"minotaur",
+"Minotaurus",
+"minotauro",
+"мінотавр"
+],
+"як": [
+"yak",
+"Yak",
+"yak",
+"як"
+],
+"мигающая лягушка": [
+"blink frog",
+"Blinzelfrosch",
+"rana parpadeante",
+"мерехтлива жаба"
+],
+"варан": [
+"komodo dragon",
+"Komodowaran",
+"dragón de Komodo",
+"варан"
+],
+"чёрная мамба": [
+"black mamba",
+"schwarze Mamba",
+"mamba negra",
+"чорна мамба"
+],
+"слон": [
+"elephant",
+"Elefant",
+"elefante",
+"слон"
+],
+"смертоносный як": [
+"death yak",
+"Todesyak",
+"yak mortífero",
+"смертоносний як"
+],
+"гидра": [
+"hydra",
+"Hydra",
+"hidra",
+"гідра"
+],
+"орк-жрец": [
+"orc priest",
+"Ork-Priester",
+"orco sacerdote",
+"орк-жрець"
+],
+"орк-рыцарь": [
+"orc knight",
+"Ork-Ritter",
+"orco caballero",
+"орк-лицар"
+],
+"глуб. эльф-аннигилятор": [
+"deep elf annihilator",
+"Tiefelf-Vernichter",
+"elfo profundo aniquilador",
+"глиб. ельф-анігілятор"
+],
+"глуб. эльф-рыцарь": [
+"deep elf knight",
+"Tiefelf-Ritter",
+"elfo profundo caballero",
+"глиб. ельф-лицар"
+],
+"глуб. эльф-лучник": [
+"deep elf archer",
+"Tiefelf-Bogenschütze",
+"elfo profundo arquero",
+"глиб. ельф-лучник"
+],
+"глуб. эльф-чародей": [
+"deep elf sorcerer",
+"Tiefelf-Hexer",
+"elfo profundo hechicero",
+"глиб. ельф-чаклун"
+],
+"верховный жрец эльфов": [
+"deep elf high priest",
+"Tiefelf-Hohepriester",
+"sumo sacerdote elfo",
+"верховний жрець ельфів"
+],
+"страж Хранилищ": [
+"vault guard",
+"Gewölbewache",
+"guardia de las Bóvedas",
+"вартовий Сховищ"
+],
+"боевая горгулья": [
+"war gargoyle",
+"Kriegsgargoyle",
+"gárgola de guerra",
+"бойова горгулья"
+],
+"железный созыватель": [
+"ironbound convoker",
+"Eisenbeschwörer",
+"convocador férreo",
+"залізний скликач"
+],
+"железный голем": [
+"iron golem",
+"Eisengolem",
+"gólem de hierro",
+"залізний голем"
+],
+"каменный великан": [
+"stone giant",
+"Steinriese",
+"gigante de piedra",
+"кам'яний велетень"
+],
+"огненный великан": [
+"fire giant",
+"Feuerriese",
+"gigante de fuego",
+"вогняний велетень"
+],
+"ледяной великан": [
+"frost giant",
+"Frostriese",
+"gigante de escarcha",
+"крижаний велетень"
+],
+"эттин": [
+"ettin",
+"Ettin",
+"ettin",
+"етін"
+],
+"призрачная моль": [
+"ghost moth",
+"Geistermotte",
+"polilla espectral",
+"примарна міль"
+],
+"лич": [
+"lich",
+"Lich",
+"liche",
+"лич"
+],
+"драконид": [
+"draconian",
+"Drakonier",
+"draconiano",
+"драконід"
+],
+"страж Шара": [
+"orb guardian",
+"Sphärenwächter",
+"guardián del Orbe",
+"вартовий Сфери"
+],
+"сфера огня": [
+"orb of fire",
+"Feuersphäre",
+"orbe de fuego",
+"сфера вогню"
+],
+"гуль": [
+"ghoul",
+"Ghul",
+"gul",
+"гуль"
+],
+"мумия": [
+"mummy",
+"Mumie",
+"momia",
+"мумія"
+],
+"Иджиб": [
+"Ijyb",
+"Ijyb",
+"Ijyb",
+"Іджиб"
+],
+"Иджиб визжит, сжимая дубину!": [
+"Ijyb shrieks, clutching his club!",
+"Ijyb kreischt und umklammert seine Keule!",
+"¡Ijyb chilla aferrando su garrote!",
+"Іджиб верещить, стискаючи кийок!"
+],
+"Теренс": [
+"Terence",
+"Terence",
+"Terence",
+"Теренс"
+],
+"Теренс жаждет вашей крови!": [
+"Terence thirsts for your blood!",
+"Terence dürstet nach eurem Blut!",
+"¡Terence ansía vuestra sangre!",
+"Теренс прагне вашої крові!"
+],
+"Сигмунд": [
+"Sigmund",
+"Sigmund",
+"Sigmund",
+"Сігмунд"
+],
+"Сигмунд ухмыляется и поднимает косу!": [
+"Sigmund grins and raises his scythe!",
+"Sigmund grinst und hebt seine Sense!",
+"¡Sigmund sonríe y alza su guadaña!",
+"Сігмунд шкіриться й здіймає косу!"
+],
+"Гриндер": [
+"Grinder",
+"Grinder",
+"Grinder",
+"Гріндер"
+],
+"Гриндер скрежещет: \"Боль!\"": [
+"Grinder grinds out: \"Pain!\"",
+"Grinder knirscht: \"Schmerz!\"",
+"Grinder rechina: \"¡Dolor!\"",
+"Гріндер скрегоче: \"Біль!\""
+],
+"Эдмунд": [
+"Edmund",
+"Edmund",
+"Edmund",
+"Едмунд"
+],
+"Эдмунд помахивает цепом.": [
+"Edmund swings his flail idly.",
+"Edmund schwingt lässig seinen Dreschflegel.",
+"Edmund balancea su mangual.",
+"Едмунд помахує ціпом."
+],
+"Принц Риббит": [
+"Prince Ribbit",
+"Prinz Ribbit",
+"Príncipe Ribbit",
+"Принц Ріббіт"
+],
+"Принц Риббит квакает о своём троне.": [
+"Prince Ribbit croaks about his throne.",
+"Prinz Ribbit quakt von seinem Thron.",
+"El Príncipe Ribbit croa sobre su trono.",
+"Принц Ріббіт квакає про свій трон."
+],
+"Эрика": [
+"Erica",
+"Erica",
+"Erica",
+"Еріка"
+],
+"Эрика салютует изогнутым клинком.": [
+"Erica salutes you with a curved blade.",
+"Erica salutiert mit gebogener Klinge.",
+"Erica saluda con una hoja curva.",
+"Еріка салютує вигнутим клинком."
+],
+"Уруг": [
+"Urug",
+"Urug",
+"Urug",
+"Уруг"
+],
+"Уруг плюёт под ноги.": [
+"Urug spits at your feet.",
+"Urug spuckt vor eure Füße.",
+"Urug escupe a vuestros pies.",
+"Уруг плює під ноги."
+],
+"Снорг": [
+"Snorg",
+"Snorg",
+"Snorg",
+"Снорг"
+],
+"Снорг ГОЛОДЕН!": [
+"Snorg is HUNGRY!",
+"Snorg hat HUNGER!",
+"¡Snorg tiene HAMBRE!",
+"Снорг ГОЛОДНИЙ!"
+],
+"Руперт": [
+"Rupert",
+"Rupert",
+"Rupert",
+"Руперт"
+],
+"Руперт орёт боевой клич!": [
+"Rupert bellows a battle cry!",
+"Rupert brüllt einen Schlachtruf!",
+"¡Rupert ruge un grito de guerra!",
+"Руперт горлає бойовий клич!"
+],
+"Франсес": [
+"Frances",
+"Frances",
+"Frances",
+"Франсес"
+],
+"Франсес шепчет проклятие.": [
+"Frances whispers a curse.",
+"Frances flüstert einen Fluch.",
+"Frances susurra una maldición.",
+"Франсес шепоче прокляття."
+],
+"Борис": [
+"Boris",
+"Boris",
+"Boris",
+"Борис"
+],
+"Борис вновь восстал из мёртвых.": [
+"Boris has risen from the dead. Again.",
+"Boris ist wieder von den Toten auferstanden.",
+"Boris se ha alzado de entre los muertos otra vez.",
+"Борис знову повстав із мертвих."
+],
+"Блорк": [
+"Blork",
+"Blork",
+"Blork",
+"Блорк"
+],
+"Блорк — необычно злобный орк.": [
+"Blork is an unusually angry orc.",
+"Blork ist ein ungewöhnlich wütender Ork.",
+"Blork es un orco inusualmente furioso.",
+"Блорк — незвично злий орк."
+],
+"Кстахуа": [
+"Xtahua",
+"Xtahua",
+"Xtahua",
+"Кстахуа"
+],
+"КСТАХУА РЕВЁТ!": [
+"XTAHUA ROARS!",
+"XTAHUA BRÜLLT!",
+"¡XTAHUA RUGE!",
+"КСТАХУА РЕВЕ!"
+],
+"Марджери": [
+"Margery",
+"Margery",
+"Margery",
+"Марджері"
+],
+"Марджери повелевает пламенем.": [
+"Margery commands the flames.",
+"Margery gebietet über die Flammen.",
+"Margery domina las llamas.",
+"Марджері володарює полум'ям."
+],
+"Лернейская гидра": [
+"the Lernaean hydra",
+"die Lernäische Hydra",
+"la hidra de Lerna",
+"Лернейська гідра"
+],
+"Лернейская гидра шипит сотней голов!": [
+"The Lernaean hydra hisses with a hundred heads!",
+"Die Lernäische Hydra zischt mit hundert Köpfen!",
+"¡La hidra de Lerna sisea con cien cabezas!",
+"Лернейська гідра сичить сотнею голів!"
+],
+"Орк-военачальник": [
+"orc warlord",
+"Ork-Kriegsherr",
+"orco señor de la guerra",
+"орк-воєвода"
+],
+"Мастер клинков": [
+"deep elf blademaster",
+"Tiefelf-Klingenmeister",
+"maestro de espadas elfo",
+"майстер клинків"
+],
+"Смотритель Хранилищ": [
+"vault warden",
+"Gewölbeaufseher",
+"celador de las Bóvedas",
+"наглядач Сховищ"
+],
+"Владыка Глубин": [
+"lord of the Depths",
+"Herr der Tiefen",
+"señor de las Profundidades",
+"володар Глибин"
+],
+"Хранитель Шара": [
+"keeper of the Orb",
+"Hüter der Sphäre",
+"guardián del Orbe",
+"хранитель Сфери"
+],
+"Владыка разлома": [
+"lord of the rift",
+"Herr des Risses",
+"señor de la grieta",
+"володар розлому"
+],
+"Человек": [
+"Human",
+"Mensch",
+"humano",
+"Людина"
+],
+"+15% к тренировке всех скиллов": [
+"+15% training speed for all skills",
+"+15% Trainingstempo für alle Fertigkeiten",
+"+15% de entrenamiento en todas las habilidades",
+"+15% до тренування всіх навичок"
+],
+"Минотавр": [
+"Minotaur",
+"Minotaurus",
+"minotauro",
+"Мінотавр"
+],
+"Бодает в ответ на удары": [
+"Retaliates with a headbutt when struck",
+"Kontert Treffer mit einem Kopfstoß",
+"Responde a los golpes con un cabezazo",
+"Буцає у відповідь на удари"
+],
+"Мерфолк": [
+"Merfolk",
+"Meervolk",
+"tritón",
+"Мерфолк"
+],
+"+EV, мастер копий": [
+"+EV, master of polearms",
+"+EV, Meister der Stangenwaffen",
+"+EV, maestro de lanzas",
+"+EV, майстер списів"
+],
+"Горгулья": [
+"Gargoyle",
+"Gargoyle",
+"gárgola",
+"Горгулья"
+],
+"+5 AC, каменная кожа": [
+"+5 AC, skin of stone",
+"+5 RS, steinerne Haut",
+"+5 CA, piel de piedra",
+"+5 AC, кам'яна шкіра"
+],
+"Дыхание огнём": [
+"Breathes fire",
+"Speit Feuer",
+"Aliento de fuego",
+"Дихає вогнем"
+],
+"Тролль": [
+"Troll",
+"Troll",
+"trol",
+"Троль"
+],
+"Мощный реген, без брони": [
+"Mighty regeneration, no armour",
+"Starke Regeneration, keine Rüstung",
+"Gran regeneración, sin armadura",
+"Потужний реген, без броні"
+],
+"Глубинный эльф": [
+"Deep Elf",
+"Tiefelf",
+"elfo profundo",
+"Глибинний ельф"
+],
+"+30% урона магии": [
+"+30% spell damage",
+"+30% Zauberschaden",
+"+30% de daño mágico",
+"+30% шкоди магії"
+],
+"Гном": [
+"Dwarf",
+"Zwerg",
+"enano",
+"Гном"
+],
+"+AC, стойкость к урону": [
+"+AC, shrugs off damage",
+"+RS, steckt Schaden weg",
+"+CA, resistencia al daño",
+"+AC, стійкість до шкоди"
+],
+"Сприган": [
+"Spriggan",
+"Spriggan",
+"espriggan",
+"Спріган"
+],
+"Очень быстрый и вёрткий": [
+"Very fast and slippery",
+"Sehr schnell und wendig",
+"Muy rápido y escurridizo",
+"Дуже швидкий і меткий"
+],
+"Кобольд": [
+"Kobold",
+"Kobold",
+"kobold",
+"Кобольд"
+],
+"+20% золота": [
+"+20% gold",
+"+20% Gold",
+"+20% de oro",
+"+20% золота"
+],
+"Демоноспон": [
+"Demonspawn",
+"Dämonenbrut",
+"engendro demoníaco",
+"Демонспон"
+],
+"Мутации с уровнями": [
+"Mutates as it levels",
+"Mutiert beim Stufenaufstieg",
+"Muta al subir de nivel",
+"Мутації з рівнями"
+],
+"Гуль": [
+"Ghoul",
+"Ghul",
+"gul",
+"Гуль"
+],
+"Лечится, пожирая трупы": [
+"Heals by devouring corpses",
+"Heilt sich durch Leichenfraß",
+"Se cura devorando cadáveres",
+"Лікується, пожираючи трупи"
+],
+"Нага": [
+"Naga",
+"Naga",
+"naga",
+"Нага"
+],
+"Плюётся ядом, медленная": [
+"Spits poison, slow",
+"Spuckt Gift, langsam",
+"Escupe veneno, lenta",
+"Плюється отрутою, повільна"
+],
+"Осьминог": [
+"Octopode",
+"Oktopode",
+"octópodo",
+"Восьминіг"
+],
+"4 кольца, без брони": [
+"Four rings, no armour",
+"Vier Ringe, keine Rüstung",
+"Cuatro anillos, sin armadura",
+"4 каблучки, без броні"
+],
+"Фелид": [
+"Felid",
+"Felide",
+"félido",
+"Фелід"
+],
+"3 жизни, без оружия": [
+"Three lives, no weapons",
+"Drei Leben, keine Waffen",
+"Tres vidas, sin armas",
+"3 життя, без зброї"
+],
+"Тэнгу": [
+"Tengu",
+"Tengu",
+"tengu",
+"Тенгу"
+],
+"Летает, уворотлив": [
+"Flies, hard to hit",
+"Fliegt, weicht gut aus",
+"Vuela, difícil de golpear",
+"Літає, ухильний"
+],
+"Боец": [
+"Fighter",
+"Kämpfer",
+"luchador",
+"Боєць"
+],
+"+AC, крепкая защита": [
+"+AC, sturdy defence",
+"+RS, robuste Verteidigung",
+"+CA, defensa sólida",
+"+AC, міцний захист"
+],
+"Берсерк": [
+"Berserker",
+"Berserker",
+"berserker",
+"Берсерк"
+],
+"Ярость Трога в бою": [
+"Trog's wrath in battle",
+"Trogs Zorn im Kampf",
+"La ira de Trog en combate",
+"Лють Трога в бою"
+],
+"Гладиатор": [
+"Gladiator",
+"Gladiator",
+"gladiador",
+"Гладіатор"
+],
+"+15% скорость атак": [
+"+15% attack speed",
+"+15% Angriffstempo",
+"+15% de velocidad de ataque",
+"+15% швидкості атак"
+],
+"Монах": [
+"Monk",
+"Mönch",
+"monje",
+"Монах"
+],
+"Кулаки и уклонение": [
+"Fists and dodging",
+"Fäuste und Ausweichen",
+"Puños y esquiva",
+"Кулаки та ухилення"
+],
+"Охотник": [
+"Hunter",
+"Jäger",
+"cazador",
+"Мисливець"
+],
+"Бьёт издалека": [
+"Strikes from afar",
+"Trifft aus der Ferne",
+"Golpea desde lejos",
+"Б'є здалеку"
+],
+"Ассасин": [
+"Assassin",
+"Assassine",
+"asesino",
+"Асасин"
+],
+"+15% шанс крита-стэба": [
+"+15% stab crit chance",
+"+15% Meuchel-Kritchance",
+"+15% de crítico por apuñalamiento",
+"+15% шансу крит-стабу"
+],
+"Волшебник": [
+"Wizard",
+"Zauberer",
+"mago",
+"Чарівник"
+],
+"Блинкует прочь из опасности": [
+"Blinks away from danger",
+"Blinzelt aus der Gefahr",
+"Parpadea lejos del peligro",
+"Блимає геть від небезпеки"
+],
+"Заклинатель": [
+"Conjurer",
+"Beschwörer",
+"conjurador",
+"Заклинач"
+],
+"+20% урона магии": [
+"+20% spell damage",
+"+20% Zauberschaden",
+"+20% de daño mágico",
+"+20% шкоди магії"
+],
+"Некромант": [
+"Necromancer",
+"Nekromant",
+"nigromante",
+"Некромант"
+],
+"Пьёт жизнь и поднимает павших": [
+"Drains life and raises the fallen",
+"Saugt Leben und erweckt Gefallene",
+"Drena vida y alza a los caídos",
+"П'є життя і піднімає полеглих"
+],
+"Пиромант": [
+"Fire Elementalist",
+"Feuerelementarist",
+"elementalista de fuego",
+"Піромант"
+],
+"Огонь задевает соседей": [
+"Fire splashes onto neighbours",
+"Feuer trifft auch Nachbarn",
+"El fuego salpica a los vecinos",
+"Вогонь зачіпає сусідів"
+],
+"Криомант": [
+"Ice Elementalist",
+"Eiselementarist",
+"elementalista de hielo",
+"Кріомант"
+],
+"Мороз замедляет врагов": [
+"Frost slows enemies",
+"Frost verlangsamt Feinde",
+"La escarcha ralentiza enemigos",
+"Мороз сповільнює ворогів"
+],
+"Призыватель": [
+"Summoner",
+"Beschwörer der Kreaturen",
+"invocador",
+"Прикликач"
+],
+"Призывает существ на подмогу": [
+"Summons creatures to fight",
+"Beschwört Kreaturen zur Hilfe",
+"Invoca criaturas de apoyo",
+"Прикликає істот на поміч"
+],
+"кинжал": [
+"dagger",
+"Dolch",
+"daga",
+"кинджал"
+],
+"короткий меч": [
+"short sword",
+"Kurzschwert",
+"espada corta",
+"короткий меч"
+],
+"ручной топор": [
+"hand axe",
+"Handaxt",
+"hacha de mano",
+"ручна сокира"
+],
+"булава": [
+"mace",
+"Streitkolben",
+"maza",
+"булава"
+],
+"копьё": [
+"spear",
+"Speer",
+"lanza",
+"спис"
+],
+"лук": [
+"bow",
+"Bogen",
+"arco",
+"лук"
+],
+"боевой посох": [
+"quarterstaff",
+"Kampfstab",
+"bastón",
+"бойовий посох"
+],
+"длинный меч": [
+"long sword",
+"Langschwert",
+"espada larga",
+"довгий меч"
+],
+"боевой топор": [
+"war axe",
+"Kriegsaxt",
+"hacha de guerra",
+"бойова сокира"
+],
+"моргенштерн": [
+"morningstar",
+"Morgenstern",
+"lucero del alba",
+"моргенштерн"
+],
+"скимитар": [
+"scimitar",
+"Krummsäbel",
+"cimitarra",
+"скимітар"
+],
+"глефа": [
+"glaive",
+"Gleve",
+"guja",
+"глефа"
+],
+"арбалет": [
+"crossbow",
+"Armbrust",
+"ballesta",
+"арбалет"
+],
+"двуручный меч": [
+"great sword",
+"Bidenhänder",
+"espadón",
+"дворучний меч"
+],
+"секира": [
+"battleaxe",
+"Streitaxt",
+"hacha de batalla",
+"сокира"
+],
+"великая булава": [
+"great mace",
+"Großstreitkolben",
+"gran maza",
+"велика булава"
+],
+"роба": [
+"robe",
+"Robe",
+"túnica",
+"роба"
+],
+"кожаный доспех": [
+"leather armour",
+"Lederrüstung",
+"armadura de cuero",
+"шкіряний обладунок"
+],
+"кольчужная рубаха": [
+"ring mail",
+"Ringelpanzer",
+"cota de anillas",
+"кольчужна сорочка"
+],
+"чешуйчатый доспех": [
+"scale mail",
+"Schuppenpanzer",
+"cota de escamas",
+"лускатий обладунок"
+],
+"кольчуга": [
+"chain mail",
+"Kettenhemd",
+"cota de malla",
+"кольчуга"
+],
+"латы": [
+"plate armour",
+"Plattenpanzer",
+"armadura de placas",
+"лати"
+],
+"хрустальные латы": [
+"crystal plate armour",
+"Kristallpanzer",
+"placas de cristal",
+"кришталеві лати"
+],
+"драконья броня": [
+"dragon scale armour",
+"Drachenschuppenpanzer",
+"armadura de escamas de dragón",
+"драконяча броня"
+],
+"баклер": [
+"buckler",
+"Buckler",
+"broquel",
+"баклер"
+],
+"каплевидный щит": [
+"kite shield",
+"Tropfenschild",
+"escudo cometa",
+"краплеподібний щит"
+],
+"башенный щит": [
+"tower shield",
+"Turmschild",
+"escudo torre",
+"башений щит"
+],
+"кольцо разрушения": [
+"ring of slaying",
+"Ring der Vernichtung",
+"anillo de destrucción",
+"каблучка руйнування"
+],
+"кольцо защиты": [
+"ring of protection",
+"Ring des Schutzes",
+"anillo de protección",
+"каблучка захисту"
+],
+"кольцо уклонения": [
+"ring of evasion",
+"Ring des Ausweichens",
+"anillo de evasión",
+"каблучка ухилення"
+],
+"кольцо жизни": [
+"ring of vitality",
+"Ring der Lebenskraft",
+"anillo de vida",
+"каблучка життя"
+],
+"кольцо магии": [
+"ring of magic",
+"Ring der Magie",
+"anillo de magia",
+"каблучка магії"
+],
+"кольцо истребления": [
+"ring of slaughter",
+"Ring des Gemetzels",
+"anillo de matanza",
+"каблучка винищення"
+],
+"амулет регенерации": [
+"amulet of regeneration",
+"Amulett der Regeneration",
+"amuleto de regeneración",
+"амулет регенерації"
+],
+"амулет стража": [
+"amulet of the guardian",
+"Amulett des Wächters",
+"amuleto del guardián",
+"амулет вартового"
+],
+"амулет ярости": [
+"amulet of rage",
+"Amulett des Zorns",
+"amuleto de furia",
+"амулет люті"
+],
+"амулет отражения": [
+"amulet of reflection",
+"Amulett der Reflexion",
+"amuleto de reflexión",
+"амулет віддзеркалення"
+],
+"пламени": [
+"of flaming",
+"der Flammen",
+"flamígero",
+"полум'я"
+],
+"льда": [
+"of freezing",
+"des Frostes",
+"gélido",
+"криги"
+],
+"яда": [
+"of venom",
+"des Giftes",
+"venenoso",
+"отрути"
+],
+"молний": [
+"of electrocution",
+"der Blitze",
+"electrizante",
+"блискавок"
+],
+"святости": [
+"of holy wrath",
+"des heiligen Zorns",
+"sagrado",
+"святості"
+],
+"скорости": [
+"of speed",
+"der Schnelligkeit",
+"veloz",
+"швидкості"
+],
+"вампиризма": [
+"of vampirism",
+"des Vampirismus",
+"vampírico",
+"вампіризму"
+],
+"защиты": [
+"of protection",
+"des Schutzes",
+"protector",
+"захисту"
+],
+"огнестойкости": [
+"of fire resistance",
+"der Feuerresistenz",
+"de resistencia al fuego",
+"вогнестійкості"
+],
+"хладостойкости": [
+"of cold resistance",
+"der Kälteresistenz",
+"de resistencia al frío",
+"холодостійкості"
+],
+"ядостойкости": [
+"of poison resistance",
+"der Giftresistenz",
+"de resistencia al veneno",
+"отрутостійкості"
+],
+"регенерации": [
+"of regeneration",
+"der Regeneration",
+"de regeneración",
+"регенерації"
+],
+"уклонения": [
+"of evasion",
+"des Ausweichens",
+"de evasión",
+"ухилення"
+],
+"воли": [
+"of willpower",
+"der Willenskraft",
+"de voluntad",
+"волі"
+],
+"Гнев": [
+"Wrath",
+"Zorn",
+"Ira",
+"Гнів"
+],
+"Сумрак": [
+"Dusk",
+"Zwielicht",
+"Crepúsculo",
+"Сутінок"
+],
+"Погибель": [
+"Bane",
+"Verderben",
+"Perdición",
+"Погибель"
+],
+"Шёпот": [
+"Whisper",
+"Flüstern",
+"Susurro",
+"Шепіт"
+],
+"Зимняя тоска": [
+"Winter's Sorrow",
+"Winterschwermut",
+"Pena Invernal",
+"Зимова туга"
+],
+"Пожиратель": [
+"Devourer",
+"Verschlinger",
+"Devorador",
+"Пожирач"
+],
+"Клятва": [
+"Oath",
+"Schwur",
+"Juramento",
+"Клятва"
+],
+"Осколок зари": [
+"Shard of Dawn",
+"Splitter der Dämmerung",
+"Esquirla del Alba",
+"Скалка зорі"
+],
+"Голод": [
+"Hunger",
+"Hunger",
+"Hambre",
+"Голод"
+],
+"Вечность": [
+"Eternity",
+"Ewigkeit",
+"Eternidad",
+"Вічність"
+],
+"Дыхание бездны": [
+"Breath of the Abyss",
+"Atem des Abgrunds",
+"Aliento del Abismo",
+"Подих безодні"
+],
+"Око бури": [
+"Eye of the Storm",
+"Auge des Sturms",
+"Ojo de la Tormenta",
+"Око бурі"
+],
+"Последний довод": [
+"Last Argument",
+"Letztes Argument",
+"Último Argumento",
+"Останній доказ"
+],
+"Змеиный язык": [
+"Serpent's Tongue",
+"Schlangenzunge",
+"Lengua de Serpiente",
+"Зміїний язик"
+],
+"«Поющий меч»": [
+"the Singing Sword",
+"das Singende Schwert",
+"la Espada Cantarina",
+"«Співочий меч»"
+],
+"Он ОРЁТ. Постоянно.": [
+"It SCREAMS. Constantly.",
+"Es SCHREIT. Ununterbrochen.",
+"GRITA. Constantemente.",
+"Він ВОЛАЄ. Постійно."
+],
+"«Демонический топор»": [
+"the Obsidian Axe",
+"die Dämonenaxt",
+"el Hacha Demoníaca",
+"«Демонічна сокира»"
+],
+"Жаждет крови и не разбирает чьей.": [
+"Thirsts for blood, anyone's blood.",
+"Dürstet nach Blut — egal wessen.",
+"Ansía sangre, de quien sea.",
+"Прагне крові й не розбирає чиєї."
+],
+"«Гнев Трога»": [
+"the Wrath of Trog",
+"der Zorn des Trog",
+"la Ira de Trog",
+"«Гнів Трога»"
+],
+"Ярость бога, вплавленная в сталь.": [
+"A god's rage, forged into steel.",
+"Götterzorn, in Stahl gegossen.",
+"La furia de un dios forjada en acero.",
+"Лють бога, вплавлена в сталь."
+],
+"«Посох Олгреба»": [
+"the Staff of Olgreb",
+"der Stab des Olgreb",
+"el Bastón de Olgreb",
+"«Посох Олгреба»"
+],
+"Сочится ядом древнего мора.": [
+"Oozes the venom of an ancient plague.",
+"Trieft vom Gift einer uralten Seuche.",
+"Rezuma el veneno de una plaga antigua.",
+"Сочиться отрутою давнього мору."
+],
+"«Клык вампира»": [
+"the Vampire's Tooth",
+"der Vampirzahn",
+"el Colmillo del Vampiro",
+"«Ікло вампіра»"
+],
+"Пьёт за двоих.": [
+"Drinks for two.",
+"Trinkt für zwei.",
+"Bebe por dos.",
+"П'є за двох."
+],
+"«Святая секира»": [
+"the Holy Axe",
+"die Heilige Axt",
+"el Hacha Sagrada",
+"«Свята сокира»"
+],
+"Нежить помнит её звон.": [
+"The undead remember its ring.",
+"Die Untoten erinnern sich an ihren Klang.",
+"Los no muertos recuerdan su tañido.",
+"Нежить пам'ятає її дзвін."
+],
+"«Хауберк Лира»": [
+"Lear's Hauberk",
+"Lears Halsberge",
+"la Loriga de Lear",
+"«Хауберк Ліра»"
+],
+"Четыре части, одна легенда.": [
+"Four pieces, one legend.",
+"Vier Teile, eine Legende.",
+"Cuatro piezas, una leyenda.",
+"Чотири частини, одна легенда."
+],
+"«Плащ драконьей шкуры»": [
+"the Dragonskin Cloak",
+"der Drachenhautmantel",
+"la Capa de Piel de Dragón",
+"«Плащ драконячої шкіри»"
+],
+"Гибкая, как жизнь, прочная, как смерть.": [
+"Supple as life, tough as death.",
+"Geschmeidig wie das Leben, hart wie der Tod.",
+"Flexible como la vida, dura como la muerte.",
+"Гнучка, як життя, міцна, як смерть."
+],
+"«Кольцо мага»": [
+"the Ring of the Mage",
+"der Ring des Magiers",
+"el Anillo del Mago",
+"«Каблучка мага»"
+],
+"Шёпот заклинаний становится криком.": [
+"Whispered spells become a roar.",
+"Geflüsterte Zauber werden zum Schrei.",
+"Los hechizos susurrados se vuelven gritos.",
+"Шепіт заклять стає криком."
+],
+"«Амулет жажды крови»": [
+"the Amulet of Bloodlust",
+"das Amulett der Blutgier",
+"el Amuleto de Sed de Sangre",
+"«Амулет жаги крові»"
+],
+"Сердце стучит в такт чужим.": [
+"Its heartbeat matches your victims'.",
+"Sein Herz schlägt im Takt fremder Herzen.",
+"Su latido sigue el ritmo de tus víctimas.",
+"Серце стукає в такт чужим."
+],
+"«Амулет жизненной силы»": [
+"the Amulet of Vitality",
+"das Amulett der Lebenskraft",
+"el Amuleto de Vitalidad",
+"«Амулет життєвої сили»"
+],
+"Отказывается отпускать душу.": [
+"Refuses to let the soul go.",
+"Weigert sich, die Seele gehen zu lassen.",
+"Se niega a soltar el alma.",
+"Відмовляється відпускати душу."
+],
+"Трог": [
+"Trog",
+"Trog",
+"Trog",
+"Трог"
+],
+"+30% урона в ближнем бою, ярость при 30% HP": [
+"+30% melee damage, berserk below 30% HP",
+"+30% Nahkampfschaden, Berserker unter 30% LP",
+"+30% de daño cuerpo a cuerpo, furia bajo 30% de vida",
+"+30% шкоди зблизька, лють при 30% HP"
+],
+"Окавару": [
+"Okawaru",
+"Okawaru",
+"Okawaru",
+"Окавару"
+],
+"+15% урона и меткости, героизм в бою с боссами": [
+"+15% damage and accuracy, heroism against bosses",
+"+15% Schaden und Präzision, Heldenmut gegen Bosse",
+"+15% de daño y precisión, heroísmo contra jefes",
+"+15% шкоди й влучності, героїзм проти босів"
+],
+"Макхлеб": [
+"Makhleb",
+"Makhleb",
+"Makhleb",
+"Макхлеб"
+],
+"Лечение 3% HP за каждое убийство": [
+"Heals 3% HP on every kill",
+"Heilt 3% LP bei jedem Tötungsschlag",
+"Cura 3% de vida por cada muerte",
+"Лікує 3% HP за кожне вбивство"
+],
+"Сиф Муна": [
+"Sif Muna",
+"Sif Muna",
+"Sif Muna",
+"Сіф Муна"
+],
+"+25% урона магии, быстрый реген маны": [
+"+25% spell damage, fast mana regen",
+"+25% Zauberschaden, schnelle Manaregeneration",
+"+25% de daño mágico, regeneración rápida de maná",
+"+25% шкоди магії, швидкий реген мани"
+],
+"Вехумет": [
+"Vehumet",
+"Vehumet",
+"Vehumet",
+"Вехумет"
+],
+"+35% урона магии": [
+"+35% spell damage",
+"+35% Zauberschaden",
+"+35% de daño mágico",
+"+35% шкоди магії"
+],
+"Периодическое исцеление, +15% HP": [
+"Periodic healing, +15% HP",
+"Regelmäßige Heilung, +15% LP",
+"Curación periódica, +15% de vida",
+"Періодичне зцілення, +15% HP"
+],
+"зелье исцеления": [
+"potion of curing",
+"Trank der Genesung",
+"poción de curación",
+"зілля зцілення"
+],
+"мутное зелье": [
+"a murky potion",
+"ein trüber Trank",
+"una poción turbia",
+"каламутне зілля"
+],
+"зелье лечения ран": [
+"potion of heal wounds",
+"Trank der Wundheilung",
+"poción de sanar heridas",
+"зілля лікування ран"
+],
+"багровое зелье": [
+"a crimson potion",
+"ein purpurroter Trank",
+"una poción carmesí",
+"багряне зілля"
+],
+"зелье ускорения": [
+"potion of haste",
+"Trank der Hast",
+"poción de celeridad",
+"зілля прискорення"
+],
+"искрящееся зелье": [
+"a sparkling potion",
+"ein funkelnder Trank",
+"una poción chispeante",
+"іскристе зілля"
+],
+"зелье могущества": [
+"potion of might",
+"Trank der Macht",
+"poción de poder",
+"зілля могутності"
+],
+"дымящееся зелье": [
+"a smoking potion",
+"ein rauchender Trank",
+"una poción humeante",
+"димляче зілля"
+],
+"зелье ярости": [
+"potion of berserk rage",
+"Trank der Berserkerwut",
+"poción de furia",
+"зілля люті"
+],
+"чёрное зелье": [
+"a black potion",
+"ein schwarzer Trank",
+"una poción negra",
+"чорне зілля"
+],
+"зелье сопротивления": [
+"potion of resistance",
+"Trank des Widerstands",
+"poción de resistencia",
+"зілля опору"
+],
+"серебристое зелье": [
+"a silvery potion",
+"ein silbriger Trank",
+"una poción plateada",
+"сріблясте зілля"
+],
+"зелье блеска": [
+"potion of brilliance",
+"Trank der Brillanz",
+"poción de brillantez",
+"зілля блиску"
+],
+"опаловое зелье": [
+"an opalescent potion",
+"ein opalisierender Trank",
+"una poción opalina",
+"опалове зілля"
+],
+"зелье ловкости": [
+"potion of agility",
+"Trank der Gewandtheit",
+"poción de agilidad",
+"зілля спритності"
+],
+"изумрудное зелье": [
+"an emerald potion",
+"ein smaragdgrüner Trank",
+"una poción esmeralda",
+"смарагдове зілля"
+],
+"зелье мутации": [
+"potion of mutation",
+"Trank der Mutation",
+"poción de mutación",
+"зілля мутації"
+],
+"шипучее зелье": [
+"a fizzy potion",
+"ein sprudelnder Trank",
+"una poción efervescente",
+"шипуче зілля"
+],
+"свиток телепортации": [
+"scroll of teleportation",
+"Schriftrolle der Teleportation",
+"pergamino de teletransporte",
+"сувій телепортації"
+],
+"свиток «ZELGO MER»": [
+"scroll «ZELGO MER»",
+"Schriftrolle «ZELGO MER»",
+"pergamino «ZELGO MER»",
+"сувій «ZELGO MER»"
+],
+"свиток блинка": [
+"scroll of blinking",
+"Schriftrolle des Blinzelns",
+"pergamino de parpadeo",
+"сувій блимання"
+],
+"свиток «VY LURO»": [
+"scroll «VY LURO»",
+"Schriftrolle «VY LURO»",
+"pergamino «VY LURO»",
+"сувій «VY LURO»"
+],
+"свиток зачарования оружия": [
+"scroll of enchant weapon",
+"Schriftrolle der Waffenverzauberung",
+"pergamino de encantar arma",
+"сувій зачарування зброї"
+],
+"свиток «XOB GAKH»": [
+"scroll «XOB GAKH»",
+"Schriftrolle «XOB GAKH»",
+"pergamino «XOB GAKH»",
+"сувій «XOB GAKH»"
+],
+"свиток зачарования брони": [
+"scroll of enchant armour",
+"Schriftrolle der Rüstungsverzauberung",
+"pergamino de encantar armadura",
+"сувій зачарування броні"
+],
+"свиток «ITA NAZG»": [
+"scroll «ITA NAZG»",
+"Schriftrolle «ITA NAZG»",
+"pergamino «ITA NAZG»",
+"сувій «ITA NAZG»"
+],
+"свиток клейма оружия": [
+"scroll of brand weapon",
+"Schriftrolle der Waffenprägung",
+"pergamino de marcar arma",
+"сувій клейма зброї"
+],
+"свиток «PHOL ENDE»": [
+"scroll «PHOL ENDE»",
+"Schriftrolle «PHOL ENDE»",
+"pergamino «PHOL ENDE»",
+"сувій «PHOL ENDE»"
+],
+"свиток картографии": [
+"scroll of magic mapping",
+"Schriftrolle der Kartografie",
+"pergamino de cartografía",
+"сувій картографії"
+],
+"свиток «COMP TERRA»": [
+"scroll «COMP TERRA»",
+"Schriftrolle «COMP TERRA»",
+"pergamino «COMP TERRA»",
+"сувій «COMP TERRA»"
+],
+"свиток страха": [
+"scroll of fear",
+"Schriftrolle der Furcht",
+"pergamino de miedo",
+"сувій страху"
+],
+"свиток «AAARGH»": [
+"scroll «AAARGH»",
+"Schriftrolle «AAARGH»",
+"pergamino «AAARGH»",
+"сувій «AAARGH»"
+],
+"свиток обретения": [
+"scroll of acquirement",
+"Schriftrolle der Erwerbung",
+"pergamino de adquisición",
+"сувій набуття"
+],
+"свиток «WONK ELBE»": [
+"scroll «WONK ELBE»",
+"Schriftrolle «WONK ELBE»",
+"pergamino «WONK ELBE»",
+"сувій «WONK ELBE»"
+],
+"свиток опознания": [
+"scroll of identify",
+"Schriftrolle der Identifikation",
+"pergamino de identificación",
+"сувій розпізнання"
+],
+"свиток «ID ENTIA»": [
+"scroll «ID ENTIA»",
+"Schriftrolle «ID ENTIA»",
+"pergamino «ID ENTIA»",
+"сувій «ID ENTIA»"
+],
+"Рога": [
+"Horns",
+"Hörner",
+"Cuernos",
+"Роги"
+],
+"+8% урона в ближнем бою": [
+"+8% melee damage",
+"+8% Nahkampfschaden",
+"+8% de daño cuerpo a cuerpo",
+"+8% шкоди зблизька"
+],
+"Когти": [
+"Claws",
+"Klauen",
+"Garras",
+"Пазурі"
+],
+"+15% урона без оружия": [
+"+15% unarmed damage",
+"+15% waffenloser Schaden",
+"+15% de daño desarmado",
+"+15% шкоди без зброї"
+],
+"Огнестойкость": [
+"Fire Resistance",
+"Feuerresistenz",
+"Resistencia al fuego",
+"Вогнестійкість"
+],
+"Сопротивление огню": [
+"Resists fire",
+"Widersteht Feuer",
+"Resiste el fuego",
+"Опір вогню"
+],
+"Хладостойкость": [
+"Cold Resistance",
+"Kälteresistenz",
+"Resistencia al frío",
+"Холодостійкість"
+],
+"Сопротивление холоду": [
+"Resists cold",
+"Widersteht Kälte",
+"Resiste el frío",
+"Опір холоду"
+],
+"Толстая кожа": [
+"Tough Skin",
+"Zähe Haut",
+"Piel dura",
+"Товста шкіра"
+],
+"+3 AC": [
+"+3 AC",
+"+3 RS",
+"+3 CA",
+"+3 AC"
+],
+"Проворство": [
+"Fleet-Footed",
+"Flinkheit",
+"Pies ligeros",
+"Прудкість"
+],
+"+8% скорости похода": [
+"+8% delving speed",
+"+8% Reisetempo",
+"+8% de velocidad de expedición",
+"+8% швидкості походу"
+],
+"Регенерация": [
+"Regeneration",
+"Regeneration",
+"Regeneración",
+"Регенерація"
+],
+"+50% регена": [
+"+50% regeneration",
+"+50% Regeneration",
+"+50% de regeneración",
+"+50% регену"
+],
+"Сметливость": [
+"Cleverness",
+"Cleverness",
+"Astucia",
+"Кмітливість"
+],
+"+15% опыта": [
+"+15% experience",
+"+15% Erfahrung",
+"+15% de experiencia",
+"+15% досвіду"
+],
+"Хрупкость": [
+"Frailty",
+"Gebrechlichkeit",
+"Fragilidad",
+"Крихкість"
+],
+"−10% здоровья": [
+"−10% health",
+"−10% Lebenspunkte",
+"−10% de vida",
+"−10% здоров'я"
+],
+"Слабость": [
+"Weakness",
+"Schwäche",
+"Debilidad",
+"Слабкість"
+],
+"−8% урона": [
+"−8% damage",
+"−8% Schaden",
+"−8% de daño",
+"−8% шкоди"
+],
+"Телепортит": [
+"Teleportitis",
+"Teleportitis",
+"Teleportitis",
+"Телепортит"
+],
+"Иногда телепортирует в случайное место": [
+"Occasionally teleports you at random",
+"Teleportiert gelegentlich an zufällige Orte",
+"A veces te teletransporta al azar",
+"Іноді телепортує у випадкове місце"
+],
+"Берсеркит": [
+"Berserkitis",
+"Berserkitis",
+"Berserkitis",
+"Берсеркіт"
+],
+"Случайные приступы ярости (+урон, −AC)": [
+"Random fits of rage (+damage, −AC)",
+"Zufällige Wutanfälle (+Schaden, −RS)",
+"Ataques de furia aleatorios (+daño, −CA)",
+"Випадкові напади люті (+шкода, −AC)"
+],
+"Крикливость": [
+"Screaming",
+"Schreianfälle",
+"Gritos",
+"Крикливість"
+],
+"Крики будят монстров этажа": [
+"Screams wake the whole floor",
+"Schreie wecken die ganze Ebene",
+"Los gritos despiertan a todo el piso",
+"Крики будять монстрів поверху"
+],
+"Медленные раны": [
+"Slow Healing",
+"Langsame Heilung",
+"Curación lenta",
+"Повільні рани"
+],
+"−40% регена": [
+"−40% regeneration",
+"−40% Regeneration",
+"−40% de regeneración",
+"−40% регену"
+],
+"Канализация": [
+"the Sewer",
+"die Kanalisation",
+"la Alcantarilla",
+"Каналізація"
+],
+"Ледяная пещера": [
+"the Ice Cave",
+"die Eishöhle",
+"la Cueva de Hielo",
+"Крижана печера"
+],
+"Вулкан": [
+"the Volcano",
+"der Vulkan",
+"el Volcán",
+"Вулкан"
+],
+"Сокровищница": [
+"the Treasure Trove",
+"die Schatzkammer",
+"el Tesoro",
+"Скарбниця"
+],
+"Гаунтлет": [
+"the Gauntlet",
+"der Spießrutenlauf",
+"el Guantelete",
+"Гаунтлет"
+],
+"Зиккурат": [
+"the Ziggurat",
+"die Zikkurat",
+"el Zigurat",
+"Зикурат"
+],
+"Подземелье": [
+"Dungeon",
+"Verlies",
+"Mazmorra",
+"Підземелля"
+],
+"Логово": [
+"the Lair",
+"die Höhle",
+"la Guarida",
+"Лігво"
+],
+"Оркские копи": [
+"the Orcish Mines",
+"die Orkminen",
+"las Minas Orcas",
+"Оркські копальні"
+],
+"Эльфийские залы": [
+"the Elven Halls",
+"die Elfenhallen",
+"los Salones Élficos",
+"Ельфійські зали"
+],
+"Хранилища": [
+"the Vaults",
+"die Gewölbe",
+"las Bóvedas",
+"Сховища"
+],
+"Глубины": [
+"the Depths",
+"die Tiefen",
+"las Profundidades",
+"Глибини"
+],
+"Царство Зота": [
+"the Realm of Zot",
+"das Reich von Zot",
+"el Reino de Zot",
+"Царство Зота"
+],
+"Бездна": [
+"the Abyss",
+"der Abgrund",
+"el Abismo",
+"Безодня"
+],
+"3 руны": [
+"3 runes",
+"3 Runen",
+"3 runas",
+"3 руни"
+],
+"D:12 + 1 руна": [
+"D:12 + 1 rune",
+"D:12 + 1 Rune",
+"D:12 + 1 runa",
+"D:12 + 1 руна"
+],
+"кистоун «Разлом Бездны»": [
+"the Abyssal Rift keystone",
+"Schlussstein «Abgrundriss»",
+"la clave «Grieta Abisal»",
+"кістоун «Розлам Безодні»"
+],
+"змеиная руна": [
+"the serpentine rune",
+"die Schlangenrune",
+"la runa serpentina",
+"зміїна руна"
+],
+"железная руна": [
+"the iron rune",
+"die Eisenrune",
+"la runa de hierro",
+"залізна руна"
+],
+"серебряная руна": [
+"the silver rune",
+"die Silberrune",
+"la runa de plata",
+"срібна руна"
+],
+"хрустальная руна": [
+"the crystal rune",
+"die Kristallrune",
+"la runa de cristal",
+"кришталева руна"
+],
+"абиссальная руна": [
+"the abyssal rune",
+"die Abgrundrune",
+"la runa abisal",
+"абісальна руна"
+],
+"демоническая руна": [
+"the demonic rune",
+"die Dämonenrune",
+"la runa demoníaca",
+"демонічна руна"
+],
+"Обычный": [
+"Common",
+"Gewöhnlich",
+"Común",
+"Звичайний"
+],
+"Редкий": [
+"Rare",
+"Selten",
+"Raro",
+"Рідкісний"
+],
+"Эпический": [
+"Epic",
+"Episch",
+"Épico",
+"Епічний"
+],
+"Легендарный": [
+"Legendary",
+"Legendär",
+"Legendario",
+"Легендарний"
+],
+"Драконид": [
+"Draconian",
+"Drakonier",
+"Dracónido",
+"Драконід"
+],
+"Портал": [
+"Portal",
+"Portal",
+"Portal",
+"Портал"
+],
+"Сущность мощи": [
+"Essence of Might",
+"Essenz der Macht",
+"Esencia de Poder",
+"Сутність моці"
+],
+"+20% урона всех героев за ур.": [
+"+20% damage for all heroes per lvl",
+"+20% Schaden aller Helden pro Stufe",
+"+20% de daño de todos los héroes por nivel",
+"+20% шкоди всіх героїв за рів."
+],
+"Сущность стойкости": [
+"Essence of Fortitude",
+"Essenz der Standhaftigkeit",
+"Esencia de Fortaleza",
+"Сутність стійкості"
+],
+"+20% здоровья всех героев за ур.": [
+"+20% health for all heroes per lvl",
+"+20% Lebenspunkte aller Helden pro Stufe",
+"+20% de vida de todos los héroes por nivel",
+"+20% здоров'я всіх героїв за рів."
+],
+"Сущность жадности": [
+"Essence of Greed",
+"Essenz der Gier",
+"Esencia de Codicia",
+"Сутність жадібності"
+],
+"+20% золота за ур.": [
+"+20% gold per lvl",
+"+20% Gold pro Stufe",
+"+20% de oro por nivel",
+"+20% золота за рів."
+],
+"Сущность удачи": [
+"Essence of Luck",
+"Essenz des Glücks",
+"Esencia de Suerte",
+"Сутність удачі"
+],
+"+3% шанса легендарки в призыве за ур.": [
+"+3% legendary summon chance per lvl",
+"+3% Chance auf legendäre Beschwörung pro Stufe",
+"+3% de probabilidad de legendario por nivel",
+"+3% шансу легендарки в призові за рів."
+],
+"Бой": [
+"Fighting",
+"Kampf",
+"Lucha",
+"Бій"
+],
+"Герои": [
+"Heroes",
+"Helden",
+"Héroes",
+"Герої"
+],
+"Данж": [
+"Dungeon",
+"Verlies",
+"Mazmorra",
+"Данж"
+],
+"Кузня": [
+"Forge",
+"Schmiede",
+"Fragua",
+"Кузня"
+],
+"Призыв": [
+"Summoning",
+"Beschwörung",
+"Invocación",
+"Призов"
+],
+"Экономика": [
+"Economy",
+"Wirtschaft",
+"Economía",
+"Економіка"
+],
+" за уровень": [
+" per level",
+" pro Stufe",
+" por nivel",
+" за рівень"
+],
+"+0.1% шанса руны с уника": [
+"+0.1% rune chance from uniques",
+"+0.1% Runenchance bei Unikaten",
+"+0.1% de probabilidad de runa de únicos",
+"+0.1% шансу руни з уніка"
+],
+"+0.2% вампиризма": [
+"+0.2% lifesteal",
+"+0.2% Lebensraub",
+"+0.2% de robo de vida",
+"+0.2% вампіризму"
+],
+"+0.2% шанса крита": [
+"+0.2% crit chance",
+"+0.2% kritische Trefferchance",
+"+0.2% de probabilidad de crítico",
+"+0.2% шансу криту"
+],
+"+0.6% скорости атак": [
+"+0.6% attack speed",
+"+0.6% Angriffstempo",
+"+0.6% de velocidad de ataque",
+"+0.6% швидкості атак"
+],
+"+0.8% к плюсам ковки": [
+"+0.8% to forging pluses",
+"+0.8% auf Schmiede-Boni",
+"+0.8% a los bonos de forja",
+"+0.8% до плюсів кування"
+],
+"+0.8% скорости похода": [
+"+0.8% delving speed",
+"+0.8% Reisetempo",
+"+0.8% de velocidad de expedición",
+"+0.8% швидкості походу"
+],
+"+1 зелье в поход": [
+"+1 potion per delve",
+"+1 Trank pro Expedition",
+"+1 poción por expedición",
+"+1 зілля в похід"
+],
+"+1 одновременная экспедиция": [
+"+1 concurrent expedition",
+"+1 gleichzeitige Expedition",
+"+1 expedición simultánea",
+"+1 одночасна експедиція"
+],
+"+1 слот экспедиции": [
+"+1 expedition slot",
+"+1 Expeditionsplatz",
+"+1 espacio de expedición",
+"+1 слот експедиції"
+],
+"+1% здоровья всех героев": [
+"+1% health for all heroes",
+"+1% Lebenspunkte aller Helden",
+"+1% de vida de todos los héroes",
+"+1% здоров'я всіх героїв"
+],
+"+1% урона и +1% золота за уровень": [
+"+1% damage and +1% gold per level",
+"+1% Schaden und +1% Gold pro Stufe",
+"+1% de daño y +1% de oro por nivel",
+"+1% шкоди і +1% золота за рівень"
+],
+"+1% шанса находок": [
+"+1% find chance",
+"+1% Fundchance",
+"+1% de probabilidad de hallazgos",
+"+1% шансу знахідок"
+],
+"+1.2% золота": [
+"+1.2% gold",
+"+1.2% Gold",
+"+1.2% de oro",
+"+1.2% золота"
+],
+"+1.2% меткости": [
+"+1.2% accuracy",
+"+1.2% Präzision",
+"+1.2% de precisión",
+"+1.2% влучності"
+],
+"+1.2% опыта": [
+"+1.2% experience",
+"+1.2% Erfahrung",
+"+1.2% de experiencia",
+"+1.2% досвіду"
+],
+"+1.5% Памяти": [
+"+1.5% Memory",
+"+1.5% Erinnerung",
+"+1.5% de Memoria",
+"+1.5% Пам'яті"
+],
+"+1.5% регена": [
+"+1.5% regeneration",
+"+1.5% Regeneration",
+"+1.5% de regeneración",
+"+1.5% регену"
+],
+"+2% осколков": [
+"+2% shards",
+"+2% Splitter",
+"+2% de esquirlas",
+"+2% уламків"
+],
+"+50% сущности Зота с побед.": [
+"+50% Zot essence from victories.",
+"+50% Zot-Essenz aus Siegen.",
+"+50% de esencia de Zot por victorias.",
+"+50% сутності Зота з перемог."
+],
+"−0.6% цены призыва": [
+"−0.6% summon cost",
+"−0.6% Beschwörungskosten",
+"−0.6% de coste de invocación",
+"−0.6% ціни призову"
+],
+"−0.8% цены ковки": [
+"−0.8% forging cost",
+"−0.8% Schmiedekosten",
+"−0.8% de coste de forja",
+"−0.8% ціни кування"
+],
+"-й искатель": [
+"th seeker",
+". Sucher",
+"º buscador",
+"-й шукач"
+],
+"⟐ Авто-призыв": [
+"⟐ Auto-Summon",
+"⟐ Auto-Beschwörung",
+"⟐ Autoinvocación",
+"⟐ Авто-призов"
+],
+"⟐ Авто-разбор": [
+"⟐ Auto-Dismantle",
+"⟐ Auto-Zerlegung",
+"⟐ Autodesmontaje",
+"⟐ Авто-розбір"
+],
+"⟐ Авто-экипировка": [
+"⟐ Auto-Equip",
+"⟐ Auto-Ausrüstung",
+"⟐ Autoequipamiento",
+"⟐ Авто-екіпірування"
+],
+"⟐ Ауры рун": [
+"⟐ Rune Auras",
+"⟐ Runenauren",
+"⟐ Auras Rúnicas",
+"⟐ Аури рун"
+],
+"⟐ Боевые узы": [
+"⟐ Battle Bonds",
+"⟐ Kampfbande",
+"⟐ Lazos de Batalla",
+"⟐ Бойові узи"
+],
+"⟐ Караваны без сна": [
+"⟐ Sleepless Caravans",
+"⟐ Schlaflose Karawanen",
+"⟐ Caravanas sin Sueño",
+"⟐ Каравани без сну"
+],
+"⟐ Наследники": [
+"⟐ Heirs",
+"⟐ Erben",
+"⟐ Herederos",
+"⟐ Спадкоємці"
+],
+"⟐ Новая глубина": [
+"⟐ New Depth",
+"⟐ Neue Tiefe",
+"⟐ Nueva Profundidad",
+"⟐ Нова глибина"
+],
+"⟐ Опыт поражений": [
+"⟐ Lessons of Defeat",
+"⟐ Lehren der Niederlage",
+"⟐ Lecciones de la Derrota",
+"⟐ Досвід поразок"
+],
+"⟐ Призраки павших": [
+"⟐ Ghosts of the Fallen",
+"⟐ Geister der Gefallenen",
+"⟐ Fantasmas de los Caídos",
+"⟐ Привиди полеглих"
+],
+"⟐ Разлом Бездны": [
+"⟐ Abyssal Rift",
+"⟐ Abgrundriss",
+"⟐ Grieta Abisal",
+"⟐ Розлам Безодні"
+],
+"⟐ Третье кольцо": [
+"⟐ Third Ring",
+"⟐ Dritter Ring",
+"⟐ Tercer Anillo",
+"⟐ Третя каблучка"
+],
+"⟐ Щедрость Зота": [
+"⟐ Zot's Bounty",
+"⟐ Zots Großzügigkeit",
+"⟐ Generosidad de Zot",
+"⟐ Щедрість Зота"
+],
+"⟐ Элитные этажи": [
+"⟐ Elite Floors",
+"⟐ Elite-Ebenen",
+"⟐ Pisos de Élite",
+"⟐ Елітні поверхи"
+],
+"Каждая добытая руна даёт постоянные +2% урона и +2% золота.": [
+"Every rune collected grants a permanent +2% damage and +2% gold.",
+"Jede gesammelte Rune gewährt dauerhaft +2% Schaden und +2% Gold.",
+"Cada runa obtenida otorga +2% de daño y +2% de oro permanentes.",
+"Кожна здобута руна дає постійні +2% шкоди і +2% золота."
+],
+"Каждый герой в данже даёт остальным +4% урона.": [
+"Each hero in the dungeon grants the others +4% damage.",
+"Jeder Held im Verlies gewährt den anderen +4% Schaden.",
+"Cada héroe en la mazmorra otorga +4% de daño a los demás.",
+"Кожен герой у данжі дає іншим +4% шкоди."
+],
+"Каждый погибший герой навсегда даёт +0.5% урона (до +30%).": [
+"Each fallen hero permanently grants +0.5% damage (up to +30%).",
+"Jeder gefallene Held gewährt dauerhaft +0.5% Schaden (bis +30%).",
+"Cada héroe caído otorga +0.5% de daño permanente (hasta +30%).",
+"Кожен загиблий герой назавжди дає +0.5% шкоди (до +30%)."
+],
+"Каждый этаж, уник и смерть героя оставляют след. Память — топливо этого древа.": [
+"Every floor, unique and hero death leaves a trace. Memory fuels this tree.",
+"Jede Ebene, jedes Unikat und jeder Heldentod hinterlässt eine Spur. Erinnerung ist der Brennstoff dieses Baums.",
+"Cada piso, único y muerte de héroe deja huella. La Memoria alimenta este árbol.",
+"Кожен поверх, унік і смерть героя лишають слід. Пам'ять — паливо цього древа."
+],
+"Кап оффлайн-прогресса 24ч → 72ч.": [
+"Offline progress cap 24h → 72h.",
+"Offline-Fortschrittslimit 24h → 72h.",
+"Límite de progreso offline 24h → 72h.",
+"Кап офлайн-прогресу 24г → 72г."
+],
+"НГ+: монстры ×2 сильнее, все награды ×2.5. Навсегда.": [
+"NG+: monsters ×2 stronger, all rewards ×2.5. Forever.",
+"NG+: Monster ×2 stärker, alle Belohnungen ×2.5. Für immer.",
+"NG+: monstruos ×2 más fuertes, todas las recompensas ×2.5. Para siempre.",
+"НГ+: монстри ×2 сильніші, всі нагороди ×2.5. Назавжди."
+],
+"Новый герой комбинации начинает с XL = 1 + треть лучшего XL погибшего предка.": [
+"A new hero of the combo starts at XL = 1 + a third of its best fallen ancestor's XL.",
+"Ein neuer Held der Kombination startet mit XL = 1 + einem Drittel des besten XL gefallener Vorfahren.",
+"Un nuevo héroe del combo empieza con XL = 1 + un tercio del mejor XL de su ancestro caído.",
+"Новий герой комбінації починає з XL = 1 + третина найкращого XL загиблого предка."
+],
+"Обычные (серые) предметы разбираются в обломки сами.": [
+"Common (grey) items are dismantled into scrap automatically.",
+"Gewöhnliche (graue) Gegenstände werden automatisch zu Schrott zerlegt.",
+"Los objetos comunes (grises) se desmontan en chatarra automáticamente.",
+"Звичайні (сірі) предмети розбираються на уламки самі."
+],
+"Открывает Бездну: бесконечная ветка со всеми монстрами, +50% золота, руна каждые 10 этажей.": [
+"Unlocks the Abyss: an endless branch with every monster, +50% gold, a rune every 10 floors.",
+"Schaltet den Abgrund frei: ein endloser Zweig mit allen Monstern, +50% Gold, eine Rune alle 10 Ebenen.",
+"Desbloquea el Abismo: una rama infinita con todos los monstruos, +50% de oro, una runa cada 10 pisos.",
+"Відкриває Безодню: нескінченна гілка з усіма монстрами, +50% золота, руна кожні 10 поверхів."
+],
+"Память со смертей героев ×2.": [
+"Memory from hero deaths ×2.",
+"Erinnerung aus Heldentoden ×2.",
+"Memoria por muertes de héroes ×2.",
+"Пам'ять зі смертей героїв ×2."
+],
+"Перед выходом герой сам берёт лучшее из арсенала.": [
+"Before departing, the hero equips the best gear from the armory automatically.",
+"Vor dem Aufbruch nimmt der Held selbst das Beste aus dem Arsenal.",
+"Antes de partir, el héroe toma lo mejor del arsenal por sí mismo.",
+"Перед виходом герой сам бере найкраще з арсеналу."
+],
+"Свободный слот и золото ≥ 2× цены — призыв происходит сам.": [
+"A free slot and gold ≥ 2× the cost — summoning happens on its own.",
+"Freier Platz und Gold ≥ 2× der Kosten — die Beschwörung geschieht von selbst.",
+"Espacio libre y oro ≥ 2× el coste — la invocación ocurre sola.",
+"Вільний слот і золото ≥ 2× ціни — призов відбувається сам."
+],
+"У всех героев появляется третий слот кольца.": [
+"All heroes gain a third ring slot.",
+"Alle Helden erhalten einen dritten Ringplatz.",
+"Todos los héroes obtienen un tercer espacio de anillo.",
+"У всіх героїв з'являється третій слот каблучки."
+],
+"15% этажей — элитные: монстры +50% HP, но добыча и Память ×2.": [
+"15% of floors are elite: monsters +50% HP, but loot and Memory ×2.",
+"15% der Ebenen sind elitär: Monster +50% LP, aber Beute und Erinnerung ×2.",
+"El 15% de los pisos son de élite: monstruos +50% de vida, pero botín y Memoria ×2.",
+"15% поверхів — елітні: монстри +50% HP, але здобич і Пам'ять ×2."
+],
+"5 смертей": [
+"5 deaths",
+"5 Tode",
+"5 muertes",
+"5 смертей"
+],
+"10 смертей": [
+"10 deaths",
+"10 Tode",
+"10 muertes",
+"10 смертей"
+],
+"25 смертей": [
+"25 deaths",
+"25 Tode",
+"25 muertes",
+"25 смертей"
+],
+"20 призывов": [
+"20 summons",
+"20 Beschwörungen",
+"20 invocaciones",
+"20 призовів"
+],
+"500 убийств": [
+"500 kills",
+"500 Tötungen",
+"500 muertes de enemigos",
+"500 вбивств"
+],
+"добыть руну": [
+"collect a rune",
+"eine Rune sammeln",
+"conseguir una runa",
+"здобути руну"
+],
+"накопить 2000 Памяти": [
+"accumulate 2000 Memory",
+"2000 Erinnerung ansammeln",
+"acumular 2000 de Memoria",
+"накопичити 2000 Пам'яті"
+],
+"победа": [
+"victory",
+"Sieg",
+"victoria",
+"перемога"
+],
+"разобрать 10 предметов": [
+"dismantle 10 items",
+"10 Gegenstände zerlegen",
+"desmontar 10 objetos",
+"розібрати 10 предметів"
+],
+"сковать 10 предметов": [
+"forge 10 items",
+"10 Gegenstände schmieden",
+"forjar 10 objetos",
+"скувати 10 предметів"
+],
+"сковать 20 предметов": [
+"forge 20 items",
+"20 Gegenstände schmieden",
+"forjar 20 objetos",
+"скувати 20 предметів"
+],
+"убить 3 уников": [
+"kill 3 uniques",
+"3 Unikate töten",
+"matar a 3 únicos",
+"вбити 3 уніків"
+],
+"Мост памяти": [
+"Memory Bridge",
+"Erinnerungsbrücke",
+"Puente de Memoria",
+"Міст пам'яті"
+],
+"Пробуждение памяти": [
+"Memory Awakening",
+"Erwachen der Erinnerung",
+"Despertar de la Memoria",
+"Пробудження пам'яті"
+],
+" (в арсенал)": [
+" (to armory)",
+" (ins Arsenal)",
+" (al arsenal)",
+" (в арсенал)"
+],
+" (надето)": [
+" (equipped)",
+" (angelegt)",
+" (equipado)",
+" (надіто)"
+],
+" ЗАБИРАЕТ ШАР ЗОТА! Легенда навеки.": [
+" TAKES THE ORB OF ZOT! A legend forever.",
+" NIMMT DEN ORB VON ZOT! Eine Legende für immer.",
+" ¡TOMA EL ORBE DE ZOT! Leyenda para siempre.",
+" ЗАБИРАЄ КУЛЮ ЗОТА! Легенда навіки."
+],
+" ИЗГНАН В БЕЗДНУ (": [
+" BANISHED TO THE ABYSS (",
+" IN DEN ABGRUND VERBANNT (",
+" DESTERRADO AL ABISMO (",
+" ВИГНАНИЙ У БЕЗОДНЮ ("
+],
+" бьёт спящего ": [
+" stabs the sleeping ",
+" trifft den schlafenden ",
+" apuñala al dormido ",
+" б'є сплячого "
+],
+" возвращается из портала": [
+" returns from the portal",
+" kehrt aus dem Portal zurück",
+" regresa del portal",
+" повертається з порталу"
+],
+" впадает в спонтанную ярость!": [
+" flies into a spontaneous rage!",
+" verfällt in spontane Raserei!",
+" ¡entra en furia espontánea!",
+" впадає в спонтанну лють!"
+],
+" впадает в ярость!": [
+" goes berserk!",
+" gerät in Raserei!",
+" ¡entra en furia!",
+" впадає в лють!"
+],
+" врагов обращены в бегство": [
+" enemies flee in terror",
+" Feinde fliehen in Panik",
+" enemigos huyen despavoridos",
+" ворогів кинулися навтьоки"
+],
+" входит в портал: ": [
+" enters a portal: ",
+" betritt ein Portal: ",
+" entra en un portal: ",
+" входить у портал: "
+],
+" входит на ": [
+" enters ",
+" betritt ",
+" entra en ",
+" входить на "
+],
+" выбирается из Бездны!": [
+" escapes the Abyss!",
+" entkommt dem Abgrund!",
+" ¡escapa del Abismo!",
+" вибирається з Безодні!"
+],
+" добывает руну: ": [
+" collects a rune: ",
+" sammelt eine Rune: ",
+" consigue una runa: ",
+" здобуває руну: "
+],
+" дышит огнём!": [
+" breathes fire!",
+" speit Feuer!",
+" ¡escupe fuego!",
+" дихає вогнем!"
+],
+" закупается: ": [
+" goes shopping: ",
+" kauft ein: ",
+" hace compras: ",
+" закуповується: "
+],
+" замечает ловушку (": [
+" spots a trap (",
+" entdeckt eine Falle (",
+" detecta una trampa (",
+" помічає пастку ("
+],
+" запутывается в сети": [
+" gets tangled in a net",
+" verfängt sich im Netz",
+" queda atrapado en una red",
+" заплутується в сітці"
+],
+" золота": [
+" gold",
+" Gold",
+" de oro",
+" золота"
+],
+" исподтишка!": [
+" from the shadows!",
+" aus dem Hinterhalt!",
+" ¡a traición!",
+" нишком!"
+],
+" кричит — этаж просыпается!": [
+" screams — the whole floor wakes up!",
+" schreit — die ganze Ebene erwacht!",
+" grita — ¡todo el piso despierta!",
+" кричить — поверх прокидається!"
+],
+" на ": [
+" on ",
+" auf ",
+" en ",
+" на "
+],
+" наполняется мощью!": [
+" swells with might!",
+" füllt sich mit Macht!",
+" ¡se llena de poder!",
+" наповнюється міццю!"
+],
+" находит золотой ключ!": [
+" finds a golden key!",
+" findet einen goldenen Schlüssel!",
+" ¡encuentra una llave dorada!",
+" знаходить золотий ключ!"
+],
+" осколков)": [
+" shards)",
+" Splitter)",
+" esquirlas)",
+" уламків)"
+],
+" осматривает лавку, но уходит ни с чем": [
+" browses the shop but leaves empty-handed",
+" sieht sich im Laden um, geht aber leer aus",
+" mira la tienda pero se va con las manos vacías",
+" оглядає крамницю, але йде ні з чим"
+],
+" отозван из подземелья. Путь начнётся заново.": [
+" is recalled from the dungeon. The journey starts anew.",
+" wird aus dem Verlies zurückgerufen. Die Reise beginnt von vorn.",
+" es retirado de la mazmorra. El camino empezará de nuevo.",
+" відкликаний з підземелля. Шлях почнеться заново."
+],
+" отравлен (": [
+" is poisoned (",
+" ist vergiftet (",
+" está envenenado (",
+" отруєний ("
+],
+" плюёт ядом в ": [
+" spits venom at ",
+" spuckt Gift auf ",
+" escupe veneno a ",
+" плює отрутою в "
+],
+" повергает босса: ": [
+" defeats the boss: ",
+" bezwingt den Boss: ",
+" derrota al jefe: ",
+" перемагає боса: "
+],
+" повержен": [
+" is defeated",
+" ist bezwungen",
+" es derrotado",
+" переможений"
+],
+" погибает от ": [
+" dies to ",
+" stirbt durch ",
+" muere por ",
+" гине від "
+],
+" подбирает ": [
+" picks up ",
+" hebt auf: ",
+" recoge ",
+" підбирає "
+],
+" подбирает: ": [
+" picks up: ",
+" hebt auf: ",
+" recoge: ",
+" підбирає: "
+],
+" призывает: ": [
+" summons: ",
+" beschwört: ",
+" invoca: ",
+" призиває: "
+],
+" присягает: ": [
+" pledges to: ",
+" schwört: ",
+" jura lealtad a: ",
+" присягає: "
+],
+" проваливается в шахту на ": [
+" falls through a shaft to ",
+" stürzt durch einen Schacht auf ",
+" cae por un pozo hasta ",
+" провалюється в шахту на "
+],
+" пройден (+": [
+" cleared (+",
+" geschafft (+",
+" superado (+",
+" пройдено (+"
+],
+" пролетает над сетью": [
+" flies over the net",
+" fliegt über das Netz",
+" vuela sobre la red",
+" пролітає над сіткою"
+],
+" пьёт ": [
+" drinks ",
+" trinkt ",
+" bebe ",
+" п'є "
+],
+" растворяется в воздухе": [
+" dissolves into thin air",
+" löst sich in Luft auf",
+" se desvanece en el aire",
+" розчиняється в повітрі"
+],
+" спускается в подземелье. Да хранит его память Зота.": [
+" descends into the dungeon. May the memory of Zot keep them.",
+" steigt ins Verlies hinab. Möge die Erinnerung an Zot über ihn wachen.",
+" desciende a la mazmorra. Que la memoria de Zot le guarde.",
+" спускається в підземелля. Хай береже його пам'ять Зота."
+],
+" спускается глубже: ": [
+" descends deeper: ",
+" steigt tiefer hinab: ",
+" desciende más: ",
+" спускається глибше: "
+],
+" сражает уникума: ": [
+" slays the unique: ",
+" erschlägt das Unikat: ",
+" abate al único: ",
+" вражає уніка: "
+],
+" телепортирован (": [
+" is teleported (",
+" wird teleportiert (",
+" es teletransportado (",
+" телепортований ("
+],
+" теряет жизнь! Осталось ": [
+" loses a life! Remaining: ",
+" verliert ein Leben! Übrig: ",
+" ¡pierde una vida! Quedan: ",
+" втрачає життя! Лишилося "
+],
+" убивает: ": [
+" kills: ",
+" tötet: ",
+" mata a: ",
+" вбиває: "
+],
+" уклоняется от ": [
+" dodges ",
+" weicht aus: ",
+" esquiva a ",
+" ухиляється від "
+],
+" ускоряется!": [
+" speeds up!",
+" beschleunigt!",
+" ¡se acelera!",
+" прискорюється!"
+],
+" фармит Глубины.": [
+" farms the Depths.",
+" farmt die Tiefen.",
+" farmea las Profundidades.",
+" фармить Глибини."
+],
+" читает ": [
+" reads ",
+" liest ",
+" lee ",
+" читає "
+],
+" эт.!": [
+" floors!",
+" Ebenen!",
+" pisos!",
+" пов.!"
+],
+" этажей": [
+" floors",
+" Ebenen",
+" pisos",
+" поверхів"
+],
+" 🜚) возвращается в казну": [
+" 🜚) returns to the treasury",
+" 🜚) kehrt in die Schatzkammer zurück",
+" 🜚) vuelve al tesoro",
+" 🜚) повертається до скарбниці"
+],
+") и обходит её": [
+") and walks around it",
+") und umgeht sie",
+") y la rodea",
+") і обходить її"
+],
+")! Нужно найти выход...": [
+")! Must find a way out...",
+")! Ein Ausweg muss her...",
+")! Hay que encontrar la salida...",
+")! Треба знайти вихід..."
+],
+". Фелид перерождается.": [
+". The felid is reborn.",
+". Der Felide wird wiedergeboren.",
+". El félido renace.",
+". Фелід перероджується."
+],
+"... это ": [
+"... it is ",
+"... es ist ",
+"... es ",
+"... це "
+],
+"Zot:5 — ШАР": [
+"Zot:5 — THE ORB",
+"Zot:5 — DER ORB",
+"Zot:5 — EL ORBE",
+"Zot:5 — КУЛЯ"
+],
+"Врата Зота закрыты — нужно 3 руны. ": [
+"The Gates of Zot are sealed — 3 runes required. ",
+"Die Tore von Zot sind verschlossen — 3 Runen nötig. ",
+"Las Puertas de Zot están selladas — se necesitan 3 runas. ",
+"Врата Зота зачинені — потрібно 3 руни. "
+],
+"Зиккурат:": [
+"Ziggurat:",
+"Zikkurat:",
+"Zigurat:",
+"Зикурат:"
+],
+"Кошелёк героя (": [
+"Hero's wallet (",
+"Geldbeutel des Helden (",
+"Cartera del héroe (",
+"Гаманець героя ("
+],
+"Сокровищница заперта — нужен золотой ключ": [
+"The Trove is locked — a golden key is required",
+"Die Schatzkammer ist verschlossen — ein goldener Schlüssel wird benötigt",
+"El Tesoro está cerrado — se necesita una llave dorada",
+"Скарбниця замкнена — потрібен золотий ключ"
+],
+"блинк": [
+"blink",
+"Blinzeln",
+"parpadeo",
+"блимання"
+],
+"демоническая кровь": [
+"demonic blood",
+"Dämonenblut",
+"sangre demoníaca",
+"демонічна кров"
+],
+"крыса-фамильяр": [
+"rat familiar",
+"Rattenvertrauter",
+"rata familiar",
+"щур-фамільяр"
+],
+"ловушка": [
+"a trap",
+"eine Falle",
+"una trampa",
+"пастка"
+],
+"ловушка Зота": [
+"a Zot trap",
+"eine Zot-Falle",
+"una trampa de Zot",
+"пастка Зота"
+],
+"малмутация от ": [
+"malmutation from ",
+"Malmutation durch ",
+"malmutación de ",
+"малмутація від "
+],
+"облако": [
+"a cloud",
+"eine Wolke",
+"una nube",
+"хмара"
+],
+"поднятый ": [
+"risen ",
+"erhoben: ",
+"alzado: ",
+"піднятий "
+],
+"призванная гидра": [
+"summoned hydra",
+"beschworene Hydra",
+"hidra invocada",
+"призвана гідра"
+],
+"призванный варан": [
+"summoned monitor lizard",
+"beschworener Waran",
+"varano invocado",
+"призваний варан"
+],
+"призванный шакал": [
+"summoned jackal",
+"beschworener Schakal",
+"chacal invocado",
+"призваний шакал"
+],
+"призванный як": [
+"summoned yak",
+"beschworener Yak",
+"yak invocado",
+"призваний як"
+],
+"руна уникума": [
+"a unique's rune",
+"Rune eines Unikats",
+"runa de un único",
+"руна уніка"
+],
+"сеть": [
+"a net",
+"ein Netz",
+"una red",
+"сітка"
+],
+"телепорт": [
+"a teleport",
+"ein Teleport",
+"un teletransporte",
+"телепорт"
+],
+"телепортит": [
+"teleportitis",
+"Teleportitis",
+"teleportitis",
+"телепортить"
+],
+"тревога": [
+"an alarm",
+"ein Alarm",
+"una alarma",
+"тривога"
+],
+"шахта": [
+"a shaft",
+"ein Schacht",
+"un pozo",
+"шахта"
+],
+"ᚱ добыта ": [
+"ᚱ obtained: ",
+"ᚱ erlangt: ",
+"ᚱ conseguida: ",
+"ᚱ здобуто "
+],
+"☠ погиб от ": [
+"☠ slain by ",
+"☠ getötet durch ",
+"☠ muerto por ",
+"☠ загинув від "
+],
+"⚔ повержен ": [
+"⚔ defeated ",
+"⚔ bezwungen: ",
+"⚔ derrotado: ",
+"⚔ переможено "
+],
+"⚔ убит уникум ": [
+"⚔ unique slain: ",
+"⚔ Unikat getötet: ",
+"⚔ único abatido: ",
+"⚔ вбито уніка "
+],
+"⚠ Ловушка Зота!": [
+"⚠ A Zot trap!",
+"⚠ Eine Zot-Falle!",
+"⚠ ¡Una trampa de Zot!",
+"⚠ Пастка Зота!"
+],
+"✦ найдено: ": [
+"✦ found: ",
+"✦ gefunden: ",
+"✦ encontrado: ",
+"✦ знайдено: "
+],
+"✧ вера: ": [
+"✧ faith: ",
+"✧ Glaube: ",
+"✧ fe: ",
+"✧ віра: "
+],
+"✨ броня зачарована: ": [
+"✨ armour enchanted: ",
+"✨ Rüstung verzaubert: ",
+"✨ armadura encantada: ",
+"✨ броня зачарована: "
+],
+"✨ оружие зачаровано: ": [
+"✨ weapon enchanted: ",
+"✨ Waffe verzaubert: ",
+"✨ arma encantada: ",
+"✨ зброя зачарована: "
+],
+"✨ оружие получает клеймо: ": [
+"✨ weapon gains a brand: ",
+"✨ Waffe erhält eine Prägung: ",
+"✨ el arma recibe una marca: ",
+"✨ зброя отримує клеймо: "
+],
+"🌀 изгнан в Бездну: ": [
+"🌀 banished to the Abyss: ",
+"🌀 in den Abgrund verbannt: ",
+"🌀 desterrado al Abismo: ",
+"🌀 вигнаний у Безодню: "
+],
+"🌀 сбежал из Бездны": [
+"🌀 escaped the Abyss",
+"🌀 dem Abgrund entkommen",
+"🌀 escapó del Abismo",
+"🌀 втік із Безодні"
+],
+"🌈 портал: ": [
+"🌈 portal: ",
+"🌈 Portal: ",
+"🌈 portal: ",
+"🌈 портал: "
+],
+"🌟 артефакт ": [
+"🌟 artefact ",
+"🌟 Artefakt ",
+"🌟 artefacto ",
+"🌟 артефакт "
+],
+"🎁 обретение: ": [
+"🎁 acquirement: ",
+"🎁 Erwerbung: ",
+"🎁 adquisición: ",
+"🎁 набуття: "
+],
+"🏆 ПОБЕДА! Шар Зота добыт (+": [
+"🏆 VICTORY! The Orb of Zot is claimed (+",
+"🏆 SIEG! Der Orb von Zot ist errungen (+",
+"🏆 ¡VICTORIA! El Orbe de Zot conseguido (+",
+"🏆 ПЕРЕМОГА! Кулю Зота здобуто (+"
+],
+"🏛 Зиккурат покорён до этажа ": [
+"🏛 Ziggurat conquered down to floor ",
+"🏛 Zikkurat bezwungen bis Ebene ",
+"🏛 Zigurat conquistado hasta el piso ",
+"🏛 Зикурат підкорено до поверху "
+],
+"🏛 Зиккурат: ": [
+"🏛 Ziggurat: ",
+"🏛 Zikkurat: ",
+"🏛 Zigurat: ",
+"🏛 Зикурат: "
+],
+"🔍 опознано: ": [
+"🔍 identified: ",
+"🔍 identifiziert: ",
+"🔍 identificado: ",
+"🔍 розпізнано: "
+],
+"🔔 Тревога! Весь этаж просыпается": [
+"🔔 Alarm! The whole floor wakes up",
+"🔔 Alarm! Die ganze Ebene erwacht",
+"🔔 ¡Alarma! Todo el piso despierta",
+"🔔 Тривога! Весь поверх прокидається"
+],
+"🕯 Память подземелья: +": [
+"🕯 Dungeon Memory: +",
+"🕯 Verlies-Erinnerung: +",
+"🕯 Memoria de la mazmorra: +",
+"🕯 Пам'ять підземелля: +"
+],
+"🗝 ключ поворачивается в замке...": [
+"🗝 the key turns in the lock...",
+"🗝 der Schlüssel dreht sich im Schloss...",
+"🗝 la llave gira en la cerradura...",
+"🗝 ключ повертається в замку..."
+],
+"🗝 найден ключ от Сокровищницы": [
+"🗝 found a key to the Trove",
+"🗝 Schlüssel zur Schatzkammer gefunden",
+"🗝 encontrada la llave del Tesoro",
+"🗝 знайдено ключ від Скарбниці"
+],
+"🗺 карта этажа открыта": [
+"🗺 floor map revealed",
+"🗺 Ebenenkarte aufgedeckt",
+"🗺 mapa del piso revelado",
+"🗺 карту поверху відкрито"
+],
+"🧬 Мутация (": [
+"🧬 Mutation (",
+"🧬 Mutation (",
+"🧬 Mutación (",
+"🧬 Мутація ("
+],
+"Дальше": [
+"Next",
+"Weiter",
+"Siguiente",
+"Далі"
+],
+"Пропустить обучение": [
+"Skip tutorial",
+"Tutorial überspringen",
+"Saltar tutorial",
+"Пропустити навчання"
+],
+"— коснись подсвеченного —": [
+"— tap the highlighted element —",
+"— tippe auf das Hervorgehobene —",
+"— toca lo resaltado —",
+"— торкнись підсвіченого —"
+],
+"Настройки": [
+"Settings",
+"Einstellungen",
+"Ajustes",
+"Налаштування"
+],
+"Язык": [
+"Language",
+"Sprache",
+"Idioma",
+"Мова"
+],
+"Звук": [
+"Sound",
+"Ton",
+"Sonido",
+"Звук"
+],
+"Звуковые эффекты": [
+"Sound effects",
+"Soundeffekte",
+"Efectos de sonido",
+"Звукові ефекти"
+],
+"Готово": [
+"Done",
+"Fertig",
+"Listo",
+"Готово"
+],
+"Я — тень того, кто не дошёл до Зота. Теперь я лишь голос в этих стенах, а тебе — вести новых. <b>Призови первого искателя</b> — первый зов гильдия оплатит сама.": [
+"I am the shade of one who never reached Zot. Now I am only a voice in these walls, and yours is to guide the new. <b>Summon your first seeker</b> — the guild pays for the first call.",
+"Ich bin der Schatten eines, der Zot nie erreichte. Nun bin ich nur eine Stimme in diesen Mauern, und deine Aufgabe ist es, Neue zu führen. <b>Beschwöre deinen ersten Sucher</b> — den ersten Ruf bezahlt die Gilde.",
+"Soy la sombra de alguien que nunca llegó a Zot. Ahora solo soy una voz en estos muros, y a ti te toca guiar a los nuevos. <b>Invoca a tu primer buscador</b> — el gremio paga la primera llamada.",
+"Я — тінь того, хто не дійшов до Зота. Тепер я лише голос у цих стінах, а тобі — вести нових. <b>Приклич першого шукача</b> — перший поклик гільдія оплатить сама."
+],
+"Достойный выбор. Но герои не живут в казармах — их дом внизу. <b>Отправь его в Подземелье.</b>": [
+"A worthy choice. But heroes don't live in barracks — their home is below. <b>Send them into the Dungeon.</b>",
+"Eine würdige Wahl. Aber Helden leben nicht in Kasernen — ihr Zuhause ist unten. <b>Schicke ihn ins Verlies.</b>",
+"Una elección digna. Pero los héroes no viven en cuarteles — su hogar está abajo. <b>Envíalo a la Mazmorra.</b>",
+"Гідний вибір. Але герої не живуть у казармах — їхній дім унизу. <b>Відправ його в Підземелля.</b>"
+],
+"Смотри: он идёт <b>сам</b>. Исследует, дерётся, пьёт зелья, молится. Ты не водишь его за руку — ты память гильдии.": [
+"Watch: they walk <b>on their own</b>. Exploring, fighting, drinking potions, praying. You don't hold their hand — you are the guild's memory.",
+"Sieh: Er geht <b>von selbst</b>. Erkundet, kämpft, trinkt Tränke, betet. Du führst ihn nicht an der Hand — du bist das Gedächtnis der Gilde.",
+"Mira: camina <b>por su cuenta</b>. Explora, pelea, bebe pociones, reza. No lo llevas de la mano — eres la memoria del gremio.",
+"Дивись: він іде <b>сам</b>. Досліджує, б'ється, п'є зілля, молиться. Ти не водиш його за руку — ти пам'ять гільдії."
+],
+"Каждый его шаг — здесь. Промахи, находки, крики умирающих. <b>Читай лог</b> — он честнее богов.": [
+"Every step is recorded here. Misses, finds, the cries of the dying. <b>Read the log</b> — it is more honest than the gods.",
+"Jeder Schritt steht hier. Fehlschläge, Funde, die Schreie der Sterbenden. <b>Lies das Protokoll</b> — es ist ehrlicher als die Götter.",
+"Cada paso queda aquí. Fallos, hallazgos, los gritos de los moribundos. <b>Lee el registro</b> — es más honesto que los dioses.",
+"Кожен його крок — тут. Промахи, знахідки, крики вмираючих. <b>Читай лог</b> — він чесніший за богів."
+],
+"Захочешь узнать о нём всё — атрибуты, скиллы, инвентарь, мутации — жми <b>«Статус»</b>. А теперь... пусть идёт. Смерть здесь — не конец, а начало Памяти.": [
+"Want to know everything — attributes, skills, inventory, mutations — press <b>“Status”</b>. And now... let them go. Death here is not the end, but the beginning of Memory.",
+"Willst du alles über ihn wissen — Attribute, Fertigkeiten, Inventar, Mutationen — drücke <b>„Status“</b>. Und nun... lass ihn gehen. Der Tod ist hier kein Ende, sondern der Anfang der Erinnerung.",
+"Si quieres saberlo todo — atributos, habilidades, inventario, mutaciones — pulsa <b>«Estado»</b>. Y ahora... déjalo ir. La muerte aquí no es el final, sino el comienzo de la Memoria.",
+"Захочеш дізнатися про нього все — атрибути, скіли, інвентар, мутації — тисни <b>«Статус»</b>. А тепер... хай іде. Смерть тут — не кінець, а початок Пам'яті."
+],
+"Маршрут решает, куда герой пойдёт: классический обходит все ветки, спидран рвётся к Зоту.": [
+"The route decides where the hero goes: classic covers every branch, speedrun races straight for Zot.",
+"Die Route bestimmt, wohin der Held geht: Klassisch besucht alle Zweige, Speedrun stürmt direkt nach Zot.",
+"La ruta decide adónde va el héroe: la clásica recorre todas las ramas, el speedrun corre directo a Zot.",
+"Маршрут вирішує, куди герой піде: класичний обходить усі гілки, спідран рветься до Зота."
+],
+"Осторожность — когда пить лечебные зелья. Труслив — живучее, безрассуден — быстрее.": [
+"Caution sets when to drink healing potions. Cowardly lives longer, reckless moves faster.",
+"Vorsicht bestimmt, wann Heiltränke getrunken werden. Feige lebt länger, waghalsig ist schneller.",
+"La cautela decide cuándo beber pociones curativas. Cobarde vive más, temerario avanza más rápido.",
+"Обережність — коли пити лікувальні зілля. Боягузливий — живучіший, безрозсудний — швидший."
+],
+"В подземелье есть лавки. Эта политика решает, сколько кошелька герой там оставит.": [
+"There are shops in the dungeon. This policy decides how much of the wallet the hero leaves there.",
+"Im Verlies gibt es Läden. Diese Richtlinie bestimmt, wie viel vom Geldbeutel der Held dort lässt.",
+"Hay tiendas en la mazmorra. Esta política decide cuánto de su cartera dejará allí el héroe.",
+"У підземеллі є крамниці. Ця політика вирішує, скільки гаманця герой там залишить."
+],
+"Отзыв возвращает героя и освобождает слот — но весь прогресс забега сгорает. Навсегда.": [
+"Recall brings the hero back and frees the slot — but all run progress burns away. Forever.",
+"Der Rückruf bringt den Helden zurück und macht den Platz frei — aber der gesamte Lauffortschritt verbrennt. Für immer.",
+"La retirada devuelve al héroe y libera el espacio — pero todo el progreso de la expedición se pierde. Para siempre.",
+"Відклик повертає героя і звільняє слот — але весь прогрес забігу згорає. Назавжди."
+],
+"Кузня куёт случайный предмет выбранного слота — за золото и обломки ⚙. Эго, плюсы, изредка рандарты.": [
+"The forge crafts a random item of the chosen slot — for gold and scrap ⚙. Egos, pluses, the occasional randart.",
+"Die Schmiede fertigt einen zufälligen Gegenstand des gewählten Platzes — für Gold und Schrott ⚙. Egos, Boni, gelegentlich Randarts.",
+"La fragua forja un objeto aleatorio del espacio elegido — por oro y chatarra ⚙. Egos, bonos, algún randart de vez en cuando.",
+"Кузня кує випадковий предмет обраного слота — за золото й уламки ⚙. Его, плюси, зрідка рандарти."
+],
+"Арсенал — всё, что нашли и сковали. Ненужное разбирай обратно в обломки.": [
+"The armory holds everything found and forged. Dismantle what you don't need back into scrap.",
+"Das Arsenal enthält alles Gefundene und Geschmiedete. Zerlege Unnötiges zurück zu Schrott.",
+"El arsenal guarda todo lo hallado y forjado. Desmonta lo que no necesites de vuelta en chatarra.",
+"Арсенал — усе, що знайшли й скували. Непотрібне розбирай назад на уламки."
+],
+"Смерть твоего искателя родила <b>Память подземелья</b>. Этажи и уники дают крохи — гибель героев даёт много.": [
+"Your seeker's death gave birth to <b>Dungeon Memory</b>. Floors and uniques give crumbs — heroes' deaths give plenty.",
+"Der Tod deines Suchers gebar die <b>Verlies-Erinnerung</b>. Ebenen und Unikate geben Krümel — Heldentode geben viel.",
+"La muerte de tu buscador dio origen a la <b>Memoria de la mazmorra</b>. Los pisos y únicos dan migajas — la muerte de héroes da mucho.",
+"Смерть твого шукача народила <b>Пам'ять підземелля</b>. Поверхи й уніки дають крихти — загибель героїв дає багато."
+],
+"Древо растёт от центра во все стороны. Малые узлы — проценты. Ромбы-кистоуны меняют правила игры.": [
+"The tree grows from the center in every direction. Small nodes are percentages. Diamond keystones change the rules of the game.",
+"Der Baum wächst vom Zentrum in alle Richtungen. Kleine Knoten sind Prozente. Rauten-Schlusssteine ändern die Spielregeln.",
+"El árbol crece del centro en todas direcciones. Los nodos pequeños son porcentajes. Las claves de rombo cambian las reglas del juego.",
+"Древо росте від центру в усі боки. Малі вузли — відсотки. Ромби-кістоуни змінюють правила гри."
+],
+"Выбери узел и вложи Память. Подсказка: в синей ветви Героев ждёт <b>«2-й искатель»</b> — второй слот экспедиции.": [
+"Pick a node and invest Memory. Hint: the blue Heroes branch holds <b>“2nd seeker”</b> — a second expedition slot.",
+"Wähle einen Knoten und investiere Erinnerung. Tipp: im blauen Heldenzweig wartet der <b>„2. Sucher“</b> — ein zweiter Expeditionsplatz.",
+"Elige un nodo e invierte Memoria. Pista: en la rama azul de Héroes espera el <b>«2º buscador»</b> — un segundo espacio de expedición.",
+"Обери вузол і вклади Пам'ять. Підказка: у синій гілці Героїв чекає <b>«2-й шукач»</b> — другий слот експедиції."
+],
+"Победители дают вечные бонусы всей гильдии. Сущность Зота ⚛ — элитные апгрейды.": [
+"Victors grant eternal bonuses to the whole guild. Zot essence ⚛ buys elite upgrades.",
+"Sieger gewähren der ganzen Gilde ewige Boni. Zot-Essenz ⚛ kauft Elite-Upgrades.",
+"Los vencedores otorgan bonos eternos a todo el gremio. La esencia de Zot ⚛ compra mejoras de élite.",
+"Переможці дають вічні бонуси всій гільдії. Сутність Зота ⚛ — елітні апгрейди."
+],
+"Здесь покоятся павшие. Я тоже когда-то был в этом списке. Их осколки усиливают будущих.": [
+"Here rest the fallen. I was on this list once too. Their shards empower those to come.",
+"Hier ruhen die Gefallenen. Auch ich stand einst auf dieser Liste. Ihre Splitter stärken die Kommenden.",
+"Aquí descansan los caídos. Yo también estuve en esta lista una vez. Sus esquirlas fortalecen a los que vendrán.",
+"Тут спочивають полеглі. Я теж колись був у цьому списку. Їхні уламки підсилюють майбутніх."
+],
+"Коснись слота — увидишь, что надето, и весь подходящий арсенал. Стрелка ↑ значит «лучше текущего».": [
+"Tap a slot to see what's equipped and every matching armory item. The ↑ arrow means “better than current”.",
+"Tippe auf einen Platz, um zu sehen, was angelegt ist, und das passende Arsenal. Der Pfeil ↑ bedeutet „besser als aktuell“.",
+"Toca un espacio para ver lo equipado y todo el arsenal compatible. La flecha ↑ significa «mejor que lo actual».",
+"Торкнись слота — побачиш, що надіто, і весь відповідний арсенал. Стрілка ↑ означає «краще за поточне»."
+],
+"Или доверься мне: одна кнопка — и герой одет в лучшее, что есть.": [
+"Or trust me: one button, and the hero wears the best you have.",
+"Oder vertraue mir: ein Knopf — und der Held trägt das Beste, was da ist.",
+"O confía en mí: un botón, y el héroe viste lo mejor que hay.",
+"Або довірся мені: одна кнопка — і герой одягнений у найкраще, що є."
+],
+"Оружие": [
+"Weapon",
+"Waffe",
+"Arma",
+"Зброя"
+],
+"Броня": [
+"Armour",
+"Rüstung",
+"Armadura",
+"Броня"
+],
+"Щит": [
+"Shield",
+"Schild",
+"Escudo",
+"Щит"
+],
+"Кольцо": [
+"Ring",
+"Ring",
+"Anillo",
+"Каблучка"
+],
+"Кольцо 1": [
+"Ring 1",
+"Ring 1",
+"Anillo 1",
+"Каблучка 1"
+],
+"Кольцо 2": [
+"Ring 2",
+"Ring 2",
+"Anillo 2",
+"Каблучка 2"
+],
+"Кольцо 3": [
+"Ring 3",
+"Ring 3",
+"Anillo 3",
+"Каблучка 3"
+],
+"Амулет": [
+"Amulet",
+"Amulett",
+"Amuleto",
+"Амулет"
+],
+"оружие": [
+"weapon",
+"Waffe",
+"arma",
+"зброя"
+],
+"броня": [
+"armour",
+"Rüstung",
+"armadura",
+"броня"
+],
+"щит": [
+"shield",
+"Schild",
+"escudo",
+"щит"
+],
+"кольцо 1": [
+"ring 1",
+"Ring 1",
+"anillo 1",
+"каблучка 1"
+],
+"кольцо 2": [
+"ring 2",
+"Ring 2",
+"anillo 2",
+"каблучка 2"
+],
+"кольцо 3": [
+"ring 3",
+"Ring 3",
+"anillo 3",
+"каблучка 3"
+],
+"амулет": [
+"amulet",
+"Amulett",
+"amuleto",
+"амулет"
+],
+"урон ": [
+"damage ",
+"Schaden ",
+"daño ",
+"шкода "
+],
+"% урона": [
+"% damage",
+"% Schaden",
+"% de daño",
+"% шкоди"
+],
+"эго ×": [
+"ego ×",
+"Ego ×",
+"ego ×",
+"его ×"
+],
+"вамп. ": [
+"lifesteal ",
+"Lebensraub ",
+"robo de vida ",
+"вамп. "
+],
+"реген": [
+"regen",
+"Regeneration",
+"regeneración",
+"реген"
+],
+"— пусто —": [
+"— empty —",
+"— leer —",
+"— vacío —",
+"— порожньо —"
+],
+" · экипировка": [
+" · equipment",
+" · Ausrüstung",
+" · equipo",
+" · екіпірування"
+],
+"Одеть лучшее": [
+"Equip best",
+"Bestes anlegen",
+"Equipar lo mejor",
+"Одягти найкраще"
+],
+"Сейчас надето": [
+"Currently equipped",
+"Aktuell angelegt",
+"Equipado ahora",
+"Зараз надіто"
+],
+"Арсенал (": [
+"Armory (",
+"Arsenal (",
+"Arsenal (",
+"Арсенал ("
+],
+" в арсенале ›": [
+" in armory ›",
+" im Arsenal ›",
+" en el arsenal ›",
+" в арсеналі ›"
+],
+"Нет подходящих предметов — куй в Кузне или жди дропа.": [
+"No matching items — forge some or wait for drops.",
+"Keine passenden Gegenstände — schmiede welche oder warte auf Beute.",
+"No hay objetos compatibles — forja algunos o espera botín.",
+"Немає відповідних предметів — куй у Кузні або чекай на дроп."
+],
+"Снять": [
+"Unequip",
+"Ablegen",
+"Quitar",
+"Зняти"
+],
+"Надеть": [
+"Equip",
+"Anlegen",
+"Poner",
+"Надіти"
+],
+"‹ Назад": [
+"‹ Back",
+"‹ Zurück",
+"‹ Atrás",
+"‹ Назад"
+],
+" пал": [
+" has fallen",
+" ist gefallen",
+" ha caído",
+" поліг"
+],
+"убит: ": [
+"slain by: ",
+"getötet durch: ",
+"muerto por: ",
+"вбитий: "
+],
+" убийств · ": [
+" kills · ",
+" Tötungen · ",
+" muertes · ",
+" вбивств · "
+],
+" ходов (~": [
+" turns (~",
+" Züge (~",
+" turnos (~",
+" ходів (~"
+],
+" мин)": [
+" min)",
+" Min.)",
+" min)",
+" хв)"
+],
+"Путь искателя": [
+"The seeker's path",
+"Der Weg des Suchers",
+"El camino del buscador",
+"Шлях шукача"
+],
+"Вехи": [
+"Milestones",
+"Meilensteine",
+"Hitos",
+"Віхи"
+],
+"ᚱ Руны: ": [
+"ᚱ Runes: ",
+"ᚱ Runen: ",
+"ᚱ Runas: ",
+"ᚱ Руни: "
+],
+"Наследие": [
+"Legacy",
+"Vermächtnis",
+"Legado",
+"Спадок"
+],
+"Осколки комбинации": [
+"Combo shards",
+"Kombo-Splitter",
+"Esquirlas del combo",
+"Уламки комбінації"
+],
+"Золото похода": [
+"Delve gold",
+"Expeditionsgold",
+"Oro de la expedición",
+"Золото походу"
+],
+"Кошелёк в казну": [
+"Wallet to treasury",
+"Geldbeutel in die Schatzkammer",
+"Cartera al tesoro",
+"Гаманець до скарбниці"
+],
+"Снаряжение": [
+"Gear",
+"Ausrüstung",
+"Equipo",
+"Спорядження"
+],
+"возвращено в арсенал": [
+"returned to armory",
+"ins Arsenal zurückgekehrt",
+"devuelto al arsenal",
+"повернуто в арсенал"
+],
+"Почтить память": [
+"Honor their memory",
+"Andenken ehren",
+"Honrar su memoria",
+"Вшанувати пам'ять"
+],
+"Стрельба": [
+"Ranged",
+"Fernkampf",
+"Tiro",
+"Стрільба"
+],
+"Кулаки": [
+"Unarmed",
+"Waffenlos",
+"Desarmado",
+"Кулаки"
+],
+"Уклонение": [
+"Dodging",
+"Ausweichen",
+"Esquiva",
+"Ухилення"
+],
+"Скрытность": [
+"Stealth",
+"Heimlichkeit",
+"Sigilo",
+"Скритність"
+],
+"Чары": [
+"Spellcasting",
+"Zauberei",
+"Hechicería",
+"Чари"
+],
+"Разрушение": [
+"Conjurations",
+"Beschwörungsmagie",
+"Conjuraciones",
+"Руйнування"
+],
+"Некромантия": [
+"Necromancy",
+"Nekromantie",
+"Nigromancia",
+"Некромантія"
+],
+"Огонь": [
+"Fire",
+"Feuer",
+"Fuego",
+"Вогонь"
+],
+"Лёд": [
+"Ice",
+"Eis",
+"Hielo",
+"Крига"
+],
+"Здоровье": [
+"Health",
+"Lebenspunkte",
+"Vida",
+"Здоров'я"
+],
+"Урон": [
+"Damage",
+"Schaden",
+"Daño",
+"Шкода"
+],
+" (маг.)": [
+" (magic)",
+" (Magie)",
+" (mágico)",
+" (маг.)"
+],
+" (дальн.)": [
+" (ranged)",
+" (Fernkampf)",
+" (a distancia)",
+" (дальн.)"
+],
+" (ближн.)": [
+" (melee)",
+" (Nahkampf)",
+" (cuerpo a cuerpo)",
+" (ближн.)"
+],
+"Меткость": [
+"Accuracy",
+"Präzision",
+"Precisión",
+"Влучність"
+],
+"AC (броня)": [
+"AC (armour)",
+"RS (Rüstung)",
+"CA (armadura)",
+"AC (броня)"
+],
+"EV (уклонение)": [
+"EV (evasion)",
+"AW (Ausweichen)",
+"EV (evasión)",
+"EV (ухилення)"
+],
+"Скорость атаки": [
+"Attack speed",
+"Angriffstempo",
+"Velocidad de ataque",
+"Швидкість атаки"
+],
+"Крит": [
+"Crit",
+"Krit",
+"Crítico",
+"Крит"
+],
+"Вампиризм": [
+"Lifesteal",
+"Lebensraub",
+"Robo de vida",
+"Вампіризм"
+],
+"Реген": [
+"Regen",
+"Regeneration",
+"Regeneración",
+"Реген"
+],
+"/8 ходов": [
+"/8 turns",
+"/8 Züge",
+"/8 turnos",
+"/8 ходів"
+],
+"Скорость": [
+"Speed",
+"Tempo",
+"Velocidad",
+"Швидкість"
+],
+"Кошелёк": [
+"Wallet",
+"Geldbeutel",
+"Cartera",
+"Гаманець"
+],
+"Жизни": [
+"Lives",
+"Leben",
+"Vidas",
+"Життя"
+],
+"скиллы ещё не тренированы": [
+"no skills trained yet",
+"noch keine Fertigkeiten trainiert",
+"aún no hay habilidades entrenadas",
+"скіли ще не треновані"
+],
+" (не опознано)": [
+" (unidentified)",
+" (nicht identifiziert)",
+" (sin identificar)",
+" (не розпізнано)"
+],
+"мутаций нет": [
+"no mutations",
+"keine Mutationen",
+"sin mutaciones",
+"мутацій немає"
+],
+"⚡ ускорение": [
+"⚡ haste",
+"⚡ Hast",
+"⚡ celeridad",
+"⚡ прискорення"
+],
+"💪 могущество": [
+"💪 might",
+"💪 Macht",
+"💪 poder",
+"💪 могутність"
+],
+"🔥 ярость": [
+"🔥 berserk",
+"🔥 Raserei",
+"🔥 furia",
+"🔥 лють"
+],
+"🛡 сопротивление": [
+"🛡 resistance",
+"🛡 Widerstand",
+"🛡 resistencia",
+"🛡 опір"
+],
+"✨ блеск": [
+"✨ brilliance",
+"✨ Brillanz",
+"✨ brillantez",
+"✨ блиск"
+],
+"🐇 ловкость": [
+"🐇 agility",
+"🐇 Gewandtheit",
+"🐇 agilidad",
+"🐇 спритність"
+],
+"🕸 в сети": [
+"🕸 netted",
+"🕸 im Netz",
+"🕸 atrapado en red",
+"🕸 у сітці"
+],
+"в лагере": [
+"in camp",
+"im Lager",
+"en el campamento",
+"у таборі"
+],
+" (пиети ": [
+" (piety ",
+" (Frömmigkeit ",
+" (piedad ",
+" (пієти "
+],
+"Атрибуты": [
+"Attributes",
+"Attribute",
+"Atributos",
+"Атрибути"
+],
+"Скиллы": [
+"Skills",
+"Fertigkeiten",
+"Habilidades",
+"Скіли"
+],
+"Статусы": [
+"Statuses",
+"Statuseffekte",
+"Estados",
+"Статуси"
+],
+"Инвентарь": [
+"Inventory",
+"Inventar",
+"Inventario",
+"Інвентар"
+],
+"Мутации": [
+"Mutations",
+"Mutationen",
+"Mutaciones",
+"Мутації"
+],
+"Закрыть": [
+"Close",
+"Schließen",
+"Cerrar",
+"Закрити"
+],
+"пока вас не было — ": [
+"while you were away — ",
+"während du weg warst — ",
+"mientras no estabas — ",
+"поки вас не було — "
+],
+"ч ": [
+"h ",
+"Std. ",
+"h ",
+"год "
+],
+"м": [
+"m",
+"Min.",
+"min",
+"хв"
+],
+"идёт: ": [
+"delving: ",
+"unterwegs: ",
+"en marcha: ",
+"іде: "
+],
+"погиб": [
+"died",
+"gestorben",
+"murió",
+"загинув"
+],
+"ПОБЕДИТЕЛЬ": [
+"VICTOR",
+"SIEGER",
+"VENCEDOR",
+"ПЕРЕМОЖЕЦЬ"
+],
+"убийств: ": [
+"kills: ",
+"Tötungen: ",
+"muertes: ",
+"вбивств: "
+],
+" · этажей: ": [
+" · floors: ",
+" · Ebenen: ",
+" · pisos: ",
+" · поверхів: "
+],
+" · золота: ": [
+" · gold: ",
+" · Gold: ",
+" · oro: ",
+" · золота: "
+],
+"Всего золота: +": [
+"Total gold: +",
+"Gold gesamt: +",
+"Oro total: +",
+"Всього золота: +"
+],
+"Дубликат! +": [
+"Duplicate! +",
+"Duplikat! +",
+"¡Duplicado! +",
+"Дублікат! +"
+],
+" осколков": [
+" shards",
+" Splitter",
+" esquirlas",
+" уламків"
+],
+"БЕСПЛАТНО — отряд пал": [
+"FREE — the party has fallen",
+"GRATIS — der Trupp ist gefallen",
+"GRATIS — el grupo ha caído",
+"БЕЗКОШТОВНО — загін поліг"
+],
+"Гарантия легендарного через: ": [
+"Legendary guaranteed in: ",
+"Legendär garantiert in: ",
+"Legendario garantizado en: ",
+"Гарантія легендарного через: "
+],
+" призывов · ": [
+" summons · ",
+" Beschwörungen · ",
+" invocaciones · ",
+" призовів · "
+],
+"Шансы: 55/30/12/": [
+"Odds: 55/30/12/",
+"Chancen: 55/30/12/",
+"Probabilidades: 55/30/12/",
+"Шанси: 55/30/12/"
+],
+"% (тёмный: 30/40/22/": [
+"% (dark: 30/40/22/",
+"% (dunkel: 30/40/22/",
+"% (oscuro: 30/40/22/",
+"% (темний: 30/40/22/"
+],
+"осколки: ": [
+"shards: ",
+"Splitter: ",
+"esquirlas: ",
+"уламки: "
+],
+" · звезда: +8% урона и HP": [
+" · star: +8% damage and HP",
+" · Stern: +8% Schaden und LP",
+" · estrella: +8% de daño y vida",
+" · зірка: +8% шкоди і HP"
+],
+"Призови первого героя!": [
+"Summon your first hero!",
+"Beschwöre deinen ersten Helden!",
+"¡Invoca a tu primer héroe!",
+"Приклич першого героя!"
+],
+"Снаряжение: ": [
+"Gear: ",
+"Ausrüstung: ",
+"Equipo: ",
+"Спорядження: "
+],
+"Маршрут: классический (все ветки)": [
+"Route: classic (all branches)",
+"Route: klassisch (alle Zweige)",
+"Ruta: clásica (todas las ramas)",
+"Маршрут: класичний (усі гілки)"
+],
+"Маршрут: спидран (к Зоту)": [
+"Route: speedrun (to Zot)",
+"Route: Speedrun (nach Zot)",
+"Ruta: speedrun (a Zot)",
+"Маршрут: спідран (до Зота)"
+],
+"Маршрут: Бездна (бесконечный фарм)": [
+"Route: Abyss (endless farming)",
+"Route: Abgrund (endloses Farmen)",
+"Ruta: Abismo (farmeo infinito)",
+"Маршрут: Безодня (нескінченний фарм)"
+],
+"Осторожность: труслив (зелья при 45% HP)": [
+"Caution: cowardly (potions at 45% HP)",
+"Vorsicht: feige (Tränke bei 45% LP)",
+"Cautela: cobarde (pociones al 45% de vida)",
+"Обережність: боягузливий (зілля при 45% HP)"
+],
+"Осторожность: обычный (30%)": [
+"Caution: normal (30%)",
+"Vorsicht: normal (30%)",
+"Cautela: normal (30%)",
+"Обережність: звичайний (30%)"
+],
+"Осторожность: безрассуден (15%)": [
+"Caution: reckless (15%)",
+"Vorsicht: waghalsig (15%)",
+"Cautela: temerario (15%)",
+"Обережність: безрозсудний (15%)"
+],
+"Траты: бережливый (30% кошелька)": [
+"Spending: thrifty (30% of wallet)",
+"Ausgaben: sparsam (30% des Geldbeutels)",
+"Gastos: ahorrador (30% de la cartera)",
+"Витрати: ощадливий (30% гаманця)"
+],
+"Траты: сбалансированный (60%)": [
+"Spending: balanced (60%)",
+"Ausgaben: ausgewogen (60%)",
+"Gastos: equilibrado (60%)",
+"Витрати: збалансований (60%)"
+],
+"Траты: мот (всё в лавку)": [
+"Spending: lavish (everything at the shop)",
+"Ausgaben: verschwenderisch (alles in den Laden)",
+"Gastos: derrochador (todo a la tienda)",
+"Витрати: марнотрат (усе в крамницю)"
+],
+"Слоты заняты (": [
+"Slots full (",
+"Plätze belegt (",
+"Espacios llenos (",
+"Слоти зайняті ("
+],
+"В данж (": [
+"Delve (",
+"Ins Verlies (",
+"A la mazmorra (",
+"У данж ("
+],
+"Новые слоты: 🕯 Память → область «Герои» → «2-й искатель»": [
+"More slots: 🕯 Memory → Heroes region → “2nd seeker”",
+"Mehr Plätze: 🕯 Erinnerung → Bereich „Helden“ → „2. Sucher“",
+"Más espacios: 🕯 Memoria → región de Héroes → «2º buscador»",
+"Нові слоти: 🕯 Пам'ять → область «Герої» → «2-й шукач»"
+],
+"Наблюдать": [
+"Watch",
+"Beobachten",
+"Observar",
+"Спостерігати"
+],
+"Отозвать": [
+"Recall",
+"Zurückrufen",
+"Retirar",
+"Відкликати"
+],
+"Отозвать ": [
+"Recall ",
+"Zurückrufen: ",
+"¿Retirar a ",
+"Відкликати "
+],
+")? ВЕСЬ прогресс забега сгорит: ": [
+")? ALL run progress will burn: ",
+")? Der GESAMTE Lauffortschritt verbrennt: ",
+")? TODO el progreso de la expedición se perderá: ",
+")? УВЕСЬ прогрес забігу згорить: "
+],
+" → 1, скиллы, вера, руны, мутации и инвентарь будут потеряны. ": [
+" → 1; skills, faith, runes, mutations and inventory will be lost. ",
+" → 1; Fertigkeiten, Glaube, Runen, Mutationen und Inventar gehen verloren. ",
+" → 1; habilidades, fe, runas, mutaciones e inventario se perderán. ",
+" → 1, скіли, віра, руни, мутації та інвентар будуть втрачені. "
+],
+"Кошелёк вернётся в казну, экипировка останется.": [
+"The wallet returns to the treasury; equipment is kept.",
+"Der Geldbeutel kehrt in die Schatzkammer zurück; die Ausrüstung bleibt.",
+"La cartera vuelve al tesoro; el equipo se conserva.",
+"Гаманець повернеться до скарбниці, екіпірування залишиться."
+],
+"Экипировка": [
+"Equipment",
+"Ausrüstung",
+"Equipo",
+"Екіпірування"
+],
+"🕯 Больше слотов: Память → «Герои» → «2-й искатель»": [
+"🕯 More slots: Memory → “Heroes” → “2nd seeker”",
+"🕯 Mehr Plätze: Erinnerung → „Helden“ → „2. Sucher“",
+"🕯 Más espacios: Memoria → «Héroes» → «2º buscador»",
+"🕯 Більше слотів: Пам'ять → «Герої» → «2-й шукач»"
+],
+"Статус": [
+"Status",
+"Status",
+"Estado",
+"Статус"
+],
+"Нет живых искателей — призови нового выше ↑": [
+"No living seekers — summon a new one above ↑",
+"Keine lebenden Sucher — beschwöre oben einen neuen ↑",
+"No hay buscadores vivos — invoca uno nuevo arriba ↑",
+"Немає живих шукачів — приклич нового вище ↑"
+],
+" Памяти подземелья": [
+" Dungeon Memory",
+" Verlies-Erinnerung",
+" de Memoria de la mazmorra",
+" Пам'яті підземелля"
+],
+"· этажи, уники и особенно смерти героев питают древо": [
+"· floors, uniques and especially hero deaths feed the tree",
+"· Ebenen, Unikate und besonders Heldentode nähren den Baum",
+"· pisos, únicos y sobre todo muertes de héroes alimentan el árbol",
+"· поверхи, уніки й особливо смерті героїв живлять древо"
+],
+"Кликни узел. Малые ноды — уровни инкрементов; ": [
+"Click a node. Small nodes are increment levels; ",
+"Klicke einen Knoten. Kleine Knoten sind Stufen von Inkrementen; ",
+"Haz clic en un nodo. Los nodos pequeños son niveles de incrementos; ",
+"Клікни вузол. Малі ноди — рівні інкрементів; "
+],
+"⟐-кистоуны меняют правила игры и требуют достижений.": [
+"⟐ keystones change the rules of the game and require achievements.",
+"⟐-Schlusssteine ändern die Spielregeln und erfordern Erfolge.",
+"Las claves ⟐ cambian las reglas del juego y requieren logros.",
+"⟐-кістоуни змінюють правила гри й вимагають досягнень."
+],
+"нужен смежный узел": [
+"requires an adjacent node",
+"benötigt einen angrenzenden Knoten",
+"requiere un nodo adyacente",
+"потрібен суміжний вузол"
+],
+"условие: ": [
+"condition: ",
+"Bedingung: ",
+"condición: ",
+"умова: "
+],
+"цена: ": [
+"cost: ",
+"Kosten: ",
+"coste: ",
+"ціна: "
+],
+"Вложить память": [
+"Invest memory",
+"Erinnerung investieren",
+"Invertir memoria",
+"Вкласти пам'ять"
+],
+"Зал Славы": [
+"Hall of Fame",
+"Ruhmeshalle",
+"Salón de la Fama",
+"Зала Слави"
+],
+"Побед: ": [
+"Victories: ",
+"Siege: ",
+"Victorias: ",
+"Перемог: "
+],
+" → все герои получают +": [
+" → all heroes gain +",
+" → alle Helden erhalten +",
+" → todos los héroes obtienen +",
+" → усі герої отримують +"
+],
+"% урона и HP<br>": [
+"% damage and HP<br>",
+"% Schaden und LP<br>",
+"% de daño y vida<br>",
+"% шкоди і HP<br>"
+],
+"Сущность Зота: ": [
+"Zot essence: ",
+"Zot-Essenz: ",
+"Esencia de Zot: ",
+"Сутність Зота: "
+],
+" ⚛ · Всего рун добыто: ": [
+" ⚛ · Total runes collected: ",
+" ⚛ · Runen gesamt: ",
+" ⚛ · Runas totales: ",
+" ⚛ · Всього рун здобуто: "
+],
+"ур. ": [
+"lvl ",
+"St. ",
+"niv. ",
+"рів. "
+],
+"вынес Шар Зота!": [
+"carried out the Orb of Zot!",
+"trug den Orb von Zot hinaus!",
+"¡sacó el Orbe de Zot!",
+"виніс Кулю Зота!"
+],
+" — убит: ": [
+" — slain by: ",
+" — getötet durch: ",
+" — muerto por: ",
+" — вбитий: "
+],
+"Пока никто не погиб и не победил. Всё впереди.": [
+"No one has died or triumphed yet. It's all ahead.",
+"Noch ist niemand gestorben oder hat gesiegt. Alles liegt noch vor dir.",
+"Nadie ha muerto ni triunfado todavía. Todo está por venir.",
+"Поки ніхто не загинув і не переміг. Усе попереду."
+],
+" · РАНДАРТ": [
+" · RANDART",
+" · RANDART",
+" · RANDART",
+" · РАНДАРТ"
+],
+" · рандарт": [
+" · randart",
+" · Randart",
+" · randart",
+" · рандарт"
+],
+"⚔ надето: ": [
+"⚔ worn by: ",
+"⚔ getragen von: ",
+"⚔ lo lleva: ",
+"⚔ надіто: "
+],
+"Разобрать": [
+"Dismantle",
+"Zerlegen",
+"Desmontar",
+"Розібрати"
+],
+"Свободные (": [
+"Unequipped (",
+"Frei (",
+"Libres (",
+"Вільні ("
+],
+"Свободных предметов нет — куй или жди находок из данжей.": [
+"No unequipped items — forge some or wait for dungeon finds.",
+"Keine freien Gegenstände — schmiede welche oder warte auf Funde aus dem Verlies.",
+"No hay objetos libres — forja algunos o espera hallazgos de las mazmorras.",
+"Вільних предметів немає — куй або чекай на знахідки з данжів."
+],
+"лагерь": [
+"camp",
+"Lager",
+"campamento",
+"табір"
+],
+"Призови героя во вкладке Призыв — он сам отправится в данж.": [
+"Summon a hero in the Heroes tab — they'll head into the dungeon on their own.",
+"Beschwöre einen Helden im Helden-Tab — er zieht von selbst ins Verlies.",
+"Invoca a un héroe en la pestaña de Héroes — irá a la mazmorra por su cuenta.",
+"Приклич героя у вкладці Призов — він сам вирушить у данж."
+],
+" · ЭЛИТА": [
+" · ELITE",
+" · ELITE",
+" · ÉLITE",
+" · ЕЛІТА"
+],
+" · ход ": [
+" · turn ",
+" · Zug ",
+" · turno ",
+" · хід "
+],
+"Призыв искателя": [
+"Summon a seeker",
+"Sucher beschwören",
+"Invocar buscador",
+"Призов шукача"
+],
+"Призыв ·": [
+"Summon ·",
+"Beschwören ·",
+"Invocar ·",
+"Призов ·"
+],
+"Тёмный призыв · 1 ᚱ": [
+"Dark summon · 1 ᚱ",
+"Dunkle Beschwörung · 1 ᚱ",
+"Invocación oscura · 1 ᚱ",
+"Темний призов · 1 ᚱ"
+],
+"Искатели": [
+"Seekers",
+"Sucher",
+"Buscadores",
+"Шукачі"
+],
+"Смерть в данже — навсегда (осколки и снаряжение возвращаются). Герой сам качает скиллы тем, чем дерётся. Стратегия задаёт маршрут и осторожность.": [
+"Death in the dungeon is forever (shards and gear return). Heroes train the skills they fight with. Strategy sets the route and caution.",
+"Der Tod im Verlies ist endgültig (Splitter und Ausrüstung kehren zurück). Helden trainieren die Fertigkeiten, mit denen sie kämpfen. Die Strategie bestimmt Route und Vorsicht.",
+"La muerte en la mazmorra es definitiva (las esquirlas y el equipo regresan). Los héroes entrenan las habilidades con las que luchan. La estrategia fija la ruta y la cautela.",
+"Смерть у данжі — назавжди (уламки й спорядження повертаються). Герой сам качає скіли тим, чим б'ється. Стратегія задає маршрут і обережність."
+],
+"Коллекция комбинаций": [
+"Combo collection",
+"Kombo-Sammlung",
+"Colección de combos",
+"Колекція комбінацій"
+],
+"Ковка (гача предмета)": [
+"Forging (item gacha)",
+"Schmieden (Gegenstand-Gacha)",
+"Forja (gacha de objetos)",
+"Кування (гача предмета)"
+],
+"Арсенал": [
+"Armory",
+"Arsenal",
+"Arsenal",
+"Арсенал"
+],
+"Элитные апгрейды (⚛ сущность Зота)": [
+"Elite upgrades (⚛ Zot essence)",
+"Elite-Upgrades (⚛ Zot-Essenz)",
+"Mejoras de élite (⚛ esencia de Zot)",
+"Елітні апгрейди (⚛ сутність Зота)"
+],
+"Павшие и победители": [
+"The fallen and the victorious",
+"Gefallene und Sieger",
+"Caídos y vencedores",
+"Полеглі й переможці"
+],
+"Память": [
+"Memory",
+"Erinnerung",
+"Memoria",
+"Пам'ять"
+],
+"Слава": [
+"Fame",
+"Ruhm",
+"Fama",
+"Слава"
+],
+"Отчёт экспедиций": [
+"Expedition report",
+"Expeditionsbericht",
+"Informe de expediciones",
+"Звіт експедицій"
+],
+"Принять": [
+"Accept",
+"Annehmen",
+"Aceptar",
+"Прийняти"
+],
+" достигает уровня ": [
+" reaches level ",
+" erreicht Stufe ",
+" alcanza el nivel ",
+" досягає рівня "
+],
+"яд": [
+"poison",
+"Gift",
+"veneno",
+"отрута"
+],
+" обжигает облако (": [
+" is burned by a cloud (",
+" wird von einer Wolke versengt (",
+" es quemado por una nube (",
+" обпікає хмара ("
+],
+" вырывается из сети...": [
+" struggles out of the net...",
+" kämpft sich aus dem Netz...",
+" se libera de la red...",
+" виривається з сітки..."
+],
+"блинк волшебника": [
+"wizard's blink",
+"Blinzeln des Zauberers",
+"parpadeo del mago",
+"блимання чарівника"
+],
+"Призванный ": [
+"Summoned ",
+"Beschworener ",
+"Invocado: ",
+"Призваний "
+],
+" промахивается по ": [
+" misses ",
+" verfehlt ",
+" falla contra ",
+" промахується по "
+],
+"🌟 ЛЕГЕНДА! Найден артефакт: ": [
+"🌟 LEGEND! Artefact found: ",
+"🌟 LEGENDE! Artefakt gefunden: ",
+"🌟 ¡LEYENDA! Artefacto hallado: ",
+"🌟 ЛЕГЕНДА! Знайдено артефакт: "
+],
+"+1% урона всех героев": [
+"+1% damage for all heroes",
+"+1% Schaden aller Helden",
+"+1% de daño de todos los héroes",
+"+1% шкоди всіх героїв"
+],
+"(не опознано)": [
+"(unidentified)",
+"(nicht identifiziert)",
+"(sin identificar)",
+"(не розпізнано)"
+],
+"+1% урона всех героев за уровень": [
+"+1% damage for all heroes per level",
+"+1% Schaden aller Helden pro Stufe",
+"+1% de daño de todos los héroes por nivel",
+"+1% шкоди всіх героїв за рівень"
+],
+"+1% здоровья всех героев за уровень": [
+"+1% health for all heroes per level",
+"+1% Lebenspunkte aller Helden pro Stufe",
+"+1% de vida de todos los héroes por nivel",
+"+1% здоров'я всіх героїв за рівень"
+],
+"+1.2% меткости за уровень": [
+"+1.2% accuracy per level",
+"+1.2% Präzision pro Stufe",
+"+1.2% de precisión por nivel",
+"+1.2% влучності за рівень"
+],
+"+0.6% скорости атак за уровень": [
+"+0.6% attack speed per level",
+"+0.6% Angriffstempo pro Stufe",
+"+0.6% de velocidad de ataque por nivel",
+"+0.6% швидкості атак за рівень"
+],
+"+0.2% шанса крита за уровень": [
+"+0.2% crit chance per level",
+"+0.2% kritische Trefferchance pro Stufe",
+"+0.2% de probabilidad de crítico por nivel",
+"+0.2% шансу криту за рівень"
+],
+"+0.2% вампиризма за уровень": [
+"+0.2% lifesteal per level",
+"+0.2% Lebensraub pro Stufe",
+"+0.2% de robo de vida por nivel",
+"+0.2% вампіризму за рівень"
+],
+"+1% EV за уровень": [
+"+1% EV per level",
+"+1% EV pro Stufe",
+"+1% EV por nivel",
+"+1% EV за рівень"
+],
+"+1% AC за уровень": [
+"+1% AC per level",
+"+1% AC pro Stufe",
+"+1% AC por nivel",
+"+1% AC за рівень"
+],
+"+1.5% регена за уровень": [
+"+1.5% regeneration per level",
+"+1.5% Regeneration pro Stufe",
+"+1.5% de regeneración por nivel",
+"+1.5% регену за рівень"
+],
+"+0.8% скорости похода за уровень": [
+"+0.8% delving speed per level",
+"+0.8% Reisetempo pro Stufe",
+"+0.8% de velocidad de expedición por nivel",
+"+0.8% швидкості походу за рівень"
+],
+"+1.2% золота за уровень": [
+"+1.2% gold per level",
+"+1.2% Gold pro Stufe",
+"+1.2% de oro por nivel",
+"+1.2% золота за рівень"
+],
+"+1.2% опыта за уровень": [
+"+1.2% experience per level",
+"+1.2% Erfahrung pro Stufe",
+"+1.2% de experiencia por nivel",
+"+1.2% досвіду за рівень"
+],
+"+1% шанса находок за уровень": [
+"+1% find chance per level",
+"+1% Fundchance pro Stufe",
+"+1% de probabilidad de hallazgos por nivel",
+"+1% шансу знахідок за рівень"
+],
+"+2% осколков за уровень": [
+"+2% shards per level",
+"+2% Splitter pro Stufe",
+"+2% de esquirlas por nivel",
+"+2% уламків за рівень"
+],
+"−0.6% цены призыва за уровень": [
+"−0.6% summon cost per level",
+"−0.6% Beschwörungskosten pro Stufe",
+"−0.6% de coste de invocación por nivel",
+"−0.6% ціни призову за рівень"
+],
+"+0.1% шанса руны с уника за уровень": [
+"+0.1% rune chance from uniques per level",
+"+0.1% Runenchance bei Unikaten pro Stufe",
+"+0.1% de probabilidad de runa de únicos por nivel",
+"+0.1% шансу руни з уніка за рівень"
+],
+"−0.8% цены ковки за уровень": [
+"−0.8% forging cost per level",
+"−0.8% Schmiedekosten pro Stufe",
+"−0.8% de coste de forja por nivel",
+"−0.8% ціни кування за рівень"
+],
+"+0.8% к плюсам ковки за уровень": [
+"+0.8% to forging pluses per level",
+"+0.8% auf Schmiede-Boni pro Stufe",
+"+0.8% a los bonos de forja por nivel",
+"+0.8% до плюсів кування за рівень"
+],
+"+1 зелье в поход за уровень": [
+"+1 potion per delve per level",
+"+1 Trank pro Expedition pro Stufe",
+"+1 poción por expedición por nivel",
+"+1 зілля в похід за рівень"
+],
+"+1.5% Памяти за уровень": [
+"+1.5% Memory per level",
+"+1.5% Erinnerung pro Stufe",
+"+1.5% de Memoria por nivel",
+"+1.5% Пам'яті за рівень"
+],
+"+1 слот экспедиции за уровень": [
+"+1 expedition slot per level",
+"+1 Expeditionsplatz pro Stufe",
+"+1 espacio de expedición por nivel",
+"+1 слот експедиції за рівень"
+],
+"Урон всех героев": [
+"Damage for all heroes",
+"Schaden aller Helden",
+"Daño de todos los héroes",
+"Шкода всіх героїв"
+],
+"Здоровье всех героев": [
+"Health for all heroes",
+"Lebenspunkte aller Helden",
+"Vida de todos los héroes",
+"Здоров'я всіх героїв"
+],
+"Шанс крита": [
+"Crit chance",
+"Kritische Trefferchance",
+"Probabilidad de crítico",
+"Шанс криту"
+],
+"EV": [
+"EV",
+"AW",
+"EV",
+"EV"
+],
+"AC": [
+"AC",
+"RS",
+"CA",
+"AC"
+],
+"Скорость похода": [
+"Delving speed",
+"Reisetempo",
+"Velocidad de expedición",
+"Швидкість походу"
+],
+"Золото": [
+"Gold",
+"Gold",
+"Oro",
+"Золото"
+],
+"Опыт": [
+"Experience",
+"Erfahrung",
+"Experiencia",
+"Досвід"
+],
+"Шанс находок": [
+"Find chance",
+"Fundchance",
+"Probabilidad de hallazgos",
+"Шанс знахідок"
+],
+"Осколки": [
+"Shards",
+"Splitter",
+"Esquirlas",
+"Уламки"
+],
+"Цена призыва": [
+"Summon cost",
+"Beschwörungskosten",
+"Coste de invocación",
+"Ціна призову"
+],
+"Шанс руны с уника": [
+"Rune chance from uniques",
+"Runenchance bei Unikaten",
+"Probabilidad de runa de únicos",
+"Шанс руни з уніка"
+],
+"Цена ковки": [
+"Forging cost",
+"Schmiedekosten",
+"Coste de forja",
+"Ціна кування"
+],
+"К плюсам ковки": [
+"To forging pluses",
+"Auf Schmiede-Boni",
+"A los bonos de forja",
+"До плюсів кування"
+],
+"Зелье в поход": [
+"Potion per delve",
+"Trank pro Expedition",
+"Poción por expedición",
+"Зілля в похід"
+],
+"Слот экспедиции": [
+"Expedition slot",
+"Expeditionsplatz",
+"Espacio de expedición",
+"Слот експедиції"
+],
+"2-й искатель": [
+"2nd seeker",
+"2. Sucher",
+"2º buscador",
+"2-й шукач"
+],
+"3-й искатель": [
+"3rd seeker",
+"3. Sucher",
+"3º buscador",
+"3-й шукач"
+],
+"4-й искатель": [
+"4th seeker",
+"4. Sucher",
+"4º buscador",
+"4-й шукач"
+],
+"5-й искатель": [
+"5th seeker",
+"5. Sucher",
+"5º buscador",
+"5-й шукач"
+],
+"Эливилон": [
+"Elyvilon",
+"Elyvilon",
+"Elyvilon",
+"Елівілон"
+],
+"Короткие клинки": [
+"Short Blades",
+"Kurzklingen",
+"Hojas cortas",
+"Короткі клинки"
+],
+"Длинные клинки": [
+"Long Blades",
+"Langklingen",
+"Hojas largas",
+"Довгі клинки"
+],
+"Топоры": [
+"Axes",
+"Äxte",
+"Hachas",
+"Сокири"
+],
+"Булавы и цепы": [
+"Maces & Flails",
+"Streitkolben & Flegel",
+"Mazas y mayales",
+"Булави й ціпи"
+],
+"Древковое": [
+"Polearms",
+"Stangenwaffen",
+"Armas de asta",
+"Древкова зброя"
+],
+"Посохи": [
+"Staves",
+"Stäbe",
+"Bastones",
+"Посохи"
+],
+"Луки": [
+"Bows",
+"Bögen",
+"Arcos",
+"Луки"
+],
+"Арбалеты": [
+"Crossbows",
+"Armbrüste",
+"Ballestas",
+"Арбалети"
+],
+"Дышит огнём, чешуя вместо брони": [
+"Breathes fire, scales instead of armour",
+"Speit Feuer, Schuppen statt Rüstung",
+"Escupe fuego, escamas en vez de armadura",
+"Дихає вогнем, луска замість броні"
+],
+"+8% урона, героизм против уников и боссов": [
+"+8% damage, heroism against uniques and bosses",
+"+8% Schaden, Heldenmut gegen Unikate und Bosse",
+"+8% de daño, heroísmo contra únicos y jefes",
+"+8% шкоди, героїзм проти уніків і босів"
+],
+"+25% урона магии, свободные касты в броне": [
+"+25% spell damage, casts freely in armour",
+"+25% Zauberschaden, freies Zaubern in Rüstung",
+"+25% de daño mágico, lanza hechizos libremente con armadura",
+"+25% шкоди магії, вільні касти в броні"
+]
+}

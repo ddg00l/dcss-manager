@@ -1,0 +1,42 @@
+/* FTUE: pure logic for tutorial stages and tab unlocks (no DOM). */
+
+export function defaultFtue() {
+  return { railDone: false, sawMap: false, sawLog: false, sawSheet: false, tours: {} };
+}
+export function completedFtue() {
+  return {
+    railDone: true, sawMap: true, sawLog: true, sawSheet: true,
+    tours: { pDun: 1, pHeroes: 1, pForge: 1, pUpg: 1, pFame: 1, equip: 1 },
+  };
+}
+/** an account with any progress is a veteran — don't show the tutorial */
+export function isVeteranSave(s) {
+  return (s.heroes && s.heroes.length > 0) || s.rolls > 0 ||
+    (s.stat && (s.stat.kills > 0 || s.stat.deaths > 0)) || s.fame.length > 0;
+}
+
+/** stages of the mandatory rail:
+   0 summon a hero · 1 send into the dungeon · 2 map · 3 log · 4 status button · 99 done */
+export function railStage(s) {
+  const f = s.ftue;
+  if (!f || f.railDone) return 99;
+  if (!s.heroes.length) return 0;
+  if (!s.heroes.some(h => h.state === 'run')) return 1;
+  if (!f.sawMap) return 2;
+  if (!f.sawLog) return 3;
+  if (!f.sawSheet) return 4;
+  return 99;
+}
+
+/** tab unlock triggers (hard gating until the event) */
+export const TAB_UNLOCK = {
+  pHeroes: () => true,
+  pDun: s => railStage(s) >= 2,
+  pForge: s => s.armory.length > 0 || s.scrap > 0 || s.stat.forged > 0,
+  pUpg: s => s.stat.deaths > 0,                          // Memory is born from the first death
+  pFame: s => s.stat.deaths > 0 || s.runesTotal > 0,
+};
+export const tabUnlocked = (s, p) => (s.ftue && s.ftue.railDone && p !== 'pDun' && p !== 'pHeroes')
+  ? (TAB_UNLOCK[p] ? TAB_UNLOCK[p](s) : true)
+  : (TAB_UNLOCK[p] ? TAB_UNLOCK[p](s) : true);
+export const darkSummonUnlocked = s => s.runesTotal > 0;
