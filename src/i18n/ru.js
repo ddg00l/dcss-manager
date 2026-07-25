@@ -781,4 +781,9 @@ export const RU = {
   'Breathes fire, scales instead of armour': 'Дышит огнём, чешуя вместо брони',
   '+8% damage, heroism against uniques and bosses': '+8% урона, героизм против уников и боссов',
   '+25% spell damage, casts freely in armour': '+25% урона магии, свободные касты в броне',
+  '+5 AC, stone skin resists poison': '+5 AC, каменная кожа не боится яда',
+  'Spits poison and is immune to it, slow': 'Плюётся ядом и сама к нему невосприимчива, медлительна',
+  'Undead: devours corpses, immune to poison and mutation': 'Нежить: пожирает трупы, иммунна к яду и мутациям',
+  'Three lives, no weapons or armour': 'Три жизни, без оружия и брони',
+  ' is immune to mutation': ' невосприимчив к мутациям',
 };

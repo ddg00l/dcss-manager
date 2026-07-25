@@ -191,12 +191,14 @@ export function makeUnrand(id){
 }
 
 import { CLASSES } from './classes.js';
+import { RACES } from './races.js';
 import { effSkill, speedMul } from './skills.js';
 /** Overall item score for auto-equip and the "better/worse" UI.
     A caster values a staff over a crossbow, and heavy armour is penalized for choking spellcasting. */
 export function scoreItem(it,h){
   const i=itemInfo(it);
   let sc=(i.dmgBase||0)*2+(i.ac||0)*2+(i.dmgP||0)*40+(i.hp||0)*40+(i.mul?20:0)+(it.plus||0)*2;
+  if(h&&RACES[h.race].und&&it.slot==='weapon'&&i.vsUndead)return -1e3; /* undead cannot wield holy */
   if(h&&CLASSES[h.cls].style!=='magic'&&it.slot==='weapon'){
     /* DCSS: the hero evaluates real DPS with his OWN school skill — an unfamiliar
        axe with its min delay loses to a well-trained blade */

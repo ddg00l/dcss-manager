@@ -156,7 +156,7 @@ export function heroStats(h,s){
   let chill=cd.chill?1:0;
   if(g.weapon){const wi=itemInfo(g.weapon);if(wi.chill)chill=1}
   /* holy vs undead and venom blades */
-  let vsUndead=1,venom=0,rPois=false;
+  let vsUndead=1,venom=0,rPois=!!rd.rPois; /* stone skin, naga blood, undead flesh */
   const gearAll=[g.weapon,g.armour,g.shield,g.ring1,g.ring2,g.ring3,g.ring4,g.amulet];
   for(const it of gearAll){
     if(!it)continue;
@@ -165,6 +165,7 @@ export function heroStats(h,s){
     if(ii.venom)venom=1;
     if(ii.pois_res)rPois=true;
   }
+  if(rd.und)vsUndead=1; /* DCSS: the undead cannot channel holy wrath */
   return {ac,ev,dmg,hpMax:Math.floor(hpMax),aspd,acc,leech,critc,regen,resAll,retal,dodge,chill,
     vsUndead,venom,rPois,twoHanded,
     style,school,rng:style!=='melee'?5:(wep&&wep.reach?2:1),spd:rd.spd*gSpd(s)};

@@ -227,7 +227,8 @@ export function simTick(h,s){
     const cl=m.clouds[ci];cl.t--;
     if(cl.t<=0){m.clouds.splice(ci,1);continue}
     if(cl.x===m.px&&cl.y===m.py){
-      const cd2=Math.max(2,brDepth(h)*1.2)*(1-st.resAll);
+      let cd2=Math.max(2,brDepth(h)*1.2)*(1-st.resAll);
+      if(cl.kind==='poison'&&st.rPois)cd2*=.15; /* rPois shrugs off poison clouds */
       h.curHp-=cd2;
       if(Math.random()<.3)hlog(h,h.name+t(' is burned by a cloud (')+cl.kind+')!','dmg');
       if(cl.kind==='poison'&&!st.rPois)h.poison={dps:Math.max(1,brDepth(h)*.3),t:5};
@@ -964,6 +965,8 @@ export function shopVisit(h,s,stype){
   }else hlog(h,'🏪 '+h.name+t(' browses the shop but leaves empty-handed'),'sys');
 }
 export function applyMut(h,s,goodOnly,reason){
+  /* DCSS: undead flesh does not mutate */
+  if(RACES[h.race].und){hlog(h,h.name+t(' is immune to mutation'),'sys');return}
   const good=goodOnly===null?Math.random()<.55:goodOnly;
   const mk=randomMut(h,Math.random,good);
   if(!mk)return;

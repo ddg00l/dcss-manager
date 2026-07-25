@@ -781,4 +781,9 @@ export const UK = {
   'Breathes fire, scales instead of armour': 'Дихає вогнем, луска замість броні',
   '+8% damage, heroism against uniques and bosses': '+8% шкоди, героїзм проти уніків і босів',
   '+25% spell damage, casts freely in armour': '+25% шкоди магії, вільні касти в броні',
+  '+5 AC, stone skin resists poison': '+5 AC, кам\'яна шкіра не боїться отрути',
+  'Spits poison and is immune to it, slow': 'Плюється отрутою і сама до неї несприйнятлива, повільна',
+  'Undead: devours corpses, immune to poison and mutation': 'Нежить: пожирає трупи, імунна до отрути й мутацій',
+  'Three lives, no weapons or armour': 'Три життя, без зброї та броні',
+  ' is immune to mutation': ' несприйнятливий до мутацій',
 };

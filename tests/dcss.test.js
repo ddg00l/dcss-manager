@@ -833,3 +833,35 @@ describe('ranged attacks require line of sight', () => {
     expect(hit).toBe(true);
   });
 });
+
+describe('racial immunities (DCSS)', () => {
+  it('gargoyle, naga and ghoul are innately poison-proof; human is not', () => {
+    const s = makeState();
+    for (const race of ['gargoyle', 'naga', 'ghoul'])
+      expect(heroStats(newHero(race, 'fighter', 0, s), s).rPois).toBe(true);
+    expect(heroStats(newHero('human', 'fighter', 0, s), s).rPois).toBe(false);
+  });
+  it('undead ghoul cannot mutate', async () => {
+    const { startRun, applyMut } = await import('../src/sim/tick.js');
+    const s = makeState();
+    const h = newHero('ghoul', 'fighter', 0, s);
+    s.heroes.push(h);
+    startRun(h, s);
+    for (let i = 0; i < 10; i++) applyMut(h, s, null, 'test');
+    expect(h.muts).toEqual([]);
+  });
+  it('undead ghoul neither benefits from nor picks holy weapons', async () => {
+    const { scoreItem } = await import('../src/data/items.js');
+    const s = makeState();
+    const h = newHero('ghoul', 'fighter', 0, s);
+    const holy = { slot: 'weapon', base: 'long_sword', plus: 5, ego: 'holy', rar: 2, rand: null, id: 'hw' };
+    expect(scoreItem(holy, h)).toBeLessThan(0);
+    h.gear.weapon = holy;
+    expect(heroStats(h, s).vsUndead).toBe(1); // no holy wrath in undead hands
+  });
+  it('felid wears no armour at all', () => {
+    const s = makeState();
+    const h = newHero('felid', 'fighter', 0, s);
+    expect(h.gear.armour).toBeFalsy();
+  });
+});

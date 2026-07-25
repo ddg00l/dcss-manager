@@ -781,4 +781,9 @@ export const ES = {
   'Breathes fire, scales instead of armour': 'Escupe fuego, escamas en vez de armadura',
   '+8% damage, heroism against uniques and bosses': '+8% de daño, heroísmo contra únicos y jefes',
   '+25% spell damage, casts freely in armour': '+25% de daño mágico, lanza hechizos libremente con armadura',
+  '+5 AC, stone skin resists poison': '+5 CA, la piel de piedra resiste el veneno',
+  'Spits poison and is immune to it, slow': 'Escupe veneno y es inmune a él, lenta',
+  'Undead: devours corpses, immune to poison and mutation': 'No muerto: devora cadáveres, inmune al veneno y la mutación',
+  'Three lives, no weapons or armour': 'Tres vidas, sin armas ni armadura',
+  ' is immune to mutation': ' es inmune a la mutación',
 };

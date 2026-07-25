@@ -781,4 +781,9 @@ export const DE = {
   'Breathes fire, scales instead of armour': 'Speit Feuer, Schuppen statt Rüstung',
   '+8% damage, heroism against uniques and bosses': '+8% Schaden, Heldenmut gegen Unikate und Bosse',
   '+25% spell damage, casts freely in armour': '+25% Zauberschaden, freies Zaubern in Rüstung',
+  '+5 AC, stone skin resists poison': '+5 RS, Steinhaut widersteht Gift',
+  'Spits poison and is immune to it, slow': 'Spuckt Gift und ist selbst immun, langsam',
+  'Undead: devours corpses, immune to poison and mutation': 'Untot: verschlingt Leichen, immun gegen Gift und Mutation',
+  'Three lives, no weapons or armour': 'Drei Leben, ohne Waffen und Rüstung',
+  ' is immune to mutation': ' ist immun gegen Mutation',
 };
