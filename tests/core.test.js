@@ -75,3 +75,24 @@ describe('economy', () => {
     expect(gAtk(s)).toBeGreaterThan(base);
   });
 });
+
+describe('sfx contract', () => {
+  it('every sfx.<name> call site has a matching method (a missing one crashes the main loop)', async () => {
+    const { sfx } = await import('../src/ui/audio.js');
+    const { readFileSync, readdirSync, statSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const walk = (dir, out = []) => {
+      for (const f of readdirSync(dir)) {
+        const p = join(dir, f);
+        if (statSync(p).isDirectory()) { if (f !== 'assets' && f !== 'i18n') walk(p, out); }
+        else if (f.endsWith('.js')) out.push(p);
+      }
+      return out;
+    };
+    const used = new Set();
+    for (const p of walk('src'))
+      for (const m of readFileSync(p, 'utf8').matchAll(/\bsfx\.(\w+)/g)) used.add(m[1]);
+    const missing = [...used].filter(k => typeof sfx[k] !== 'function');
+    expect(missing).toEqual([]);
+  });
+});

@@ -15,6 +15,7 @@ export const sfx={
   ui(){tone(440,660,.06,'square',.03)},
   roll(){tone(200,800,.3,'triangle',.06)},
   leg(){tone(392,784,.4,'square',.08);setTimeout(()=>tone(523,1046,.5,'square',.07),160)},
+  level(){tone(330,660,.12,'square',.05);setTimeout(()=>tone(660,990,.18,'square',.05),120)},
   forge(){tone(180,70,.2,'square',.07)},
   coin(){tone(900,1400,.08,'triangle',.04)},
   death(){tone(150,40,.5,'sawtooth',.08)},
