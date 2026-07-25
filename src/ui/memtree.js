@@ -10,6 +10,36 @@ import { t } from '../i18n/index.js';
 
 let selId = null, built = false, centered = false;
 
+/* PoE-style panning: click + drag scrolls the tree canvas (mouse/pen only —
+   touch keeps native scrolling). A real drag suppresses the node click. */
+{
+  const wrap = $('memWrap');
+  let dragging = false, moved = false, sx = 0, sy = 0, sl = 0, st = 0;
+  wrap.addEventListener('pointerdown', e => {
+    if (e.button !== 0 || e.pointerType === 'touch') return;
+    dragging = true; moved = false;
+    sx = e.clientX; sy = e.clientY;
+    sl = wrap.scrollLeft; st = wrap.scrollTop;
+    wrap.classList.add('grabbing');
+  });
+  window.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    if (Math.abs(dx) + Math.abs(dy) > 5) moved = true;
+    wrap.scrollLeft = sl - dx;
+    wrap.scrollTop = st - dy;
+  });
+  window.addEventListener('pointerup', () => {
+    dragging = false;
+    wrap.classList.remove('grabbing');
+  });
+  /* swallow the click that ends a drag so nodes are not selected accidentally */
+  wrap.addEventListener('click', e => {
+    if (moved) { moved = false; e.stopPropagation(); e.preventDefault(); }
+  }, true);
+  wrap.addEventListener('dragstart', e => e.preventDefault());
+}
+
 /** Full re-render of the tree canvas (SVG edges + nodes). */
 function buildTree() {
   const cont = $('memTree');
