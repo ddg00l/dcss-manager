@@ -59,13 +59,23 @@ function renderAll() {
   renderChips(); renderHeroes(); renderGacha(); renderForge(); renderMemTree(); renderFame(); updTop();
 }
 
-/* main loop */
+/* main loop.
+   The sim runs on a real-time clock (Date.now), not on rAF deltas: rAF stops in
+   background tabs, so elapsed hidden time must be caught up, not thrown away. */
 let last = 0, autoT = 0;
+let lastSim = Date.now();
+function simCatchUp() {
+  const now = Date.now();
+  const dt = (now - lastSim) / 1000;
+  lastSim = now;
+  if (dt > 0) advanceHeroes(save, dt, dt > 2); // big chunks run in silent mode
+  return dt;
+}
 function frame(ts) {
   requestAnimationFrame(frame);
   const t = ts / 1000;
   const dt = Math.min(t - last, .25); last = t;
-  advanceHeroes(save, dt, false);
+  simCatchUp();
   if (document.querySelector('#pDun.active')) renderWatch();
   maybeShowDeath();
   ftueTick(switchPane);
@@ -83,11 +93,28 @@ function frame(ts) {
   updTop();
 }
 setInterval(() => {
+  /* in a throttled background tab this still fires ~once a minute and keeps
+     the sim advancing, so tab switches never freeze the game */
+  simCatchUp();
   persist();
   const act = document.querySelector('.pane.active');
   if (act && act.id !== 'pDun') renderAll();
   else renderChips();
 }, 4000);
+
+/* returning to a hard-frozen tab (browsers can suspend timers entirely):
+   short gaps are simulated silently, long ones get the expedition report */
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') { persist(); return; }
+  const gap = (Date.now() - lastSim) / 1000;
+  if (gap > 180) {
+    lastSim = Date.now();
+    showOfflineReport();
+  } else {
+    simCatchUp();
+  }
+  renderAll();
+});
 
 setLang(save.lang || DEFAULT_LANG);
 applyStatic();
