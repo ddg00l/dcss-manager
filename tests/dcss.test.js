@@ -18,8 +18,9 @@ const tileFiles = new Set(
   fs.readdirSync(path.join(import.meta.dirname, '../src/assets/tiles'))
     .filter(f => f.endsWith('.png')).map(f => f.replace('.png', ''))
 );
-function runHero(s, race = 'minotaur', cls = 'fighter') {
+function runHero(s, race = 'minotaur', cls = 'fighter', seed) {
   const h = newHero(race, cls, 2, s);
+  if (seed !== undefined) { s.masterSeed = seed; h.seed = seed; }
   s.heroes.push(h);
   startRun(h, s);
   return h;
@@ -248,7 +249,8 @@ describe('floor gear drops are pre-rolled', () => {
   it('item cells carry a concrete item with a real tile, and pickup grants exactly it', async () => {
     const { itemTile, itemName } = await import('../src/data/items.js');
     const s = makeState();
-    const h = runHero(s);
+    s.masterSeed = 1;
+    const h = runHero(s, 'minotaur', 'fighter', 1); // pinned seed: deterministic drops
     let found = null;
     for (let f = 1; f <= 40 && !found; f++) {
       h.floor = f % 15 + 1; genFloor(h, s);
@@ -272,20 +274,17 @@ describe('floor gear drops are pre-rolled', () => {
 describe('log freshness', () => {
   it('logSeq keeps growing after the 80-entry cap (realtime log diff)', async () => {
     const { advanceHeroes } = await import('../src/sim/tick.js');
-    /* reach the log cap on a living hero (up to 5 attempts — a weakling may die sooner) */
-    for (let attempt = 0; attempt < 5; attempt++) {
-      const s = makeState();
-      const h = runHero(s, 'troll', 'berserker');
-      while (h.state === 'run' && h.log.length < 80) advanceHeroes(s, 60, true);
-      if (h.log.length < 80 || h.state !== 'run') continue; // died before/at the cap — retry
-      const seq = h.logSeq;
-      advanceHeroes(s, 120, true);
-      expect(h.log.length).toBe(80);           // buffer stays capped
-      /* the counter keeps growing: a living hero logs turns, a dead one logs its death */
-      expect(h.logSeq).toBeGreaterThan(seq);
-      return;
-    }
-    throw new Error('hero never survived to 80 log entries in 5 attempts');
+    /* pinned seed: a troll berserker that reliably reaches the 80-entry cap alive */
+    const s = makeState();
+    const h = runHero(s, 'troll', 'berserker', 2);
+    let guard = 0;
+    while (h.state === 'run' && h.log.length < 80 && guard++ < 300) advanceHeroes(s, 60, true);
+    expect(h.log.length).toBe(80);             // buffer stays capped
+    expect(h.state).toBe('run');               // still alive at the cap
+    const seq = h.logSeq;
+    advanceHeroes(s, 120, true);
+    expect(h.log.length).toBe(80);             // buffer stays capped
+    expect(h.logSeq).toBeGreaterThan(seq);     // monotonic counter keeps growing
   });
 });
 
