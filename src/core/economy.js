@@ -26,10 +26,11 @@ export const fameMul = s => {
 export const ghostMul = s => memHas(s, 'k_ghosts') ? 1 + Math.min(0.30, s.stat.deaths * 0.005) : 1;
 export const runeAura = s => memHas(s, 'k_runeaura') ? 1 + 0.02 * s.runesTotal : 1;
 import { ngLevel, pupg } from './prestige.js';
+import { greatMul } from './chronicle.js';
 export const ngMul = s => 1 + 1.5 * ngLevel(s);
 
-export const gAtk  = s => (1 + memEff(s, 'atk')) * (1 + 0.1 * zupg(s, 'zatk')) * fameMul(s) * ghostMul(s) * runeAura(s) * (1 + .08 * pupg(s, 'p_dmg'));
-export const gHp   = s => (1 + memEff(s, 'hp'))  * (1 + 0.1 * zupg(s, 'zhp'))  * fameMul(s) * (1 + .08 * pupg(s, 'p_hp'));
+export const gAtk  = s => (1 + memEff(s, 'atk')) * (1 + 0.1 * zupg(s, 'zatk')) * fameMul(s) * ghostMul(s) * runeAura(s) * (1 + .08 * pupg(s, 'p_dmg')) * greatMul(s);
+export const gHp   = s => (1 + memEff(s, 'hp'))  * (1 + 0.1 * zupg(s, 'zhp'))  * fameMul(s) * (1 + .08 * pupg(s, 'p_hp')) * greatMul(s);
 export const gSpd  = s => 1 + memEff(s, 'spd');
 export const gGold = s => (1 + memEff(s, 'gold')) * (1 + 0.15 * zupg(s, 'zloot')) * runeAura(s) * ngMul(s);
 export const gDrop = s => 1 + memEff(s, 'drop');

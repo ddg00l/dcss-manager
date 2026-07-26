@@ -4948,5 +4948,161 @@
 "Prestige erfordert {n} Siege in diesem Zyklus (bisher {w})",
 "El prestigio requiere {n} victorias en este ciclo (por ahora {w})",
 "Для престижу потрібно {n} перемог за цикл (поки {w})"
+],
+"Хроника гильдии": [
+"Chronicle of the guild",
+"Chronik der Gilde",
+"Crónica del gremio",
+"Хроніка гільдії"
+],
+"Вынеси Шар Зота из Zot:5": [
+"Carry the Orb of Zot out of Zot:5",
+"Trage den Orb von Zot aus Zot:5 hinaus",
+"Saca el Orbe de Zot de Zot:5",
+"Винеси Кулю Зота із Zot:5"
+],
+"Одержи {n} побед в этом цикле для престижа": [
+"Win {n} times this cycle to prestige",
+"Siege {n}-mal in diesem Zyklus für Prestige",
+"Gana {n} veces en este ciclo para prestigiar",
+"Здобудь {n} перемог у цьому циклі для престижу"
+],
+"Зал Великих: победи за {x}": [
+"Hall of the Great: win with {x}",
+"Halle der Großen: siege mit {x}",
+"Salón de los Grandes: gana con {x}",
+"Зала Великих: перемоги за {x}"
+],
+"Вынеси Шар с {n} рунами за один поход": [
+"Carry the Orb with {n} runes in one delve",
+"Trage den Orb mit {n} Runen in einer Expedition hinaus",
+"Saca el Orbe con {n} runas en una sola expedición",
+"Винеси Кулю з {n} рунами за один похід"
+],
+"Рекорд Зиккурата: достигни этажа {n}": [
+"Ziggurat record: reach floor {n}",
+"Zikkurat-Rekord: erreiche Ebene {n}",
+"Récord del Zigurat: alcanza el piso {n}",
+"Рекорд Зикурату: досягни поверху {n}"
+],
+"Зал Великих": [
+"Hall of the Great",
+"Halle der Großen",
+"Salón de los Grandes",
+"Зала Великих"
+],
+"Постоянные +1% урона и здоровья за каждую расу и класс, вынесшие Шар": [
+"A permanent +1% damage and health for every race and class that has carried the Orb",
+"Dauerhaft +1% Schaden und Lebenspunkte für jede Rasse und Klasse, die den Orb hinausgetragen hat",
+"Un +1% permanente de daño y vida por cada raza y clase que haya sacado el Orbe",
+"Постійні +1% шкоди й здоров'я за кожну расу і клас, що винесли Кулю"
+],
+"Контракт: голая кожа": [
+"Contract: bare skin",
+"Vertrag: nackte Haut",
+"Contrato: piel desnuda",
+"Контракт: гола шкіра"
+],
+"Победи без нательной брони": [
+"Win with no body armour equipped",
+"Siege ohne angelegte Körperrüstung",
+"Gana sin armadura corporal equipada",
+"Перемоги без натільної броні"
+],
+"Контракт: простая кровь": [
+"Contract: common blood",
+"Vertrag: einfaches Blut",
+"Contrato: sangre común",
+"Контракт: проста кров"
+],
+"Победи героем обычной редкости": [
+"Win with a common-rarity hero",
+"Siege mit einem Helden gewöhnlicher Seltenheit",
+"Gana con un héroe de rareza común",
+"Перемоги героєм звичайної рідкості"
+],
+"Контракт: жадный поход": [
+"Contract: greedy delve",
+"Vertrag: gierige Expedition",
+"Contrato: expedición codiciosa",
+"Контракт: жадібний похід"
+],
+"Победи, неся не меньше 4 рун": [
+"Win carrying at least 4 runes",
+"Siege mit mindestens 4 Runen",
+"Gana llevando al menos 4 runas",
+"Перемоги, несучи щонайменше 4 руни"
+],
+" выполняет контракт гильдии (+": [
+" fulfils the guild contract (+",
+" erfüllt den Gildenvertrag (+",
+" cumple el contrato del gremio (+",
+" виконує контракт гільдії (+"
+],
+" мстит за павших: немезида платит ": [
+" avenges the fallen: the nemesis pays ",
+" rächt die Gefallenen: die Nemesis zahlt ",
+" venga a los caídos: la némesis paga ",
+" мстить за полеглих: немезида платить "
+],
+"Спокойный день": [
+"Calm day",
+"Ruhiger Tag",
+"Día tranquilo",
+"Спокійний день"
+],
+"Подземелье отдыхает — без модификаторов": [
+"The dungeon rests — no modifiers",
+"Das Verlies ruht — keine Modifikatoren",
+"La mazmorra descansa — sin modificadores",
+"Підземелля відпочиває — без модифікаторів"
+],
+"Кровавая луна": [
+"Blood moon",
+"Blutmond",
+"Luna de sangre",
+"Кривавий місяць"
+],
+"Монстры бьют больнее, гильдия платит щедрее": [
+"Monsters hit harder, the guild pays more",
+"Monster schlagen härter zu, die Gilde zahlt mehr",
+"Los monstruos golpean más fuerte, el gremio paga más",
+"Монстри б'ють болючіше, гільдія платить щедріше"
+],
+"Золотая лихорадка": [
+"Gold rush",
+"Goldrausch",
+"Fiebre del oro",
+"Золота лихоманка"
+],
+"Сокровища повсюду, стражи крепче": [
+"Treasure everywhere, sturdier guardians",
+"Überall Schätze, zähere Wächter",
+"Tesoros por doquier, guardianes más recios",
+"Скарби всюди, вартові міцніші"
+],
+"Рой": [
+"Swarm",
+"Schwarm",
+"Enjambre",
+"Рій"
+],
+"Много слабых монстров": [
+"Many weak monsters",
+"Viele schwache Monster",
+"Muchos monstruos débiles",
+"Багато слабких монстрів"
+],
+"День титанов": [
+"Day of titans",
+"Tag der Titanen",
+"Día de los titanes",
+"День титанів"
+],
+"Меньше врагов, но могучих; княжеская добыча": [
+"Fewer but mighty foes, princely loot",
+"Weniger, aber mächtige Feinde; fürstliche Beute",
+"Menos enemigos pero poderosos; botín principesco",
+"Менше ворогів, але могутніх; княжа здобич"
 ]
 }

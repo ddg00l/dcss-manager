@@ -72,6 +72,7 @@ function statKey(h,s){
   let zp=0;
   for(const q in s.zupg)zp+=s.zupg[q];
   for(const q in s.pupg)zp+=13*s.pupg[q];
+  if(s.vic){for(const q in s.vic.races)zp+=131;for(const q in s.vic.classes)zp+=257}
   return k+'|'+zp;
 }
 export function heroStats(h,s){

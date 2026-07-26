@@ -1,5 +1,7 @@
 import {mulberry32} from '../core/rng.js';
 import {ngMonMul,cycleProgress} from '../core/prestige.js';
+import {nemesisLevel} from '../core/chronicle.js';
+import {todayAffix} from '../data/affixes.js';
 import {BRANCHES,brDepth,BR_OFFSET,BR_ORDER} from '../data/branches.js';
 import {MONS,UNIQUES} from '../data/monsters.js';
 import {GODKEYS} from '../data/gods.js';
@@ -45,8 +47,10 @@ export function genFloor(h,s){
   const depth=P?(h.portalDepth+(P.depthRamp||0)*(h.inPortal.floor-1)):brDepth(h);
   const isBossFloor=P?false:((br.floors===h.floor&&(br.boss||br.bossMon))||(br.every&&h.floor%br.every===0));
   const monsters=[];
+  const afx=todayAffix(); /* the daily affix colours every floor */
   const pool=P?br.mobs:br.mobs.filter(m=>h.floor>=m[1]&&h.floor<=m[2]);
-  const n=P?(P.mobs.length?6+Math.floor(rng()*5):0):(5+Math.floor(rng()*5)+(h.branch==='zot'?2:0));
+  let n=P?(P.mobs.length?6+Math.floor(rng()*5):0):(5+Math.floor(rng()*5)+(h.branch==='zot'?2:0));
+  if(n>0)n=Math.max(2,n+(afx.extraMobs||0)-(afx.lessMobs||0));
   for(let i=0;i<n&&free.length>4;i++){
     const mk=pool[Math.floor(rng()*pool.length)][0];
     const c=take();
@@ -68,7 +72,10 @@ export function genFloor(h,s){
   if(uniq&&free.length>2){
     const u=UNIQUES[uniq],c=take();
     const m=makeMon(u.base,depth,c[0],c[1],rng);
-    m.hp=Math.floor(m.hp*u.mul);m.maxHp=m.hp;m.dmg=Math.floor(m.dmg*(1+u.mul*.25));
+    /* a nemesis grows stronger with every hero it has slain */
+    const nem=1+.15*nemesisLevel(s,uniq);
+    m.hp=Math.floor(m.hp*u.mul*nem);m.maxHp=m.hp;m.dmg=Math.floor(m.dmg*(1+u.mul*.25)*nem);
+    if(nem>1)m.nem=nemesisLevel(s,uniq);
     m.xp*=u.mul*2;m.uniq=uniq;m.n=u.n;m.t=u.t;
     monsters.push(m);
     (h.uniqSeen=h.uniqSeen||[]).push(uniq);
@@ -126,8 +133,8 @@ export function genFloor(h,s){
   const ngPlus=ngMonMul(s)*Math.pow(1.3,Math.max(0,cycleProgress(s).wins));
   const elite=memHas(s,'k_elite')&&rng()<.15;
   for(const mo of monsters){
-    mo.hp=Math.floor(mo.hp*ngPlus*(elite?1.5:1));mo.maxHp=mo.hp;
-    mo.dmg=Math.floor(mo.dmg*ngPlus*(elite?1.2:1));
+    mo.hp=Math.max(1,Math.floor(mo.hp*ngPlus*afx.monHp*(elite?1.5:1)));mo.maxHp=mo.hp;
+    mo.dmg=Math.max(1,Math.floor(mo.dmg*ngPlus*afx.monDmg*(elite?1.2:1)));
   }
   const explored=[];
   for(let y=0;y<MH;y++)explored.push(new Array(MW).fill(false));

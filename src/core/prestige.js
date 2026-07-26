@@ -41,7 +41,8 @@ export function legendsReward(s) {
   const c = cycleProgress(s);
   if (c.wins < 1) return 0;
   const raw = c.wins * 8 + c.runes * 3 + c.uniq + Math.sqrt(Math.max(0, c.mem) / 50);
-  return Math.max(1, Math.round(raw * (1 + .25 * ngLevel(s))));
+  const runner = 1 + .15 * Math.max(0, (s.cycRunnerBest || 0) - 3); /* greed pays */
+  return Math.max(1, Math.round(raw * runner * (1 + .25 * ngLevel(s))));
 }
 
 /* the deeper the ladder, the more Orbs a cycle must produce before it can be
@@ -81,6 +82,7 @@ export function doPrestige(s) {
   s.rev = (s.rev || 0) + 1; /* tree changed: invalidate stat caches */
 
   s.cycRunes = []; /* named runes become collectable again */
+  s.cycRunnerBest = 0; s.cycContractDone = 0; /* runner arc and contract reset */
   /* new cycle snapshot */
   s.cycBase = {
     wins: s.stat.wins || 0,

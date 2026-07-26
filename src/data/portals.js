@@ -15,7 +15,7 @@ export const PORTALS = {
   gauntlet: { n: 'the Gauntlet',        t: 'p_gauntlet', fl: [9, 15],  floors: 1,
     mobs: ['minotaur_mon', 'cyclops', 'two_headed_ogre'], lootN: 6, goldMul: 4,
     floor: 'd_floor_zot', wall: 'd_wall_zot' },
-  zig:      { n: 'the Ziggurat',        t: 'p_zig',      fl: [14, 26], floors: 27,
+  zig:      { n: 'the Ziggurat',        t: 'p_zig',      fl: [14, 26], floors: 999, /* endless: the record IS the goal */
     mobs: ['orc_warlord_x', 'stone_giant', 'fire_giant', 'frost_giant', 'ettin', 'lich',
       'draconian_mon', 'orb_guardian', 'ghost_moth', 'orb_of_fire'].filter(m => m !== 'orc_warlord_x'),
     lootN: 3, goldMul: 5, needWin: 1, depthRamp: 2,

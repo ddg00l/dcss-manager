@@ -31,6 +31,7 @@ export function makeState() {
     stat: { kills: 0, deaths: 0, uniqKills: 0, forged: 0, dismantled: 0, memEarned: 0, wins: 0, bestXL: {} },
     runesTotal: 0, pendingDeaths: [], unrandsOwned: [],
     ng: 0, legends: 0, prestiges: 0, pupg: {}, balV: 2,
+    vic: { races: {}, classes: {} }, nemeses: {}, cycRunnerBest: 0, cycContractDone: 0,
     cycBase: { wins: 0, runes: 0, uniq: 0, mem: 0 }, cycRunes: [],
     ftue: null,
     progress: { D: 0, Lair: 0, Orc: 0, Elf: 0, Vaults: 0, Depths: 0, Zot: 0, Abyss: 0 },
@@ -52,6 +53,8 @@ export function loadState(storage) {
         tree: { root: 1, ...(s.tree || {}) },
         stat: { ...state.stat, ...(s.stat || {}) },
         pupg: { ...(s.pupg || {}) },
+        vic: { races: { ...((s.vic || {}).races || {}) }, classes: { ...((s.vic || {}).classes || {}) } },
+        nemeses: { ...(s.nemeses || {}) },
         cycBase: { ...state.cycBase, ...(s.cycBase || {}) },
       });
       /* FTUE: veterans with progress never see the tutorial */
@@ -108,6 +111,13 @@ export function loadState(storage) {
           }
         }
       }
+      /* veterans: seed the Hall of the Great from recorded Hall of Fame wins */
+      if (s.vic === undefined)
+        for (const f of (s.fame || []))
+          if (f.won && f.race && f.cls) {
+            state.vic.races[f.race] = (state.vic.races[f.race] || 0) + 1;
+            state.vic.classes[f.cls] = (state.vic.classes[f.cls] || 0) + 1;
+          }
       state.balV = 2;
       /* migration: old CIFI upgrades convert into Memory */
       if (s.upg && Object.keys(s.upg).length) {

@@ -16,6 +16,7 @@ import {MW,MH,los,FOV_R} from '../sim/mapgen.js';
 import {stackHTML,heroLayers} from './portrait.js';
 import {comboKey,RARN} from '../data/combos.js';
 import { t } from '../i18n/index.js';
+import {todayAffix} from '../data/affixes.js';
 /* ===================== watch view ===================== */
 export let watchId=null;
 export function setWatch(id){watchId=id;renderChips()}
@@ -155,7 +156,7 @@ export function renderWatch(){
   nameEl.className='rar'+h.rarity;
   nameEl.textContent=h.name;
   $('wiMeta').textContent=t(RACES[h.race].n)+' '+t(CLASSES[h.cls].n)+' XL'+h.xl+' · '+brTag(h)+(h.map&&h.map.elite?t(' · ELITE'):'')+
-    (h.god?' · ✧'+t(GODS[h.god].n):'')+t(' · turn ')+h.turn;
+    (h.god?' · ✧'+t(GODS[h.god].n):'')+' · '+t(todayAffix().n)+t(' · turn ')+h.turn;
   $('wiHp').style.width=hpc+'%';
   const invN=Object.values(h.inv||{}).reduce((a,b)=>a+b,0);
   const stIcons=[h.status.haste>0?'⚡':'',h.status.might>0?'💪':'',h.status.berserk>0?'🔥':'',

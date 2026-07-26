@@ -14,6 +14,8 @@ import {POTIONS,SCROLLS,consName,randConsumable} from '../data/consumables.js';
 import {MUTS,randomMut} from '../data/mutations.js';
 import {PORTALS} from '../data/portals.js';
 import {MONS} from '../data/monsters.js';
+import {recordVictory,recordRunnerWin,checkContract,recordNemesisKill,avengeNemesis} from '../core/chronicle.js';
+import {todayAffix} from '../data/affixes.js';
 import { t } from '../i18n/index.js';
 
 export const simHooks={onDeath:null,onWin:null};
@@ -45,6 +47,7 @@ function nextFloor(h,s){
   if(h.inPortal){
     const P=PORTALS[h.inPortal.type];
     if(h.inPortal.type==='zig'){
+      s.stat.zigBest=Math.max(s.stat.zigBest||0,h.inPortal.floor);
       gainMem(s,20+h.inPortal.floor*4);
       const zg=Math.floor(100*Math.pow(1.3,h.inPortal.floor));
       h.gold+=zg;
@@ -179,6 +182,10 @@ export function heroWin(h,s){
   const firstWin=((s.stat.wins||0)-((s.cycBase&&s.cycBase.wins)||0))===0;
   s.stat.wins=(s.stat.wins||0)+1;
   s.progress.Zot=Math.max(s.progress.Zot||0,5);
+  recordVictory(s,h);
+  recordRunnerWin(s,h);
+  const cReward=checkContract(s,h);
+  if(cReward)hlog(h,'📜 '+h.name+t(' fulfils the guild contract (+')+cReward+' ⚜)','rune');
   simHooks.onWin&&simHooks.onWin(h);
   hlog(h,'🏆 '+h.name+t(' TAKES THE ORB OF ZOT! A legend forever.'),'rune');
   if(h.gold>0)s.gold+=h.gold;
@@ -418,7 +425,7 @@ function killMon(h,mo,s){
   m.monsters.splice(m.monsters.indexOf(mo),1);
   h.kills++;h.rep.kills++;s.stat.kills++;
   const depth=brDepth(h);
-  const goldMul=(RACES[h.race].gold||1)*gGold(s)*(m.elite?2:1);
+  const goldMul=(RACES[h.race].gold||1)*gGold(s)*todayAffix().gold*(m.elite?2:1);
   const g=Math.floor((2+Math.random()*4)*Math.pow(1.22,depth)*goldMul);
   s.gold+=Math.ceil(g*.5);h.gold+=Math.floor(g*.5);h.rep.gold+=g;
   gainXp(h,mo.xp,s);
@@ -441,6 +448,12 @@ function killMon(h,mo,s){
     h.curHp=Math.min(h.maxHpCache,h.curHp+h.maxHpCache*.05);
   if(mo.uniq){
     hlog(h,'⚔ '+h.name+t(' slays the unique: ')+t(mo.n)+'!','kill');
+    const grudge=avengeNemesis(s,mo.uniq);
+    if(grudge>0){
+      const vg=Math.floor(300*grudge*gGold(s));
+      s.gold+=vg;gainMem(s,40*grudge);
+      hlog(h,'⚖ '+h.name+t(' avenges the fallen: the nemesis pays ')+vg+' 🜚','rune');
+    }
     h.rep.notable.push(t('⚔ unique slain: ')+t(mo.n)+' ('+brTag(h)+')');
     s.stat.uniqKills++;
     gainMem(s,10+brDepth(h));
@@ -506,6 +519,7 @@ function monAttack(h,st,mo,s){
     banishHero(h,s,t(mo.n));return;
   }
   if(h.curHp<=0){
+    if(mo.uniq)recordNemesisKill(s,mo.uniq); /* the slayer becomes a nemesis */
     heroDie(h,t(mo.n),s);
   }
 }
