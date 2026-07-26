@@ -4,7 +4,7 @@
    the session silently for months — no per-hour re-login, no popup on reload. */
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyAWZQJ9ZTxN3ubBSHZKU1ph4sX2FHbO-yc',
@@ -69,4 +69,9 @@ export async function writeState(state, meta) {
     saveJson: JSON.stringify(state),
     meta, ts: Date.now(),
   });
+}
+/** delete the cloud save (for a full reset) */
+export async function deleteState() {
+  if (!user) return;
+  await deleteDoc(doc(db, 'saves', user.uid));
 }

@@ -2,7 +2,7 @@
    silently (refresh token in IndexedDB), so there is no token expiry to manage:
    we simply react to auth state, pull on sign-in/tab-return, push on
    milestones/interval/tab-hide, and surface genuine disputes to a dialog. */
-import { cloudAvailable, watchAuth, signIn, signOut, isSignedIn, readState, writeState } from './firebase.js';
+import { cloudAvailable, watchAuth, signIn, signOut, isSignedIn, readState, writeState, deleteState } from './firebase.js';
 import { resolvePull, shouldPush, makeMeta, vectorOf } from './sync.js';
 import { pruneSave } from '../core/state.js';
 
@@ -68,6 +68,10 @@ async function push(getSave, milestone) {
   lastPushedVec = vec; status('synced');
 }
 
+/** delete the cloud save if signed in (used by the full reset) */
+export async function cloudDelete() {
+  if (isSignedIn()) { try { await deleteState(); lastPushedVec = null; } catch (e) { status('error', e.message); throw e; } }
+}
 export const cloudPull = (getSave, applyState) => pull(getSave, applyState).catch(e => status('error', e.message));
 export const cloudPush = (getSave, milestone) => push(getSave, milestone).catch(e => status('error', e.message));
 

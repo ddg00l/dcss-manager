@@ -924,4 +924,9 @@ export const ES = {
   'Use cloud': 'Usar la nube',
   'Cloud session expired — sign in again to keep syncing': 'La sesión en la nube caducó — inicia sesión de nuevo para seguir sincronizando',
   'Sign in': 'Iniciar sesión',
+  'Danger zone': 'Zona peligrosa',
+  'Reset save': 'Reiniciar partida',
+  'Reset everything and start over? All progress — heroes, upgrades, prestige, the Hall of Fame — is permanently lost.': '¿Reiniciar todo y empezar de nuevo? Todo el progreso — héroes, mejoras, prestigio, el Salón de la Fama — se perderá para siempre.',
+  'Are you absolutely sure? This cannot be undone.': '¿Estás totalmente seguro? Esto no se puede deshacer.',
+  'Resetting…': 'Reiniciando…',
 };

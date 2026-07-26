@@ -5548,5 +5548,35 @@
 "Anmelden",
 "Iniciar sesión",
 "Увійти"
+],
+"Опасная зона": [
+"Danger zone",
+"Gefahrenzone",
+"Zona peligrosa",
+"Небезпечна зона"
+],
+"Сбросить сохранение": [
+"Reset save",
+"Spielstand zurücksetzen",
+"Reiniciar partida",
+"Скинути збереження"
+],
+"Сбросить всё и начать заново? Весь прогресс — герои, апгрейды, престиж, Зал Славы — будет потерян навсегда.": [
+"Reset everything and start over? All progress — heroes, upgrades, prestige, the Hall of Fame — is permanently lost.",
+"Alles zurücksetzen und neu beginnen? Der gesamte Fortschritt — Helden, Upgrades, Prestige, die Ruhmeshalle — geht unwiderruflich verloren.",
+"¿Reiniciar todo y empezar de nuevo? Todo el progreso — héroes, mejoras, prestigio, el Salón de la Fama — se perderá para siempre.",
+"Скинути все й почати заново? Весь прогрес — герої, апгрейди, престиж, Зала Слави — буде втрачено назавжди."
+],
+"Вы точно уверены? Это нельзя отменить.": [
+"Are you absolutely sure? This cannot be undone.",
+"Bist du ganz sicher? Das kann nicht rückgängig gemacht werden.",
+"¿Estás totalmente seguro? Esto no se puede deshacer.",
+"Ви точно впевнені? Це не можна скасувати."
+],
+"Сброс…": [
+"Resetting…",
+"Zurücksetzen…",
+"Reiniciando…",
+"Скидання…"
 ]
 }

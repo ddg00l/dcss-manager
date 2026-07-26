@@ -238,3 +238,7 @@
     background:var(--panel2);border-bottom:1px solid var(--epic);font-size:12px}
   #cloudBar button{min-height:30px;padding:4px 14px}
   #cloudBar .updX{background:none;border:none;color:var(--dim);font-size:16px;min-height:30px;padding:4px 8px}
+  /* danger zone: destructive reset button */
+  .dangerBtn{background:var(--hp);color:#fff;border-color:var(--hp);margin-top:6px}
+  .dangerBtn:hover{filter:brightness(1.1)}
+  .dangerBtn:disabled{opacity:.6}

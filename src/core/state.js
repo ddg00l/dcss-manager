@@ -164,3 +164,12 @@ export function persistState(state, storage) {
 const storage = typeof localStorage !== 'undefined' ? localStorage : null;
 export const save = loadState(storage);
 export const persist = () => persistState(save, storage);
+
+/** Wipe local storage and reset the live save singleton to a fresh account.
+   Keeps object identity (imported `save` reference stays valid) by mutating it. */
+export function resetSave() {
+  try { storage && storage.removeItem(SKEY); } catch (e) { /* quota */ }
+  for (const k of Object.keys(save)) delete save[k];
+  Object.assign(save, makeState());
+  persistState(save, storage);
+}

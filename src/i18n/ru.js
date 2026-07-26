@@ -924,4 +924,9 @@ export const RU = {
   'Use cloud': 'Использовать облако',
   'Cloud session expired — sign in again to keep syncing': 'Сессия облака истекла — войдите снова, чтобы продолжить синхронизацию',
   'Sign in': 'Войти',
+  'Danger zone': 'Опасная зона',
+  'Reset save': 'Сбросить сохранение',
+  'Reset everything and start over? All progress — heroes, upgrades, prestige, the Hall of Fame — is permanently lost.': 'Сбросить всё и начать заново? Весь прогресс — герои, апгрейды, престиж, Зал Славы — будет потерян навсегда.',
+  'Are you absolutely sure? This cannot be undone.': 'Вы точно уверены? Это нельзя отменить.',
+  'Resetting…': 'Сброс…',
 };

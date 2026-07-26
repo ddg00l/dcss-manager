@@ -2,7 +2,8 @@ import { $ } from './dom.js';
 import { save, persist } from '../core/state.js';
 import { sfx } from './audio.js';
 import { t, setLang, getLang, applyStatic, LANGS } from '../i18n/index.js';
-import { cloudAvailable, isSignedIn, connect, disconnect, cloudPush, cloudPull } from '../cloud/index.js';
+import { cloudAvailable, isSignedIn, connect, disconnect, cloudPush, cloudPull, cloudDelete } from '../cloud/index.js';
+import { resetSave } from '../core/state.js';
 import { exportSaveFile } from '../cloud/export.js';
 
 let cloudMsg = '';
@@ -21,6 +22,8 @@ export function openSettings() {
     `<label class="setRow"><input type="checkbox" id="setSnd"${save.muted ? '' : ' checked'}> ` +
     `<span>${t('Sound effects')}</span></label>` +
     cloudSection() +
+    `<h3>${t('Danger zone')}</h3>` +
+    `<button id="setReset" class="dangerBtn" style="width:100%">${t('Reset save')}</button>` +
     `<button id="setClose" style="width:100%;margin-top:16px">${t('Done')}</button>`;
   $('settings').classList.add('show');
   $('setLang').onchange = () => {
@@ -37,6 +40,19 @@ export function openSettings() {
     if (!save.muted) sfx.ui();
   };
   wireCloud();
+  $('setReset').onclick = async () => {
+    sfx.ui();
+    /* double confirmation: this is irreversible and wipes the cloud too */
+    if (!confirm(t('Reset everything and start over? All progress — heroes, upgrades, prestige, the Hall of Fame — is permanently lost.'))) return;
+    if (!confirm(t('Are you absolutely sure? This cannot be undone.'))) return;
+    const btn = $('setReset'); btn.disabled = true; btn.textContent = t('Resetting…');
+    try { if (cloudAvailable() && isSignedIn()) await cloudDelete(); } catch (e) { /* already surfaced */ }
+    resetSave();
+    cloudMsg = '';
+    window.__renderAll();
+    applyStatic();
+    $('settings').classList.remove('show');
+  };
   $('setClose').onclick = () => { sfx.ui(); $('settings').classList.remove('show'); };
 }
 

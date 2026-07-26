@@ -65,3 +65,19 @@ describe('deterministic domain streams', () => {
     expect(typeof s.seq).toBe('object');
   });
 });
+
+describe('reset save', () => {
+  it('resetSave wipes progress in place and re-mints a fresh account', async () => {
+    const { save, resetSave } = await import('../src/core/state.js');
+    save.gold = 99999; save.stat.wins = 12; save.prestiges = 4;
+    save.heroes.push({ id: 1, state: 'run' });
+    const before = save; // identity must be preserved (imported reference)
+    resetSave();
+    expect(save).toBe(before);          // same object reference
+    expect(save.gold).toBe(200);        // fresh account
+    expect(save.stat.wins).toBe(0);
+    expect(save.prestiges).toBe(0);
+    expect(save.heroes).toEqual([]);
+    expect(save.masterSeed).toBeGreaterThan(0);
+  });
+});

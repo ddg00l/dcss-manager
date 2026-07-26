@@ -924,4 +924,9 @@ export const DE = {
   'Use cloud': 'Cloud verwenden',
   'Cloud session expired — sign in again to keep syncing': 'Cloud-Sitzung abgelaufen — melde dich erneut an, um die Synchronisierung fortzusetzen',
   'Sign in': 'Anmelden',
+  'Danger zone': 'Gefahrenzone',
+  'Reset save': 'Spielstand zurücksetzen',
+  'Reset everything and start over? All progress — heroes, upgrades, prestige, the Hall of Fame — is permanently lost.': 'Alles zurücksetzen und neu beginnen? Der gesamte Fortschritt — Helden, Upgrades, Prestige, die Ruhmeshalle — geht unwiderruflich verloren.',
+  'Are you absolutely sure? This cannot be undone.': 'Bist du ganz sicher? Das kann nicht rückgängig gemacht werden.',
+  'Resetting…': 'Zurücksetzen…',
 };

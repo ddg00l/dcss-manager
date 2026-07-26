@@ -924,4 +924,9 @@ export const UK = {
   'Use cloud': 'Використати хмару',
   'Cloud session expired — sign in again to keep syncing': 'Сесія хмари закінчилася — увійдіть знову, щоб продовжити синхронізацію',
   'Sign in': 'Увійти',
+  'Danger zone': 'Небезпечна зона',
+  'Reset save': 'Скинути збереження',
+  'Reset everything and start over? All progress — heroes, upgrades, prestige, the Hall of Fame — is permanently lost.': 'Скинути все й почати заново? Весь прогрес — герої, апгрейди, престиж, Зала Слави — буде втрачено назавжди.',
+  'Are you absolutely sure? This cannot be undone.': 'Ви точно впевнені? Це не можна скасувати.',
+  'Resetting…': 'Скидання…',
 };
