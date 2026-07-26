@@ -13,6 +13,7 @@ import {randomItem,itemName,itemInfo,scoreItem,WEP_BASES,UNRANDS,makeUnrand} fro
 import {POTIONS,SCROLLS,consName,randConsumable} from '../data/consumables.js';
 import {MUTS,randomMut} from '../data/mutations.js';
 import {PORTALS} from '../data/portals.js';
+import {zigFee,zigStartDepth} from '../core/treasury.js';
 import {MONS,FAMILY_OF,familyDmgBonus} from '../data/monsters.js';
 import {recordVictory,recordRunnerWin,checkContract,recordNemesisKill,avengeNemesis} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
@@ -63,6 +64,25 @@ export function startRun(h,s){
   const st=heroStats(h,s);
   h.curHp=st.hpMax;h.maxHpCache=st.hpMax;
   hlog(h,h.name+t(' descends into the dungeon. May the memory of Zot keep them.'),'sys');
+}
+/** pay the escalating fee to send a camp hero straight into a deep Ziggurat farm.
+    Returns true on success. Consumes an expedition slot (the zig hero is 'run'). */
+export function fundZiggurat(h,s){
+  if(h.state!=='camp')return false;
+  if(s.heroes.filter(x=>x.state==='run').length>=maxSlots(s))return false;
+  const fee=zigFee(s);
+  if(s.gold<fee)return false;
+  s.gold-=fee;
+  s.zigFunded=(s.zigFunded||0)+1;
+  startRun(h,s);
+  /* drop them into a ziggurat that starts deep enough to stay lethal */
+  h.portalRet={branch:'dungeon',floor:1,seg:0};
+  h.portalDepth=zigStartDepth(s);
+  h.inPortal={type:'zig',floor:1};
+  genFloor(h,s);
+  const st=heroStats(h,s);h.curHp=st.hpMax;h.maxHpCache=st.hpMax;
+  hlog(h,'🏛 '+h.name+t(' is funded into a Ziggurat! (')+fmt(fee)+' 🜚)','rune');
+  return true;
 }
 function nextFloor(h,s){
   if(h.inPortal){

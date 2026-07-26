@@ -35,6 +35,7 @@ export const TAB_UNLOCK = {
   pForge: s => s.armory.length > 0 || s.scrap > 0 || s.stat.forged > 0,
   pUpg: s => s.stat.deaths > 0,                          // Memory is born from the first death
   pFame: s => s.stat.deaths > 0 || s.runesTotal > 0,
+  pTreasury: s => (s.stat.wins || 0) > 0,                // the treasury matters once gold piles up
 };
 /* what the player must do to unlock each gated tab — shown on a locked-tab click */
 export const TAB_HINT = {
@@ -42,6 +43,7 @@ export const TAB_HINT = {
   pForge: 'Find loot or forge an item to open the Forge',
   pUpg: 'A hero must fall — Memory is born from the first death',
   pFame: 'Win the Orb or lose a hero to open the Hall of Fame',
+  pTreasury: 'Carry the Orb out of Zot to open the Treasury',
 };
 export const tabUnlocked = (s, p) => (s.ftue && s.ftue.railDone && p !== 'pDun' && p !== 'pHeroes')
   ? (TAB_UNLOCK[p] ? TAB_UNLOCK[p](s) : true)

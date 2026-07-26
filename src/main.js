@@ -12,6 +12,7 @@ import { renderHeroes } from './ui/heroes.js';
 import { renderForge } from './ui/forge.js';
 import { openEquip } from './ui/equip.js';
 import { renderFame } from './ui/upgrades.js';
+import { renderTreasury } from './ui/treasury.js';
 import { renderMemTree, centerMemTree } from './ui/memtree.js';
 import { renderChips, renderWatch, setWatch } from './ui/watch.js';
 import { openSheet } from './ui/sheet.js';
@@ -70,7 +71,7 @@ function updTop() {
   if (save.zot > 0 || save.fame.some(f => f.won)) { z.style.display = ''; z.textContent = save.zot + ' ⚛'; }
 }
 function renderAll() {
-  renderChips(); renderHeroes(); renderGacha(); renderForge(); renderMemTree(); renderFame(); updTop();
+  renderChips(); renderHeroes(); renderGacha(); renderForge(); renderMemTree(); renderFame(); renderTreasury(); updTop();
 }
 
 /* main loop.

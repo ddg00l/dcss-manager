@@ -103,6 +103,7 @@ export function doPrestige(s) {
   s.tree = tree;
   s.rev = (s.rev || 0) + 1; /* tree changed: invalidate stat caches */
 
+  s.cofferBuys = 0; s.zigFunded = 0; s.provisions = {}; /* gold sinks reset each cycle */
   s.cycRunes = []; /* named runes become collectable again */
   s.cycRunnerBest = 0; s.cycContractDone = 0; /* runner arc and contract reset */
   s.prestReq = nextReq; /* the next cycle's fixed target */
