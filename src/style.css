@@ -23,8 +23,9 @@
   h3:first-child{margin-top:0}
 
   /* topbar */
-  #topbar{position:fixed;top:0;left:0;right:0;height:46px;z-index:8;display:flex;align-items:center;
-    gap:12px;padding:0 12px;background:rgba(10,12,16,.94);border-bottom:1px solid var(--line)}
+  #topbar{position:fixed;top:0;left:0;right:0;z-index:8;display:flex;align-items:center;
+    height:calc(46px + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) 12px 0;
+    gap:12px;background:rgba(10,12,16,.94);border-bottom:1px solid var(--line)}
   #topbar b{font-weight:700;font-size:13px}
   #goldTxt{color:var(--gold)} #runeTxt{color:var(--epic)} #zotTxt{color:var(--rare)} #scrapTxt{color:var(--stone)}
   #topbar .sp{flex:1}
@@ -43,7 +44,8 @@
   #nav .tb.active i{filter:none}
 
   /* main area */
-  #main{position:fixed;top:46px;bottom:50px;left:0;right:0;overflow-y:auto;
+  #main{position:fixed;top:calc(46px + env(safe-area-inset-top,0px));
+    bottom:calc(50px + env(safe-area-inset-bottom,0px));left:0;right:0;overflow-y:auto;
     -webkit-overflow-scrolling:touch;padding:10px 10px 24px}
   @media (min-width:780px){#main{left:50%;transform:translateX(-50%);width:760px}}
   .pane{display:none}.pane.active{display:block}
