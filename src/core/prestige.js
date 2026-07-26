@@ -51,12 +51,25 @@ export function legendsReward(s) {
 /* the deeper the ladder, the more Orbs a cycle must produce before it can be
    reset: the requirement runs into the in-cycle x1.3 compound, so the prestige
    cadence self-balances against the build's real power — no spam, no stall */
-/* The prestige requirement scales with PLAYER POWER, not account age. A strong
-   build (many delvers, high stars) must produce more Orbs per cycle — throttling
-   the runaway; a weak build needs fewer — so the first win of a cycle is always
-   reachable and no account can freeze. readiness() lives in eliteAffixes.js. */
-import { readiness } from '../data/eliteAffixes.js';
-export const prestigeReq = s => 1 + Math.min(5, Math.floor(readiness(s) / 6));
+/* The prestige requirement is a SNAPSHOT, locked in when a cycle begins
+   (account creation and every doPrestige), never recomputed while the cycle is
+   in progress. This is the whole fix for the first-prestige deadlock: the old
+   live formula read from readiness, so as a delver banked Orbs it raised its own
+   readiness (stars) and the goal it was chasing crept out of reach — win 5, need
+   6, freeze forever. A fixed target can always be finished.
+
+   The bar for the NEXT cycle is a function of the account's LIFETIME Orb count
+   (stat.wins), not of the current cycle. Because that total only ever climbs and
+   is independent of cadence, a prestige-ASAP loop can't keep the bar flat: its
+   lifetime total accrues just as fast, so its bar rises just as fast — no
+   artificial per-prestige floor needed. Greed still pays, since this cycle's
+   Orbs are part of the total. The curve is sqrt (sub-linear) so early cycles stay
+   fast and frequent, then — because the in-cycle 1.25^wins compound is
+   exponential in the bar — an ever-rising bar bends cadence into a graceful
+   asymptote over dozens of prestiges instead of the runaway a capped bar allowed. */
+export const prestigeReq = s => s.prestReq || 1;
+/** requirement for the next cycle, from lifetime Orbs — snapshotted at prestige time */
+export const nextPrestigeReq = s => 1 + Math.floor(Math.sqrt(s.stat.wins || 0));
 export const canPrestige = s => cycleProgress(s).wins >= prestigeReq(s);
 
 /** the reset itself; returns the Legends earned or 0 when not allowed */
@@ -64,6 +77,7 @@ export function doPrestige(s) {
   if (!canPrestige(s)) return 0;
   const reward = legendsReward(s);
   if (reward <= 0) return 0;
+  const nextReq = nextPrestigeReq(s); /* lock in next cycle's bar before stats reset */
   s.legends = (s.legends || 0) + reward;
   s.ng = (s.ng || 0) + 1;
   s.prestiges = (s.prestiges || 0) + 1;
@@ -91,6 +105,7 @@ export function doPrestige(s) {
 
   s.cycRunes = []; /* named runes become collectable again */
   s.cycRunnerBest = 0; s.cycContractDone = 0; /* runner arc and contract reset */
+  s.prestReq = nextReq; /* the next cycle's fixed target */
   /* new cycle snapshot */
   s.cycBase = {
     wins: s.stat.wins || 0,

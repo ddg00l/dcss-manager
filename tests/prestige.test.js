@@ -263,7 +263,7 @@ describe('graceful migration of rune-inflation-era saves (balV 2)', () => {
     expect(s.gold).toBe(1000 + 260 * 800);             // excess sold for gold
     const { canPrestige } = await import('../src/core/prestige.js');
     expect(canPrestige(s)).toBe(false);                // needs a NEW victory
-    expect(s.balV).toBe(2);
+    expect(s.balV).toBe(3);
   });
   it('bought elite levels keep their paid-for power after the effect nerf', async () => {
     const { gAtk, zupgCap, ZUPGRADES } = await import('../src/core/economy.js');
@@ -300,33 +300,45 @@ describe('graceful migration of rune-inflation-era saves (balV 2)', () => {
     expect(s.legends).toBeLessThan(80);
     expect(s.mem).toBe(5000); // memory balance untouched
   });
-  it('fresh accounts are born on balV 2 with no grant', () => {
+  it('fresh accounts are born on balV 3 with no grant', () => {
     const s = makeState();
-    expect(s.balV).toBe(2);
+    expect(s.balV).toBe(3);
     expect(s.legends).toBe(0);
   });
 });
 
-describe('prestige requirement scales with player power', () => {
-  it('a fresh account prestiges on one win; a strong build must earn more', async () => {
+describe('prestige requirement is a fixed snapshot with a forward-only ratchet', () => {
+  it('the current bar never rises mid-cycle — no goal can creep out of reach', async () => {
     const { prestigeReq, canPrestige } = await import('../src/core/prestige.js');
     const s = makeState();
     expect(prestigeReq(s)).toBe(1);            // fresh: one Orb prestiges
-    s.ng = 40;                                 // pure age never raises the bar
+    s.ng = 40;                                 // account age never touches the current bar
     expect(prestigeReq(s)).toBe(1);
-    s.stars = { 'human/fighter': 12 };         // a strong per-hero build (readiness ~36)
-    expect(prestigeReq(s)).toBe(6);
+    s.stars = { 'human/fighter': 12 };         // banking power mid-cycle never moves the goal
+    expect(prestigeReq(s)).toBe(1);
     s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
-    s.stat.wins = 5;
-    expect(canPrestige(s)).toBe(false);
-    s.stat.wins = 6;
-    expect(canPrestige(s)).toBe(true);
+    s.stat.wins = 1;
+    expect(canPrestige(s)).toBe(true);         // the fixed target is always finishable
   });
-  it('a wide roster of weak combos does not inflate the requirement', async () => {
-    const { prestigeReq } = await import('../src/core/prestige.js');
+  it('the NEXT bar tracks lifetime Orbs (sub-linear) — cadence-independent', async () => {
+    const { nextPrestigeReq } = await import('../src/core/prestige.js');
     const s = makeState();
-    s.stars = {}; for (let i = 0; i < 20; i++) s.stars['combo' + i] = 1; // 20 one-star combos
-    expect(prestigeReq(s)).toBeLessThan(4); // breadth is damped, not god-tier
+    expect(nextPrestigeReq(s)).toBe(1);        // 0 lifetime Orbs
+    s.stat.wins = 3;                           // 1 + floor(sqrt(3)) = 2
+    expect(nextPrestigeReq(s)).toBe(2);
+    s.stat.wins = 100;                         // 1 + floor(sqrt(100)) = 11
+    expect(nextPrestigeReq(s)).toBe(11);
+    s.stat.wins = 2000;                        // a runaway's total → an unreachable bar
+    expect(nextPrestigeReq(s)).toBe(45);       // 1 + floor(sqrt(2000)); 1.25^44 walls the cycle
+  });
+  it('doPrestige locks the next bar in from lifetime Orbs', async () => {
+    const { doPrestige } = await import('../src/core/prestige.js');
+    const s = makeState();
+    s.prestReq = 2;
+    s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
+    s.stat.wins = 5;                           // 5 lifetime Orbs (this is the first cycle)
+    expect(doPrestige(s)).toBeGreaterThan(0);
+    expect(s.prestReq).toBe(3);                // 1 + floor(sqrt(5)) = 3, snapshotted for next cycle
   });
 });
 

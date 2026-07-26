@@ -31,7 +31,8 @@ export function makeState() {
     mem: 0, tree: { root: 1 },
     stat: { kills: 0, deaths: 0, uniqKills: 0, forged: 0, dismantled: 0, memEarned: 0, wins: 0, bestXL: {} },
     runesTotal: 0, pendingDeaths: [], unrandsOwned: [],
-    ng: 0, legends: 0, prestiges: 0, pupg: {}, balV: 2,
+    ng: 0, legends: 0, prestiges: 0, pupg: {}, balV: 3,
+    prestReq: 1, /* Orbs the current cycle needs to prestige; snapshotted at cycle start, never rises mid-cycle */
     vic: { races: {}, classes: {} }, nemeses: {}, cycRunnerBest: 0, cycContractDone: 0,
     cycBase: { wins: 0, runes: 0, uniq: 0, mem: 0 }, cycRunes: [],
     ftue: null,
@@ -123,7 +124,11 @@ export function loadState(storage) {
             state.vic.races[f.race] = (state.vic.races[f.race] || 0) + 1;
             state.vic.classes[f.cls] = (state.vic.classes[f.cls] || 0) + 1;
           }
-      state.balV = 2;
+      /* balV 3: the prestige requirement is now a snapshot (state.prestReq) taken
+         at cycle start instead of a live readiness formula, so it can never rise
+         under a delver mid-cycle. Migrated saves inherit the default prestReq 1
+         (one easy prestige, then the ratchet takes over) — safe, never freezes. */
+      state.balV = 3;
       pruneSave(state); /* shrink pre-existing bloated saves (accumulated dead heroes) */
       if (s.masterSeed === undefined) {
         /* derive a stable seed from immutable account facts so it never shifts */

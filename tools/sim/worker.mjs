@@ -12,7 +12,8 @@ import { newHero, rollHero } from '../../src/sim/hero.js';
 import { advanceHeroes, startRun, equipBestFromArmory, recallHero } from '../../src/sim/tick.js';
 import { NODES, canBuy, buyNode, treeLvl, nodeCost, memHas } from '../../src/data/memtree.js';
 import { rollCost, maxSlots, forgeDisc, freeRollAvailable, ZUPGRADES, zupg, zupgCost, zupgCap } from '../../src/core/economy.js';
-import { canPrestige, doPrestige, PUPGRADES, pupg, pupgCost, cycleProgress, ngLevel } from '../../src/core/prestige.js';
+import { canPrestige, doPrestige, PUPGRADES, pupg, pupgCost, cycleProgress, ngLevel, prestigeReq } from '../../src/core/prestige.js';
+import { readiness } from '../../src/data/eliteAffixes.js';
 import { achMet } from '../../src/data/memtree.js';
 const achMetSafe = (s, n) => { try { return achMet(s, n); } catch { return false; } };
 import { randomItem, doForge, forgeCost as fCost, forgeScrap as fScrap } from '../../src/data/items.js';
@@ -185,6 +186,7 @@ function session(tactic, days = 1, seed = 0) {
       camp: s.heroes.filter(h => h.state === 'camp').length,
       running: s.heroes.filter(h => h.state === 'run').length,
       rolls: s.rolls, cycWins: (s.stat.wins || 0) - ((s.cycBase && s.cycBase.wins) || 0),
+      readiness: +readiness(s).toFixed(1), prestigeReq: prestigeReq(s), canPrestige: canPrestige(s),
     };
   }
   const d = depthScore(s);

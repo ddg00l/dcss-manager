@@ -55,11 +55,17 @@ export function readiness(s) {
   let zot = 0; if (s.zupg) for (const k in s.zupg) zot += s.zupg[k];
   return greatCount * .35 + starPower * 1.5 + legacy * .5 + zot * .5;
 }
-export const affixLevel = (s, ng) => Math.min(ng, Math.round(readiness(s)));
+/* Affix level tracks readiness, but a floor rising with NG guarantees that a
+   low-readiness build (wide/dilute army) can never permanently outrun affix
+   pressure by staying "unready" — the deeper the ladder, the more the floor
+   drags the effective level up toward NG. Surgical: when readiness >= ng the
+   min() still picks ng (focused mid-game unchanged); it only bites the
+   deep-and-wide runaway regime where readiness lagged far behind NG. */
+export const affixLevel = (s, ng) => Math.round(Math.min(ng, readiness(s) + ng * .12));
 /* the escalation curves now take the effective affix level, not raw NG */
-export const eliteChance = lvl => Math.min(.4, .05 + .018 * lvl);
-export const eliteAffixCount = lvl => 1 + Math.min(2, Math.floor(lvl / 8));
-export const floorAffixChance = lvl => Math.min(.4, .07 + .02 * lvl);
+export const eliteChance = lvl => Math.min(.45, .05 + .018 * lvl);
+export const eliteAffixCount = lvl => 1 + Math.min(3, Math.floor(lvl / 10));
+export const floorAffixChance = lvl => Math.min(.45, .07 + .02 * lvl);
 
 /** roll elite affixes for a monster (floor rng keeps it deterministic per seed) */
 export function rollEliteAffixes(ng, rng) {
