@@ -1,4 +1,5 @@
 import { defaultFtue, completedFtue, isVeteranSave } from './ftue.js';
+import { stream, hashSeed } from './rng.js';
 import { WEP_BASES } from '../data/items.js';
 import { CLASSES } from '../data/classes.js';
 import { RACES } from '../data/races.js';
@@ -36,6 +37,10 @@ export function makeState() {
     ftue: null,
     progress: { D: 0, Lair: 0, Orc: 0, Elf: 0, Vaults: 0, Depths: 0, Zot: 0, Abyss: 0 },
     last: Date.now(), muted: false, lang: 'en',
+    /* master seed: every gameplay random derives from this via domain streams;
+       synced forever, identical on all of the player's devices */
+    masterSeed: (Math.floor(Math.random() * 0xffffffff) >>> 0) || 1,
+    seq: {}, /* per-domain monotonic counters (gacha, loot, forge) */
   };
 }
 
@@ -119,6 +124,11 @@ export function loadState(storage) {
             state.vic.classes[f.cls] = (state.vic.classes[f.cls] || 0) + 1;
           }
       state.balV = 2;
+      if (s.masterSeed === undefined) {
+        /* derive a stable seed from immutable account facts so it never shifts */
+        state.masterSeed = (hashSeed(s.nextId || 1, (s.fame || []).length, s.mem || 0) || 1) >>> 0;
+        state.seq = {};
+      }
       /* migration: old CIFI upgrades convert into Memory */
       if (s.upg && Object.keys(s.upg).length) {
         const total = Object.values(s.upg).reduce((a, b) => a + b, 0);

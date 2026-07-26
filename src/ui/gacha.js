@@ -16,7 +16,7 @@ import { t } from '../i18n/index.js';
 /* ===================== gacha ===================== */
 
 export function doRoll(premium){
-  const r=rollHero(save,premium,Math.random);
+  const r=rollHero(save,premium);
   if(!r)return;
   if(r.kind==='dup'){
     revealGacha(r.res,t('Duplicate! +')+r.sh+t(' shards'));

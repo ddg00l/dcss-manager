@@ -6,6 +6,7 @@ import {WEP_BASES,ARM_BASES,SH_BASES,itemInfo} from '../data/items.js';
 import {GODS} from '../data/gods.js';
 import {HERO_NAMES} from '../data/names.js';
 import {gHp,gAtk,gSpd,freeRollAvailable,rollCost,PITY_AT,rollCombo,pickComboOfTier,shardMul} from '../core/economy.js';
+import {nextStream} from '../core/streams.js';
 import {memEff,memHas,treeSig} from '../data/memtree.js';
 
 export function newHero(race,cls,rarity,s){
@@ -189,7 +190,7 @@ function heroStatsCompute(h,s){
   let chill=cd.chill?1:0;
   if(g.weapon){const wi=itemInfo(g.weapon);if(wi.chill)chill=1}
   /* holy vs undead and venom blades */
-  let vsUndead=1,venom=0,rPois=!!rd.rPois; /* stone skin, naga blood, undead flesh */
+  let vsUndead=1,venom=0,rPois=!!rd.rPois,lantern=false,waders=false; /* stone skin, naga blood, undead flesh */
   const gearAll=[g.weapon,g.armour,g.shield,g.ring1,g.ring2,g.ring3,g.ring4,g.amulet];
   for(const it of gearAll){
     if(!it)continue;
@@ -197,22 +198,27 @@ function heroStatsCompute(h,s){
     if(ii.vsUndead)vsUndead=Math.max(vsUndead,ii.vsUndead);
     if(ii.venom)venom=1;
     if(ii.pois_res)rPois=true;
+    if(ii.lantern)lantern=true;
+    if(ii.waders)waders=true;
   }
   if(rd.und)vsUndead=1; /* DCSS: the undead cannot channel holy wrath */
   return {ac,ev,dmg,hpMax:Math.floor(hpMax),aspd,acc,leech,critc,regen,resAll,retal,dodge,chill,
-    vsUndead,venom,rPois,twoHanded,
+    vsUndead,venom,rPois,lantern,waders,twoHanded,
     style,school,rng:style!=='melee'?5:(wep&&wep.reach?2:1),spd:rd.spd*gSpd(s)};
 }
 
 /** One gacha roll, pure state logic (UI adds sounds/animation on top).
     Returns {kind:'dup',res,sh} | {kind:'hero',res,h} | null when unaffordable. */
-export function rollHero(s,premium,rng=Math.random){
+export function rollHero(s,premium,rng){
   if(premium){if(s.runes<1)return null;s.runes--}
   else if(freeRollAvailable(s)){/* the guild pays when the party is gone */}
   else{const c=rollCost(s);if(s.gold<c)return null;s.gold-=c;s.rolls++}
   s.pity++;
-  let res=rollCombo(s,premium,rng);
-  if(s.pity>=PITY_AT)res=pickComboOfTier(3,rng);
+  /* deterministic: summon #N draws the same stream on every device (unless a
+     stream is passed in, e.g. by the headless simulator running CRN) */
+  const r=rng||nextStream(s,'gacha');
+  let res=rollCombo(s,premium,r);
+  if(s.pity>=PITY_AT)res=pickComboOfTier(3,r);
   if(res.rarity===3)s.pity=0;
   const ck=comboKey(res.race,res.cls);
   const dup=s.seen[ck];

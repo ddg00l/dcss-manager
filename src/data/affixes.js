@@ -15,5 +15,9 @@ export function affixKeyFor(dateStr) {
   for (let i = 0; i < dateStr.length; i++) h = (h * 31 + dateStr.charCodeAt(i)) >>> 0;
   return KEYS[h % KEYS.length];
 }
-export const todayAffixKey = () => affixKeyFor(new Date().toISOString().slice(0, 10));
+/* the date provider is injectable so headless sims can map game days to
+   virtual dates instead of freezing the whole run on one real-world day */
+let dateProvider = () => new Date().toISOString().slice(0, 10);
+export const setAffixDateProvider = fn => { dateProvider = fn; };
+export const todayAffixKey = () => affixKeyFor(dateProvider());
 export const todayAffix = () => AFFIXES[todayAffixKey()];
