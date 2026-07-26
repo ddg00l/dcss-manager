@@ -18,6 +18,9 @@ import { t } from '../i18n/index.js';
 
 const forgeCost=slot=>fCost(save,slot);
 const forgeScrap=slot=>fScrap(slot);
+/* armory filter/sort state (session-scoped) so a big roster stays manageable */
+const armF={slot:'all',rar:'all',asc:false};
+const SLOTN={weapon:'Weapon',armour:'Armour',shield:'Shield',ring:'Ring',amulet:'Amulet'};
 export function renderForge(){
   const btns=$('forgeBtns');btns.innerHTML='';
   for(const [slot,nm] of [['weapon',t('Weapon')],['armour',t('Armour')],['shield',t('Shield')],['ring',t('Ring')],['amulet',t('Amulet')]]){
@@ -73,11 +76,37 @@ export function renderForge(){
     }
     box.appendChild(el);
   };
-  /* unequipped first, sorted by rarity */
-  const sorted=[...save.armory].sort((a,b)=>b.rar-a.rar);
-  header(t('Unequipped (')+sorted.length+')');
-  for(const it of sorted.slice(0,60))itemRow(it,null);
-  if(!sorted.length)box.innerHTML+='<div class="hint">'+t('No unequipped items — forge some or wait for dungeon finds.')+'</div>';
+  /* --- filter + sort bar so a large armory stays manageable on small screens --- */
+  const chip=(html,active,onclick,extra)=>{
+    const c=document.createElement('button');
+    c.className='fchip'+(active?' on':'')+(extra||'');
+    c.innerHTML=html;c.onclick=onclick;return c;
+  };
+  const match=it=>(armF.slot==='all'||it.slot===armF.slot)&&(armF.rar==='all'||it.rar===armF.rar);
+  const shown=save.armory.filter(match).sort((a,b)=>armF.asc?a.rar-b.rar:b.rar-a.rar);
+  const bar=document.createElement('div');bar.className='armBar';
+  const rowT=document.createElement('div');rowT.className='chipRow';
+  rowT.appendChild(chip(t('All'),armF.slot==='all',()=>{armF.slot='all';renderForge();}));
+  for(const sl of ['weapon','armour','shield','ring','amulet'])
+    rowT.appendChild(chip(t(SLOTN[sl]),armF.slot===sl,()=>{armF.slot=sl;renderForge();}));
+  const rowR=document.createElement('div');rowR.className='chipRow';
+  rowR.appendChild(chip(t('All'),armF.rar==='all',()=>{armF.rar='all';renderForge();}));
+  for(let r=RARN.length-1;r>=0;r--)
+    rowR.appendChild(chip(t(RARN[r]),armF.rar===r,()=>{armF.rar=r;renderForge();},' rar'+r));
+  const rowA=document.createElement('div');rowA.className='chipRow';
+  rowA.appendChild(chip((armF.asc?'▲ ':'▼ ')+t('Rarity'),false,()=>{armF.asc=!armF.asc;renderForge();}));
+  if(shown.length)rowA.appendChild(chip('⚙ '+t('Dismantle all shown')+' ('+shown.length+')',false,()=>{
+    if(!confirm(t('Dismantle all {n} shown items for scrap?',{n:shown.length})))return;
+    let sc=0;for(const it of shown){sc+=2+it.rar*2;const i=save.armory.indexOf(it);if(i>=0)save.armory.splice(i,1);save.stat.dismantled++;}
+    save.scrap+=sc;sfx.coin();persist();renderForge();
+  },' danger'));
+  bar.appendChild(rowT);bar.appendChild(rowR);bar.appendChild(rowA);
+  box.appendChild(bar);
+  /* unequipped, filtered + sorted */
+  header(t('Unequipped (')+shown.length+(shown.length!==save.armory.length?' / '+save.armory.length:'')+')');
+  for(const it of shown.slice(0,80))itemRow(it,null);
+  if(shown.length>80)header('⋯ +'+(shown.length-80));
+  if(!save.armory.length)box.innerHTML+='<div class="hint">'+t('No unequipped items — forge some or wait for dungeon finds.')+'</div>';
   /* then worn items, grouped by hero */
   for(const hh of save.heroes){
     if(hh.state==='dead'||hh.state==='victor')continue;

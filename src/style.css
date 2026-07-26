@@ -102,6 +102,18 @@
   .fst.locked::before{content:'🔒';position:absolute;top:2px;right:3px;font-size:9px}
   .famePane{display:none}
   .famePane.shown{display:block}
+  /* armory filter/sort chips */
+  .armBar{display:flex;flex-direction:column;gap:5px;margin:4px 0 10px}
+  .chipRow{display:flex;flex-wrap:wrap;gap:5px}
+  .fchip{padding:5px 10px;font-size:10px;letter-spacing:.05em;border-radius:14px;
+    background:var(--panel);border:1px solid var(--line);color:var(--dim);min-height:0;cursor:pointer}
+  .fchip.on{border-color:var(--gold);color:var(--gold);background:var(--panel2)}
+  .fchip.rar0{color:var(--stone);border-color:rgba(154,167,184,.4)}
+  .fchip.rar1{color:var(--rare);border-color:rgba(94,158,224,.4)}
+  .fchip.rar2{color:var(--epic);border-color:rgba(176,107,224,.4)}
+  .fchip.rar3{color:var(--leg);border-color:rgba(224,160,60,.4)}
+  .fchip.rar0.on,.fchip.rar1.on,.fchip.rar2.on,.fchip.rar3.on{background:var(--panel2);border-width:2px;padding:4px 9px}
+  .fchip.danger{color:var(--hp);border-color:rgba(201,79,67,.5)}
   /* install hint (iOS: manual A2HS steps; Android: real prompt button) */
   #installBar{position:fixed;left:50%;transform:translateX(-50%);
     bottom:86px;z-index:60;
