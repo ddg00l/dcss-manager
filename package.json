@@ -14,5 +14,8 @@
     "vite": "^7.0.0",
     "vite-plugin-singlefile": "^2.2.0",
     "vitest": "^3.2.0"
+  },
+  "dependencies": {
+    "firebase": "^12.16.0"
   }
 }

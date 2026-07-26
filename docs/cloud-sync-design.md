@@ -1,3 +1,19 @@
+# Cloud Save Sync — Design (Firebase)
+
+Backend-as-a-service: Firebase Authentication (Google sign-in) keeps a refresh
+token in the browser's IndexedDB and renews the session silently for months —
+no per-hour re-login, no reload popup. Saves live in Cloud Firestore at
+`saves/{uid}`, readable/writable only by their owner (security rules in
+`firestore.rules`). The pure conflict resolver (`sync.js`) and the master-seed
+determinism layer are reused unchanged. Offline escape hatch: export/import the
+save as a file (`export.js`), independent of any account.
+
+Owner setup: Firebase project `dcss-manager-e4668` with Google auth enabled,
+`ddg00l.github.io` in Authorized domains, Firestore in production mode, and the
+rules from `firestore.rules` published.
+
+---
+
 # Cloud Save Sync — Design (Google Drive, no backend)
 
 Decisions locked with the game owner (2026-07-26):

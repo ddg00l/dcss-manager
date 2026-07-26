@@ -14,11 +14,11 @@
 <h2>Where it is stored</h2>
 <ul>
 <li><strong>On your device</strong> — in the browser's local storage, so your progress persists between visits.</li>
-<li><strong>In your Google Drive (optional)</strong> — only if you choose to sign in for cloud sync. The save is written to the hidden <em>application data folder</em> (<code>drive.appdata</code> scope). This folder is private to this app: it does not appear in your Drive, we cannot see your other files, and other apps cannot see ours. You can delete it at any time by revoking the app's access in your Google account settings.</li>
+<li><strong>In our cloud database (optional)</strong> — only if you choose to sign in for cloud sync. Your save is stored in Google Firebase (Cloud Firestore), keyed to your Google account, and is readable and writable only by you (enforced by security rules). It contains only game progress — no personal information.</li>
 </ul>
 
 <h2>Google account access</h2>
-<p>Cloud sync uses Google Sign-In and requests a single permission: <code>drive.appdata</code> (create and manage this app's own private configuration data in your Drive). We request no other scopes. We never access, read, or store your email, contacts, documents, or any other Drive content. Access tokens live only in your browser and are never sent to us — we operate no server.</p>
+<p>Cloud sync uses Google Sign-In (via Firebase Authentication) only to identify your account so your save can be tied to it. We request no access to your email content, contacts, Drive, or any other Google data — only your basic account identifier. Firebase manages the sign-in session in your browser.</p>
 
 <h2>Analytics</h2>
 <p>The site uses Cloudflare Web Analytics, which counts anonymous page views without cookies and without tracking individuals across sites.</p>
@@ -30,7 +30,7 @@
 <ul>
 <li>Export your save to a file at any time from the game's Settings.</li>
 <li>Sign out to stop cloud sync.</li>
-<li>Revoke this app's Drive access at <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>, which removes the stored save from your Drive.</li>
+<li>Revoke this app's access at <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>. To delete your cloud save, sign in and use the delete option, or contact us via the repository.</li>
 <li>Clear your browser storage to remove the local save.</li>
 </ul>
 
