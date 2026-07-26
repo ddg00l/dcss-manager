@@ -63,7 +63,7 @@ function wireCloud() {
   const si = $('setSignin'); if (si) si.onclick = async () => {
     sfx.ui(); cloudMsg = t('Signing in…'); openSettings();
     try { await connect(); await cloudPull(() => save, applyRemote); cloudMsg = t('Synced'); }
-    catch (e) { cloudMsg = t('Sign-in failed'); }
+    catch (e) { console.error('cloud sign-in:', e); cloudMsg = t('Sign-in failed') + ': ' + (e.code || e.message || ''); }
     openSettings();
   };
   const so = $('setSignout'); if (so) so.onclick = () => { sfx.ui(); disconnect(); cloudMsg = ''; openSettings(); };

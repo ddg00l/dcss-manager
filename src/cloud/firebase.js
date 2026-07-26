@@ -3,7 +3,7 @@
    by hiding the config. Firebase keeps a refresh token in IndexedDB and renews
    the session silently for months — no per-hour re-login, no popup on reload. */
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult, signOut as fbSignOut, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -27,43 +27,46 @@ function ensure() {
   db = getFirestore(app);
 }
 
-/** resolves once Firebase has restored (or confirmed the absence of) a session.
-    Also finalizes a redirect sign-in and surfaces its error, if any. */
-export function watchAuth(cb, onError) {
+/** resolves once Firebase has restored (or confirmed the absence of) a session */
+export function watchAuth(cb) {
   if (!cloudAvailable()) return;
   ensure();
-  /* complete a pending redirect sign-in (no-op on a normal load) */
-  getRedirectResult(auth).catch(e => onError && onError(e));
   onAuthStateChanged(auth, u => { user = u; cb(u); });
 }
 
-/** Sign in with Google. Uses the redirect flow, which is immune to the
-    Cross-Origin-Opener-Policy that breaks popup sign-in on some hosts; the page
-    navigates to Google and back, and onAuthStateChanged fires with the user.
-    Falls back to popup only if redirect cannot start. */
+/** Sign in with Google via popup. Firebase 12 completes the popup over
+    postMessage even when a Cross-Origin-Opener-Policy warning is logged for the
+    window.closed poll, so that warning is benign. Errors carry a .code
+    (e.g. auth/unauthorized-domain) that the caller surfaces for diagnosis. */
 export async function signIn() {
   ensure();
   const provider = new GoogleAuthProvider();
-  try {
-    await signInWithRedirect(auth, provider); // navigates away; resolves rarely
-  } catch (e) {
-    const res = await signInWithPopup(auth, provider);
-    user = res.user;
-    return user;
-  }
+  const res = await signInWithPopup(auth, provider);
+  user = res.user;
+  return user;
 }
 export async function signOut() { if (auth) await fbSignOut(auth); user = null; }
 export const isSignedIn = () => !!user;
 export const currentUser = () => user;
 
+/* The save holds nested arrays (floor grids, rune lists, logs) that Firestore
+   rejects, so the whole state is stored as one JSON string field. meta stays a
+   plain object (flat, no nested arrays) for cheap conflict comparison. */
+
 /** read the cloud save document, or null */
 export async function readState() {
   if (!user) return null;
   const snap = await getDoc(doc(db, 'saves', user.uid));
-  return snap.exists() ? snap.data().save : null;
+  if (!snap.exists()) return null;
+  const d = snap.data();
+  try { return d.saveJson ? JSON.parse(d.saveJson) : (d.save || null); }
+  catch { return null; }
 }
 /** write the whole save under the user's uid */
 export async function writeState(state, meta) {
   if (!user) return;
-  await setDoc(doc(db, 'saves', user.uid), { save: state, meta, ts: Date.now() });
+  await setDoc(doc(db, 'saves', user.uid), {
+    saveJson: JSON.stringify(state),
+    meta, ts: Date.now(),
+  });
 }
