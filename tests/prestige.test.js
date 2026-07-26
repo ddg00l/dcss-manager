@@ -68,6 +68,12 @@ describe('prestige', () => {
     s.tree.k_ngplus = 1; // legacy keystone stacks as one more level
     expect(ngLevel(s)).toBe(3);
   });
+  it('the NG reward multiplier caps at +500% (anti-runaway)', async () => {
+    const { legendsReward } = await import('../src/core/prestige.js');
+    const mk = (ng) => { const s = makeState(); winCycle(s); s.ng = ng; return legendsReward(s); };
+    expect(mk(20)).toBe(mk(500)); // deep ladders pay the same per cycle
+    expect(mk(20)).toBeGreaterThan(mk(0));
+  });
   it('reward grows with the cycle progress and NG+ level', () => {
     const a = makeState(); winCycle(a, 1, 3);
     const b = makeState(); winCycle(b, 2, 10);
@@ -308,6 +314,8 @@ describe('prestige requirement scales with the ladder', () => {
     expect(prestigeReq(s)).toBe(1);
     s.ng = 10;
     expect(prestigeReq(s)).toBe(6);
+    s.ng = 40;
+    expect(prestigeReq(s)).toBe(6); // capped: deep cycles plateau, never freeze
     s.stat.wins = 5; // 5 wins this cycle - not enough at NG10
     expect(canPrestige(s)).toBe(false);
     s.stat.wins = 6;
@@ -320,9 +328,9 @@ describe('no-softlock guarantees (asymptotic NG + unbounded stars)', () => {
     const { ngMonMul } = await import('../src/core/prestige.js');
     const at = (ng) => { const s = makeState(); s.ng = ng; return ngMonMul(s); };
     expect(at(0)).toBe(1);
-    expect(at(1)).toBeCloseTo(1.15);  // the first win of a cycle stays reachable
-    expect(at(10)).toBeCloseTo(2.5);  // the cap
-    expect(at(50)).toBeCloseTo(2.5);  // never grows past it
+    expect(at(1)).toBeCloseTo(1.1);   // the first win of a cycle stays reachable
+    expect(at(10)).toBeCloseTo(2);    // hybrid cap: numbers stop at x2, affixes carry the depth
+    expect(at(50)).toBeCloseTo(2);    // never grows past it
   });
   it('star promotions never cap and keep raising hero power', async () => {
     const { starNeed, starStr } = await import('../src/data/combos.js');
@@ -338,5 +346,19 @@ describe('no-softlock guarantees (asymptotic NG + unbounded stars)', () => {
     const d5 = heroStats(h, s).dmg;
     s.stars[ck] = 12;
     expect(heroStats(h, s).dmg).toBeCloseTo(d5 * (1 + .08 * 12) / (1 + .08 * 5));
+  });
+});
+
+describe('Legacy engraving: the infinite Legends sink', () => {
+  it('is uncapped, escalates in cost and feeds combat stats', async () => {
+    const { PUPGRADES, pupg, pupgCost } = await import('../src/core/prestige.js');
+    const { gAtk } = await import('../src/core/economy.js');
+    const u = PUPGRADES.find(x => x.k === 'p_legacy');
+    const s = makeState();
+    expect(u.max).toBeGreaterThan(1000);
+    const base = gAtk(s);
+    s.pupg = { p_legacy: 25 };
+    expect(gAtk(s)).toBeCloseTo(base * 1.25);
+    expect(pupgCost(s, u)).toBeGreaterThan(u.base * 100); // steep late levels
   });
 });

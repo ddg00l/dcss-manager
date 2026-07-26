@@ -43,7 +43,7 @@ export function checkContract(s, h) {
   if (!c.check(s, h)) return 0;
   s.cycContractDone = 1;
   s.stat.contracts = (s.stat.contracts || 0) + 1;
-  const reward = 10 + 5 * ngLevel(s);
+  const reward = 10 + 5 * Math.min(20, ngLevel(s)); /* same anti-runaway cap as Legends */
   s.legends = (s.legends || 0) + reward;
   return reward;
 }

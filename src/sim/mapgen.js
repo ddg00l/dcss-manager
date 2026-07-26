@@ -1,7 +1,8 @@
 import {mulberry32} from '../core/rng.js';
-import {ngMonMul,cycleProgress} from '../core/prestige.js';
+import {ngMonMul,cycleProgress,ngLevel} from '../core/prestige.js';
 import {nemesisLevel} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
+import {FLOOR_KEYS,floorAffixChance,eliteChance,rollEliteAffixes} from '../data/eliteAffixes.js';
 import {BRANCHES,brDepth,BR_OFFSET,BR_ORDER} from '../data/branches.js';
 import {MONS,UNIQUES} from '../data/monsters.js';
 import {GODKEYS} from '../data/gods.js';
@@ -19,12 +20,16 @@ export function genFloor(h,s){
   const pf=P?h.inPortal.floor:h.floor;
   h.regenN=(h.regenN||0)+1; /* every regeneration is unique — the same floor cannot be farmed in a loop */
   const rng=mulberry32(h.seed+pf*7919+h.segIdx*104729+(P?31337:0)+h.regenN*1013904);
+  /* qualitative escalation: a floor may carry its own affix; NG raises the odds */
+  const ngl=ngLevel(s);
+  const fafx=(!P&&rng()<floorAffixChance(ngl))?FLOOR_KEYS[Math.floor(rng()*FLOOR_KEYS.length)]:null;
   const g=[];
   for(let y=0;y<MH;y++){g.push(new Array(MW).fill(1))}
   const rooms=[];
-  const nr=4+Math.floor(rng()*4);
+  /* the Maze affix: many cramped rooms instead of a few halls */
+  const nr=(fafx==='maze'?9:4)+Math.floor(rng()*4);
   for(let i=0;i<nr;i++){
-    const w=3+Math.floor(rng()*6),hh=3+Math.floor(rng()*4);
+    const w=(fafx==='maze'?2:3)+Math.floor(rng()*(fafx==='maze'?2:6)),hh=(fafx==='maze'?2:3)+Math.floor(rng()*(fafx==='maze'?2:4));
     const x=1+Math.floor(rng()*(MW-w-2)),y=1+Math.floor(rng()*(MH-hh-2));
     rooms.push({x,y,w,h:hh,cx:x+(w>>1),cy:y+(hh>>1)});
     for(let yy=y;yy<y+hh;yy++)for(let xx=x;xx<x+w;xx++)g[yy][xx]=0;
@@ -127,19 +132,26 @@ export function genFloor(h,s){
     }
   }
   if(isBossFloor&&br.orb&&free.length>2){const c=take();items.push({x:c[0],y:c[1],kind:'orb'})}
-  /* NG+ and elite floors */
-  /* difficulty follows in-cycle success: every Orb carried out multiplies the
-     dungeon x1.3 (compounds, resets on prestige); NG+ adds a light capped bonus */
+  /* hybrid escalation: soft stat multipliers (in-cycle compound + NG capped
+     low) carry the numbers; elite monsters with qualitative affixes carry the
+     depth — combinatorics instead of a growing scalar */
   const ngPlus=ngMonMul(s)*Math.pow(1.3,Math.max(0,cycleProgress(s).wins));
-  const elite=memHas(s,'k_elite')&&rng()<.15;
+  const ech=eliteChance(ngl)*(memHas(s,'k_elite')?1.5:1);
   for(const mo of monsters){
-    mo.hp=Math.max(1,Math.floor(mo.hp*ngPlus*afx.monHp*(elite?1.5:1)));mo.maxHp=mo.hp;
-    mo.dmg=Math.max(1,Math.floor(mo.dmg*ngPlus*afx.monDmg*(elite?1.2:1)));
+    mo.hp=Math.max(1,Math.floor(mo.hp*ngPlus*afx.monHp));mo.maxHp=mo.hp;
+    mo.dmg=Math.max(1,Math.floor(mo.dmg*ngPlus*afx.monDmg));
+    if(!P&&!mo.uniq&&rng()<ech){
+      mo.eliteAf=rollEliteAffixes(ngl,rng);
+      mo.hp=Math.floor(mo.hp*(1+.4*mo.eliteAf.length));mo.maxHp=mo.hp;
+      mo.dmg=Math.floor(mo.dmg*(1+.15*mo.eliteAf.length));
+      mo.xp=Math.floor(mo.xp*(1+.5*mo.eliteAf.length));
+      if(mo.eliteAf.includes('shielded'))mo.shield=3;
+    }
   }
   const explored=[];
   for(let y=0;y<MH;y++)explored.push(new Array(MW).fill(false));
   h.map={g,monsters,items,stairs:{x:far[0],y:far[1]},px:start[0],py:start[1],explored,
-    bossFloor:isBossFloor,elite,traps,clouds:[]};
+    bossFloor:isBossFloor,fafx,traps,clouds:[]};
   /* volcano: smoldering clouds */
   if(P&&P.clouds){
     for(let i=0;i<5&&free.length>2;i++){const c=take();
@@ -184,11 +196,11 @@ export function los(m,x0,y0,x1,y1){
   return true;
 }
 export const FOV_R=7;
-export function reveal(h){
+export function reveal(h,radius){
   const m=h.map;
-  if(m._rx===m.px&&m._ry===m.py)return; /* only recompute after movement */
-  m._rx=m.px;m._ry=m.py;
-  const R=FOV_R;
+  const R=radius||FOV_R;
+  if(m._rx===m.px&&m._ry===m.py&&m._rr===R)return; /* only recompute after movement */
+  m._rx=m.px;m._ry=m.py;m._rr=R;
   for(let dy=-R;dy<=R;dy++)for(let dx=-R;dx<=R;dx++){
     if(dx*dx+dy*dy>R*R+2)continue;
     const x=m.px+dx,y=m.py+dy;

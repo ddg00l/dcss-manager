@@ -42,6 +42,8 @@ export const ARM_EGOS=[
   {k:'fire_res',n:'of fire resistance',res:1},{k:'cold_res',n:'of cold resistance',res:1},
   {k:'poison_res',n:'of poison resistance',pois_res:1},{k:'regen',n:'of regeneration',regen:1},
   {k:'ev',n:'of evasion',ev:4},{k:'mr',n:'of willpower',mr:1},
+  /* counters to floor affixes: gear answers the dungeon's tricks */
+  {k:'lantern',n:'of the lantern',lantern:1},{k:'waders',n:'of wading',waders:1},
 ];
 export const RING_KINDS=[
   {k:'r_dmg',n:'ring of slaying',t:'r_ring',dmg:.1},{k:'r_ac',n:'ring of protection',t:'r_ring2',ac:4},
@@ -82,6 +84,8 @@ export function itemInfo(it){
       if(e2.pois)out.venom=1;
       if(e2.vsUndead)out.vsUndead=e2.vsUndead;
       if(e2.pois_res)out.pois_res=1;
+      if(e2.lantern)out.lantern=1;
+      if(e2.waders)out.waders=1;
     }
   }
   if(it.rand){out.dmgP=(out.dmgP||0)+.08;out.hp=(out.hp||0)+.05}

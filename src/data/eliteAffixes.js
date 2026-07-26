@@ -1,0 +1,56 @@
+/* Qualitative escalation: elite monster affixes and floor affixes.
+   Depth stops being a number — it becomes combinatorics. Elites carry personal
+   affixes (Diablo-style), floors carry their own; the pool and intensity grow
+   slowly and endlessly with NG+, while raw stat multipliers stay softly capped.
+
+   Family colors (canvas auras): tactical=violet, aggressive=red,
+   defensive=blue, antibuild=gold. */
+
+export const ELITE_AFFIXES = {
+  /* --- tactical: change the geometry of the fight --- */
+  blinker:    { fam: 'tactical', n: 'Blinker', d: 'teleports away when struck', col: '#b57edc' },
+  caller:     { fam: 'tactical', n: 'Caller', d: 'wakes and pulls the whole floor toward the fight', col: '#b57edc' },
+  raiser:     { fam: 'tactical', n: 'Bonecaller', d: 'raises slain monsters back once', col: '#b57edc' },
+  /* --- aggressive: punish carelessness --- */
+  volatile:   { fam: 'aggressive', n: 'Volatile', d: 'explodes on death', col: '#e05252' },
+  painaura:   { fam: 'aggressive', n: 'Pain aura', d: 'burns the hero every turn nearby', col: '#e05252' },
+  vampiric:   { fam: 'aggressive', n: 'Vampiric', d: 'heals off every hit it lands', col: '#e05252' },
+  enrage:     { fam: 'aggressive', n: 'Furious', d: 'attacks twice as fast below half health', col: '#e05252' },
+  /* --- defensive: demand variety --- */
+  shielded:   { fam: 'defensive', n: 'Shielded', d: 'ignores the first three hits', col: '#5aa2e0' },
+  phasing:    { fam: 'defensive', n: 'Phasing', d: 'every third hit passes through it', col: '#5aa2e0' },
+  stoneskin:  { fam: 'defensive', n: 'Stoneskin', d: 'takes half damage below a third of health', col: '#5aa2e0' },
+  /* --- antibuild: hard counters that ask for a different hero --- */
+  antimagic:  { fam: 'antibuild', n: 'Antimagic', d: 'spells deal half damage to it', col: '#e0c05a' },
+  thorns:     { fam: 'antibuild', n: 'Thorned', d: 'melee attackers take a fifth of dealt damage back', col: '#e0c05a' },
+  reflector:  { fam: 'antibuild', n: 'Mirrored', d: 'ranged shots sometimes bounce back', col: '#e0c05a' },
+};
+export const ELITE_KEYS = Object.keys(ELITE_AFFIXES);
+
+export const FLOOR_AFFIXES = {
+  /* --- environmental: interact with races, resists and gear --- */
+  darkness: { n: 'Darkness', d: 'sight is cut to a few tiles (a lantern ego negates it)', col: '#6a5a9a' },
+  flooded:  { n: 'Flooded', d: 'everyone but merfolk wades at half speed (waders negate it)', col: '#4a7ac0' },
+  miasma:   { n: 'Miasma', d: 'poison seeps every turn (rPois shrugs it off)', col: '#6aa050' },
+  /* --- structural: change navigation itself --- */
+  maze:     { n: 'Maze', d: 'a dense labyrinth of corridors', col: '#a08050' },
+  cursed:   { n: 'Cursed ground', d: 'traps are twice as common and stay hidden', col: '#905090' },
+};
+export const FLOOR_KEYS = Object.keys(FLOOR_AFFIXES);
+
+/* slow, endless escalation: elite frequency and affix count grow with NG+ */
+export const eliteChance = ng => Math.min(.45, .05 + .02 * ng);
+export const eliteAffixCount = ng => 1 + Math.min(3, Math.floor(ng / 6));
+export const floorAffixChance = ng => Math.min(.6, .08 + .025 * ng);
+
+/** roll elite affixes for a monster (floor rng keeps it deterministic per seed) */
+export function rollEliteAffixes(ng, rng) {
+  const n = eliteAffixCount(ng);
+  const out = [];
+  let guard = 0;
+  while (out.length < n && guard++ < 20) {
+    const k = ELITE_KEYS[Math.floor(rng() * ELITE_KEYS.length)];
+    if (!out.includes(k)) out.push(k);
+  }
+  return out;
+}

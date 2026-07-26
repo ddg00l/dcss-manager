@@ -17,6 +17,7 @@ import {stackHTML,heroLayers} from './portrait.js';
 import {comboKey,RARN} from '../data/combos.js';
 import { t } from '../i18n/index.js';
 import {todayAffix} from '../data/affixes.js';
+import {ELITE_AFFIXES,FLOOR_AFFIXES} from '../data/eliteAffixes.js';
 /* ===================== watch view ===================== */
 export let watchId=null;
 export function setWatch(id){watchId=id;renderChips()}
@@ -114,7 +115,14 @@ export function renderWatch(){
       wctx.fillStyle='#c94f43';
       wctx.fillRect(X(mo.x)+2,Y(mo.y)-3,(TILE-4)*clamp(mo.hp/mo.maxHp,0,1),3);
     }
-    if(mo.uniq||mo.boss){
+    if(mo.eliteAf&&mo.eliteAf.length){
+      wctx.strokeStyle=ELITE_AFFIXES[mo.eliteAf[0]].col;wctx.lineWidth=2;
+      wctx.strokeRect(X(mo.x)+1,Y(mo.y)+1,TILE-2,TILE-2);
+      if(mo.eliteAf.length>1){
+        wctx.strokeStyle=ELITE_AFFIXES[mo.eliteAf[1]].col;wctx.lineWidth=1;
+        wctx.strokeRect(X(mo.x)+3,Y(mo.y)+3,TILE-6,TILE-6);
+      }
+    }else if(mo.uniq||mo.boss){
       wctx.strokeStyle='#e0a03c';wctx.lineWidth=1.5;
       wctx.strokeRect(X(mo.x)+1,Y(mo.y)+1,TILE-2,TILE-2);
     }
@@ -156,7 +164,8 @@ export function renderWatch(){
   nameEl.className='rar'+h.rarity;
   nameEl.textContent=h.name;
   $('wiMeta').textContent=t(RACES[h.race].n)+' '+t(CLASSES[h.cls].n)+' XL'+h.xl+' · '+brTag(h)+(h.map&&h.map.elite?t(' · ELITE'):'')+
-    (h.god?' · ✧'+t(GODS[h.god].n):'')+' · '+t(todayAffix().n)+t(' · turn ')+h.turn;
+    (h.god?' · ✧'+t(GODS[h.god].n):'')+' · '+t(todayAffix().n)+
+    (h.map&&h.map.fafx?' · \u2b51'+t(FLOOR_AFFIXES[h.map.fafx].n):'')+t(' · turn ')+h.turn;
   $('wiHp').style.width=hpc+'%';
   const invN=Object.values(h.inv||{}).reduce((a,b)=>a+b,0);
   const stIcons=[h.status.haste>0?'⚡':'',h.status.might>0?'💪':'',h.status.berserk>0?'🔥':'',

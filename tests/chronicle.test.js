@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { makeState } from '../src/core/state.js';
 import { newHero, heroStats } from '../src/sim/hero.js';
 import {
@@ -92,5 +92,62 @@ describe('daily affixes and the endless Ziggurat', () => {
   });
   it('the Ziggurat is endless', () => {
     expect(PORTALS.zig.floors).toBeGreaterThan(100);
+  });
+});
+
+describe('qualitative escalation: elite affixes and floor affixes', () => {
+  it('elite frequency and affix count grow slowly and endlessly with NG', async () => {
+    const { eliteChance, eliteAffixCount, rollEliteAffixes, ELITE_KEYS } = await import('../src/data/eliteAffixes.js');
+    expect(eliteChance(0)).toBeCloseTo(.05);
+    expect(eliteChance(10)).toBeCloseTo(.25);
+    expect(eliteChance(100)).toBeCloseTo(.45); // capped frequency
+    expect(eliteAffixCount(0)).toBe(1);
+    expect(eliteAffixCount(20)).toBe(4);       // capped count, pool combinatorics is the depth
+    const { mulberry32 } = await import('../src/core/rng.js');
+    const af = rollEliteAffixes(20, mulberry32(7));
+    expect(af.length).toBe(4);
+    expect(new Set(af).size).toBe(4);          // no duplicates
+    for (const k of af) expect(ELITE_KEYS).toContain(k);
+  });
+  it('deep-NG floors spawn affixed elites deterministically per seed', async () => {
+    const { genFloor } = await import('../src/sim/mapgen.js');
+    const mk = () => {
+      const s = makeState();
+      s.ng = 15;
+      const h = newHero('human', 'fighter', 2, s);
+      h.branch = 'dungeon'; h.floor = 5; h.seed = 123; h.regenN = 0; h.segIdx = 0;
+      genFloor(h, s);
+      return h.map;
+    };
+    const a = mk(), b = mk();
+    const elitesA = a.monsters.filter(m => m.eliteAf);
+    expect(elitesA.length).toBeGreaterThan(0); // NG15 => ~35% of monsters are elite
+    expect(a.monsters.map(m => (m.eliteAf || []).join())).toEqual(b.monsters.map(m => (m.eliteAf || []).join()));
+    expect(a.fafx).toBe(b.fafx); // floor affix is part of the seed too
+  });
+  it('shielded elites really absorb the first hits', async () => {
+    const { heroAttack, startRun } = await import('../src/sim/tick.js');
+    const s = makeState();
+    const h = newHero('human', 'fighter', 2, s);
+    s.heroes.push(h);
+    startRun(h, s);
+    const st = heroStats(h, s);
+    const mo = { n: 'test', x: h.map.px + 1, y: h.map.py, hp: 1e6, maxHp: 1e6, ac: 0, ev: 0, dmg: 1, xp: 1, spd: 1, mv: 0, awake: true, eliteAf: ['shielded'], shield: 3 };
+    h.map.monsters.push(mo);
+    const spy = vi.spyOn(Math, 'random').mockReturnValue(0.5); // guaranteed hits, no crits
+    for (let i = 0; i < 3; i++) heroAttack(h, st, mo, s);
+    expect(mo.hp).toBe(1e6); // three hits eaten by the shield
+    heroAttack(h, st, mo, s);
+    spy.mockRestore();
+    expect(mo.hp).toBeLessThan(1e6); // the fourth lands
+  });
+  it('lantern and waders egos exist and surface in hero stats', async () => {
+    const { ARM_EGOS } = await import('../src/data/items.js');
+    expect(ARM_EGOS.some(e => e.k === 'lantern')).toBe(true);
+    const s = makeState();
+    const h = newHero('human', 'fighter', 0, s);
+    h.gear.armour = { slot: 'armour', base: 'robe', plus: 0, ego: 'waders', rar: 1, id: 'wd' };
+    expect(heroStats(h, s).waders).toBe(true);
+    expect(heroStats(h, s).lantern).toBe(false);
   });
 });

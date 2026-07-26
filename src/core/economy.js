@@ -3,9 +3,9 @@ import { CKEYS } from '../data/classes.js';
 import { comboRarity } from '../data/combos.js';
 
 export const ZUPGRADES = [
-  { k: 'zatk',  n: 'Essence of Might',      d: '+10% damage for all heroes per lvl',   base: 2, g: 1.8, max: 20 },
-  { k: 'zhp',   n: 'Essence of Fortitude', d: '+10% health for all heroes per lvl', base: 2, g: 1.8, max: 20 },
-  { k: 'zloot', n: 'Essence of Greed',  d: '+15% gold per lvl',              base: 2, g: 1.8, max: 15 },
+  { k: 'zatk',  n: 'Essence of Might',      d: '+10% damage for all heroes per lvl',   base: 2, g: 1.45, max: 20 },
+  { k: 'zhp',   n: 'Essence of Fortitude', d: '+10% health for all heroes per lvl', base: 2, g: 1.45, max: 20 },
+  { k: 'zloot', n: 'Essence of Greed',  d: '+15% gold per lvl',              base: 2, g: 1.45, max: 15 },
   { k: 'zluck', n: 'Essence of Luck',     d: '+3% legendary summon chance per lvl', base: 5, g: 2.2, max: 5 },
 ];
 
@@ -27,10 +27,10 @@ export const ghostMul = s => memHas(s, 'k_ghosts') ? 1 + Math.min(0.30, s.stat.d
 export const runeAura = s => memHas(s, 'k_runeaura') ? 1 + 0.02 * s.runesTotal : 1;
 import { ngLevel, pupg } from './prestige.js';
 import { greatMul } from './chronicle.js';
-export const ngMul = s => 1 + 1.5 * ngLevel(s);
+export const ngMul = s => 1 + 1.5 * Math.min(10, ngLevel(s)); /* gold reward caps with the rest of the scalars */
 
-export const gAtk  = s => (1 + memEff(s, 'atk')) * (1 + 0.1 * zupg(s, 'zatk')) * fameMul(s) * ghostMul(s) * runeAura(s) * (1 + .08 * pupg(s, 'p_dmg')) * greatMul(s);
-export const gHp   = s => (1 + memEff(s, 'hp'))  * (1 + 0.1 * zupg(s, 'zhp'))  * fameMul(s) * (1 + .08 * pupg(s, 'p_hp')) * greatMul(s);
+export const gAtk  = s => (1 + memEff(s, 'atk')) * (1 + 0.1 * zupg(s, 'zatk')) * fameMul(s) * ghostMul(s) * runeAura(s) * (1 + .08 * pupg(s, 'p_dmg')) * (1 + .01 * pupg(s, 'p_legacy')) * greatMul(s);
+export const gHp   = s => (1 + memEff(s, 'hp'))  * (1 + 0.1 * zupg(s, 'zhp'))  * fameMul(s) * (1 + .08 * pupg(s, 'p_hp')) * (1 + .01 * pupg(s, 'p_legacy')) * greatMul(s);
 export const gSpd  = s => 1 + memEff(s, 'spd');
 export const gGold = s => (1 + memEff(s, 'gold')) * (1 + 0.15 * zupg(s, 'zloot')) * runeAura(s) * ngMul(s);
 export const gDrop = s => 1 + memEff(s, 'drop');
