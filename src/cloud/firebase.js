@@ -3,7 +3,7 @@
    by hiding the config. Firebase keeps a refresh token in IndexedDB and renews
    the session silently for months — no per-hour re-login, no popup on reload. */
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult, signOut as fbSignOut, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -27,19 +27,30 @@ function ensure() {
   db = getFirestore(app);
 }
 
-/** resolves once Firebase has restored (or confirmed the absence of) a session */
-export function watchAuth(cb) {
+/** resolves once Firebase has restored (or confirmed the absence of) a session.
+    Also finalizes a redirect sign-in and surfaces its error, if any. */
+export function watchAuth(cb, onError) {
   if (!cloudAvailable()) return;
   ensure();
+  /* complete a pending redirect sign-in (no-op on a normal load) */
+  getRedirectResult(auth).catch(e => onError && onError(e));
   onAuthStateChanged(auth, u => { user = u; cb(u); });
 }
 
+/** Sign in with Google. Uses the redirect flow, which is immune to the
+    Cross-Origin-Opener-Policy that breaks popup sign-in on some hosts; the page
+    navigates to Google and back, and onAuthStateChanged fires with the user.
+    Falls back to popup only if redirect cannot start. */
 export async function signIn() {
   ensure();
   const provider = new GoogleAuthProvider();
-  const res = await signInWithPopup(auth, provider);
-  user = res.user;
-  return user;
+  try {
+    await signInWithRedirect(auth, provider); // navigates away; resolves rarely
+  } catch (e) {
+    const res = await signInWithPopup(auth, provider);
+    user = res.user;
+    return user;
+  }
 }
 export async function signOut() { if (auth) await fbSignOut(auth); user = null; }
 export const isSignedIn = () => !!user;

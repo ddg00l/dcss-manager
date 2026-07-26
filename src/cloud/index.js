@@ -76,7 +76,7 @@ export function startAutoSync(getSave, applyState) {
   watchAuth(u => {
     status(u ? 'synced' : 'signedout');
     if (u) cloudPull(getSave, applyState);
-  });
+  }, e => status('error', (e && e.code) || (e && e.message) || 'auth'));
   const onVisible = () => {
     if (document.visibilityState === 'visible') cloudPull(getSave, applyState);
     else cloudPush(getSave, false);

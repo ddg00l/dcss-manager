@@ -118,7 +118,9 @@ window.__cloudPush = m => cloudPush(() => save, m); /* called by heroWin/doPrest
 const applyRemote = st => { Object.assign(save, st); persist(); renderAll(); };
 initCloud({
   onConflict: openConflict,
-  onStatus: (k) => setCloudMsg(k === 'error' ? 'Sync error' : k === 'synced' ? 'Synced' : k === 'signedout' ? '' : k),
+  onStatus: (k, extra) => setCloudMsg(
+    k === 'error' ? ('Sync error: ' + (extra || '')) :
+    k === 'synced' ? 'Synced' : k === 'signedout' ? '' : k),
 });
 if (cloudAvailable()) startAutoSync(() => save, applyRemote);
 
