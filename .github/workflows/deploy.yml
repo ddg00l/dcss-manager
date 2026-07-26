@@ -30,8 +30,8 @@ jobs:
           BUILD_ID: ${{ github.sha }}
       - name: Publish version manifest for the in-game update check
         run: echo "{\"build\":\"${{ github.sha }}\"}" > dist/version.json
-      - name: Copy static pages (privacy, homepage) into the deploy
-        run: cp public/privacy.html public/home.html public/terms.html dist/
+      - name: Copy static pages and PWA assets into the deploy
+        run: cp public/privacy.html public/home.html public/terms.html public/manifest.webmanifest public/sw.js public/icon-192.png public/icon-512.png public/icon-maskable-512.png dist/
       - name: Inject Cloudflare Web Analytics (Pages build only)
         env:
           CF_TOKEN: ${{ vars.CF_ANALYTICS_TOKEN }}

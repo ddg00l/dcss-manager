@@ -3,7 +3,16 @@
 <head>
 <meta charset="utf-8">
 <title>DCSS Manager — idle roguelike gacha</title>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0a0c10">
+<meta name="description" content="An idle roguelike gacha — summon delvers, train their skills, and send them into the dungeon after the Orb of Zot.">
+<link rel="manifest" href="./manifest.webmanifest">
+<!-- iOS installability -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DCSS Manager">
+<link rel="apple-touch-icon" href="./icon-192.png">
 <link rel="icon" type="image/png" href="data:image/png;base64,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">
 </head>
 <body>
@@ -85,5 +94,12 @@
 <div id="settings" class="overlay"><div class="panelBox" id="settingsBox"></div></div>
 
 <script type="module" src="/src/main.js"></script>
+<script>
+  /* register the PWA service worker on the live (https) site only, so local dev
+     over http/file is never shadowed by a cached shell */
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+  }
+</script>
 </body>
 </html>
