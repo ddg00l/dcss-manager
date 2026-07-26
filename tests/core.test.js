@@ -70,7 +70,7 @@ describe('economy', () => {
   it('fame victories raise global multipliers', () => {
     const s = makeState();
     const base = gAtk(s);
-    s.fame.push({ won: true }, { won: true }, { won: false });
+    s.stat.wins = 2; /* fameMul now reads lifetime wins with diminishing returns */
     expect(fameMul(s)).toBeCloseTo(1.16);
     expect(gAtk(s)).toBeGreaterThan(base);
   });

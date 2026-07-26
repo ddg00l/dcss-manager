@@ -57,7 +57,11 @@ export const AMU_KINDS=[
 export const RANDART_NAMES=['Wrath','Dusk','Bane','Whisper','Winter\'s Sorrow','Devourer','Oath',
   'Shard of Dawn','Hunger','Eternity','Breath of the Abyss','Eye of the Storm','Last Argument','Serpent\'s Tongue'];
 
+const infoMemo=new WeakMap();
 export function itemInfo(it){
+  const memoK=(it.plus||0)+'|'+(it.ego||'');
+  const hit=infoMemo.get(it);
+  if(hit&&hit.k===memoK)return hit.v;
   const out={};
   let b;
   if(it.slot==='weapon'){b=WEP_BASES.find(w=>w.k===it.base);out.dmgBase=b.dmg+it.plus}
@@ -99,6 +103,7 @@ export function itemInfo(it){
       if(p.dmg)out.dmgP=(out.dmgP||0)+p.dmg;
     }
   }
+  infoMemo.set(it,{k:memoK,v:out});
   return out;
 }
 export function itemName(it){
@@ -193,6 +198,8 @@ export function makeUnrand(id){
 import { CLASSES } from './classes.js';
 import { RACES } from './races.js';
 import { effSkill, speedMul } from './skills.js';
+import { forgeDisc } from '../core/economy.js';
+import { memEff } from './memtree.js';
 /** Overall item score for auto-equip and the "better/worse" UI.
     A caster values a staff over a crossbow, and heavy armour is penalized for choking spellcasting. */
 export function scoreItem(it,h){
@@ -221,4 +228,35 @@ export function scoreItem(it,h){
     if(eb&&eb.enc)sc-=Math.max(0,eb.enc*.08-(h.skills.armour||0)*.006)*120;
   }
   return sc;
+}
+
+/* ===================== forge (shared by UI and sim) ===================== */
+const FORGE_BASE={weapon:90,armour:90,shield:70,ring:150,amulet:150};
+const FORGE_SCRAP={weapon:3,armour:3,shield:2,ring:5,amulet:5};
+export const forgeCost=(s,slot)=>Math.floor(FORGE_BASE[slot]*Math.pow(1.05,s.forges||0)*forgeDisc(s));
+export const forgeScrap=slot=>FORGE_SCRAP[slot];
+const TIER_OFF={D:0,Lair:6,Orc:9,Elf:12,Vaults:13,Depths:16,Zot:21,Abyss:12};
+/* forging quality follows the account's deepest reach, not only the main dungeon */
+export const forgeTier=s=>{
+  let d=0;
+  for(const k in TIER_OFF)if(s.progress[k])d=Math.max(d,TIER_OFF[k]+s.progress[k]);
+  return Math.min(2,Math.floor(d/8));
+};
+/** one forging: pays gold+scrap, produces a better-than-found item; null if unaffordable */
+export function doForge(s,slot,rng=Math.random){
+  const c=forgeCost(s,slot);
+  if(s.gold<c||s.scrap<FORGE_SCRAP[slot])return null;
+  s.gold-=c;s.scrap-=FORGE_SCRAP[slot];
+  const it=randomItem(slot,forgeTier(s),rng);
+  /* forged gear is craftsmanship, not dungeon scraps: ego far more likely */
+  if(!it.ego&&rng()<.35){
+    const pool=slot==='weapon'?WEP_EGOS:(slot==='armour'||slot==='shield')?ARM_EGOS:null;
+    if(pool)it.ego=pool[Math.floor(rng()*pool.length)].k;
+  }
+  if(it.slot==='weapon'||it.slot==='armour'||it.slot==='shield')
+    it.plus+=Math.round(memEff(s,'fqual')*15);
+  s.armory.push(it);
+  s.forges=(s.forges||0)+1; /* цикловая лестница цен, как s.rolls у призыва */
+  s.stat.forged++;
+  return it;
 }

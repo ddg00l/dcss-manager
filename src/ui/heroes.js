@@ -5,7 +5,7 @@ import {sfx} from './audio.js';
 import {tileURL,tileImg} from '../data/tiles.js';
 import {RACES} from '../data/races.js';
 import {CLASSES} from '../data/classes.js';
-import {comboKey,comboRarity,RARN,SHARDS_PER} from '../data/combos.js';
+import {comboKey,comboRarity,RARN,SHARDS_PER,starStr} from '../data/combos.js';
 import {GODS} from '../data/gods.js';
 import {BRANCHES,brTag} from '../data/branches.js';
 import {itemName,itemTile,randomItem,itemInfo} from '../data/items.js';
@@ -25,7 +25,7 @@ export function renderHeroes(){
     el.className='card bord'+h.rarity;
     const ck=comboKey(h.race,h.cls);
     el.innerHTML='<div class="rowT">'+stackHTML(h)+
-      '<div><div class="nm rar'+h.rarity+'">'+h.name+' <span class="label">'+'★'.repeat(save.stars[ck]||0)+'</span></div>'+
+      '<div><div class="nm rar'+h.rarity+'">'+h.name+' <span class="label">'+starStr(save.stars[ck]||0)+'</span></div>'+
       '<div class="sub">'+t(RACES[h.race].n)+' '+t(CLASSES[h.cls].n)+' · XL '+h.xl+' · '+
       (h.state==='run'?brTag(h):t('in camp'))+'</div></div></div>'+
       '<div class="meta">HP '+Math.ceil(h.curHp||st.hpMax)+'/'+st.hpMax+' · '+t('damage ')+Math.floor(st.dmg)+

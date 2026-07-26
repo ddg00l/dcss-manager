@@ -1,4 +1,5 @@
 import {mulberry32} from '../core/rng.js';
+import {ngMonMul,cycleProgress} from '../core/prestige.js';
 import {BRANCHES,brDepth,BR_OFFSET,BR_ORDER} from '../data/branches.js';
 import {MONS,UNIQUES} from '../data/monsters.js';
 import {GODKEYS} from '../data/gods.js';
@@ -120,7 +121,9 @@ export function genFloor(h,s){
   }
   if(isBossFloor&&br.orb&&free.length>2){const c=take();items.push({x:c[0],y:c[1],kind:'orb'})}
   /* NG+ and elite floors */
-  const ngPlus=memHas(s,'k_ngplus')?2:1;
+  /* difficulty follows in-cycle success: every Orb carried out multiplies the
+     dungeon x1.3 (compounds, resets on prestige); NG+ adds a light capped bonus */
+  const ngPlus=ngMonMul(s)*Math.pow(1.3,Math.max(0,cycleProgress(s).wins));
   const elite=memHas(s,'k_elite')&&rng()<.15;
   for(const mo of monsters){
     mo.hp=Math.floor(mo.hp*ngPlus*(elite?1.5:1));mo.maxHp=mo.hp;

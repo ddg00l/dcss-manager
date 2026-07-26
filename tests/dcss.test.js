@@ -919,11 +919,14 @@ describe('Auto-summon keystone runs inside the sim (offline too)', () => {
     advanceHeroes(s, 10, true);
     expect(h.state).not.toBe('camp');
   });
-  it('without the keystone nothing happens', async () => {
+  it('without the keystone a living camp hero is left alone (only dead accounts revive)', async () => {
     const { advanceHeroes } = await import('../src/sim/tick.js');
     const s = makeState();
     s.gold = 100000;
+    const h = newHero('minotaur', 'fighter', 2, s);
+    s.heroes.push(h);
     advanceHeroes(s, 600, true);
-    expect(s.heroes.length).toBe(0);
+    expect(h.state).toBe('camp');          // player's own hero is not touched
+    expect(s.heroes.length).toBe(1);       // and no paid summons happen
   });
 });

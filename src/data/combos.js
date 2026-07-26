@@ -20,5 +20,9 @@ export function comboRarity(r,c){
 export const RARN=['Common','Rare','Epic','Legendary'];
 export const RARMUL=[1,1.15,1.35,1.6];
 export const SHARDS_PER=[1,2,4,8];
+/* star promotions never cap: exponential shard costs, +8% power each —
+   any activity (even dying) feeds shards, so account power always grows */
+export const starNeed=st=>Math.pow(2,st+1);
+export const starStr=n=>!n?'':n<=5?'\u2605'.repeat(n):'\u2605\u00d7'+n;
 
 export const comboKey=(r,c)=>r+'/'+c;

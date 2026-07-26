@@ -171,6 +171,10 @@ keystone('k_autosummon', 'gacha', 0, 9, {
   n: '⟐ Auto-Summon', d: 'A free slot and gold ≥ 2× the cost — summoning happens on its own.',
   icon:'sk_summonings',base: 800, req: ['gacha_s8'], ach: { rolls: 20, t: '20 summons' },
 });
+keystone('k_herald', 'gacha', -26, 2, {
+  n: '⟐ Guild Herald', d: 'When the whole party has fallen, the guild sends a free seeker who sets out on his own — even offline.',
+  icon:'m_wraith', base: 60, req: ['gacha_s1'], ach: { deaths: 1, t: 'first death' },
+});
 keystone('k_heirs', 'gacha', 26, 7, {
   n: '⟐ Heirs', d: 'A new hero of the combo starts at XL = 1 + a third of its best fallen ancestor\'s XL.',
   icon:'i_scroll',base: 1000, req: ['gacha_b1_2'], ach: { deaths: 10, t: '10 deaths' },
@@ -213,12 +217,26 @@ export const nodeById = id => byId[id];
 export const treeLvl = (s, id) => s.tree[id] || 0;
 export const memHas = (s, id) => treeLvl(s, id) > 0;
 export function nodeCost(s, n) { return Math.ceil(n.base * Math.pow(n.g, treeLvl(s, n.id))); }
+/* memEff is the hottest tree lookup — memoized per state and revalidated by a
+   cheap checksum of the tree, so even direct s.tree mutations are caught */
+export function treeSig(s) {
+  let n = 0, sum = 0;
+  for (const k in s.tree) { n++; sum += s.tree[k]; }
+  return n * 4096 + sum;
+}
+const effMemo = new WeakMap();
 export function memEff(s, key) {
+  const sig = treeSig(s);
+  let m = effMemo.get(s);
+  if (!m || m.sig !== sig) { m = { sig, map: new Map() }; effMemo.set(s, m); }
+  const hit = m.map.get(key);
+  if (hit !== undefined) return hit;
   let sum = 0;
   for (const n of NODES) {
     const l = s.tree[n.id];
     if (l && n.eff[key]) sum += n.eff[key] * l;
   }
+  m.map.set(key, sum);
   return sum;
 }
 export function achMet(s, n) {
@@ -245,11 +263,12 @@ export function buyNode(s, n) {
   if (!canBuy(s, n)) return false;
   s.mem -= nodeCost(s, n);
   s.tree[n.id] = treeLvl(s, n.id) + 1;
+  s.rev = (s.rev || 0) + 1; /* invalidates memEff/heroStats caches */
   return true;
 }
 /** Memory gain with tree multipliers applied */
 export function gainMem(s, amount, isDeath) {
-  let v = amount * (1 + memEff(s, 'mem'));
+  let v = amount * (1 + memEff(s, 'mem')) * (1 + .15 * ((s.pupg && s.pupg.p_memmul) || 0));
   if (isDeath && memHas(s, 'k_deathmem')) v *= 2;
   v = Math.ceil(v);
   s.mem += v; s.stat.memEarned += v;

@@ -80,6 +80,7 @@ describe('mapgen', () => {
 describe('full run lifecycle', () => {
   it('a hero explores, fights, descends and eventually dies with legacy', { timeout: 20000 }, () => {
     const s = makeState();
+    s.ftue = { railDone: false, tours: {} }; // rail active: no offline free seekers in this test
     const h = freshHero(s, 'human', 'monk', 0); // weak commoner
     startRun(h, s);
     const goldBefore = s.gold;
@@ -138,6 +139,7 @@ describe('offline', () => {
   });
   it('returns null when nothing happened', () => {
     const s = makeState();
+    s.ftue = { railDone: false, tours: {} }; // rail active: the guild sends no one yet
     s.last = Date.now() - 2 * 60000;
     expect(computeOffline(s, Date.now())).toBeNull();
   });

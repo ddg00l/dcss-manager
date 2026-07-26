@@ -6,7 +6,7 @@ import { RACES } from '../data/races.js';
 import { CLASSES } from '../data/classes.js';
 import { GODS } from '../data/gods.js';
 import { brTag } from '../data/branches.js';
-import { comboKey, RARN } from '../data/combos.js';
+import { comboKey, RARN, starStr } from '../data/combos.js';
 import { itemName, itemTile, itemInfo } from '../data/items.js';
 import { heroStats } from '../sim/hero.js';
 import { memHas } from '../data/memtree.js';
@@ -100,7 +100,7 @@ export function openSheet(heroId) {
     `<div class="sheetHead">${stackHTML(h,'lg')}` +
     `<div><h2 class="rar${h.rarity}">${h.name}</h2>` +
     `<div class="label">${t(RACES[h.race].n)} ${t(CLASSES[h.cls].n)} · ${t(RARN[h.rarity])}` +
-    ` ${'★'.repeat(save.stars[ck] || 0)} · XL ${h.xl} · ` +
+    ` ${starStr(save.stars[ck] || 0)} · XL ${h.xl} · ` +
     (h.state === 'run' ? brTag(h) : h.state === 'camp' ? t('in camp') : h.state) + `</div>` +
     `<div class="label">${t(RACES[h.race].d)} · ${t(CLASSES[h.cls].d)}</div>` +
     (h.god ? `<div class="label" style="color:var(--epic)">✧ ${t(GODS[h.god].n)}${t(' (piety ')}${h.piety}) — ${t(GODS[h.god].d)}</div>` : '') +

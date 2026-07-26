@@ -7,7 +7,7 @@ import {RACES} from '../data/races.js';
 import {CLASSES} from '../data/classes.js';
 import {GODS} from '../data/gods.js';
 import {BRANCHES,brTag} from '../data/branches.js';
-import {itemName,itemTile,randomItem,itemInfo} from '../data/items.js';
+import {itemName,itemTile,randomItem,itemInfo,doForge,forgeCost as fCost,forgeScrap as fScrap} from '../data/items.js';
 import {forgeDisc} from '../core/economy.js';
 import {memEff} from '../data/memtree.js';
 import {heroStats} from '../sim/hero.js';
@@ -16,12 +16,8 @@ import {comboKey,RARN} from '../data/combos.js';
 import { t } from '../i18n/index.js';
 /* ===================== forge & armory ===================== */
 
-const forgeTier=()=>Math.min(2,Math.floor((save.progress.D||0)/6));
-const forgeCost=slot=>{
-  const base={weapon:120,armour:120,shield:90,ring:200,amulet:200}[slot];
-  return Math.floor(base*Math.pow(1.06,save.armory.length)*forgeDisc(save));
-};
-const forgeScrap=slot=>({weapon:3,armour:3,shield:2,ring:5,amulet:5}[slot]);
+const forgeCost=slot=>fCost(save,slot);
+const forgeScrap=slot=>fScrap(slot);
 export function renderForge(){
   const btns=$('forgeBtns');btns.innerHTML='';
   for(const [slot,nm] of [['weapon',t('Weapon')],['armour',t('Armour')],['shield',t('Shield')],['ring',t('Ring')],['amulet',t('Amulet')]]){
@@ -29,12 +25,8 @@ export function renderForge(){
     b.innerHTML=nm+'<br><span class="label">'+fmt(forgeCost(slot))+'🜚 + '+forgeScrap(slot)+'⚙</span>';
     b.disabled=save.gold<forgeCost(slot)||save.scrap<forgeScrap(slot);
     b.onclick=()=>{
-      save.gold-=forgeCost(slot);save.scrap-=forgeScrap(slot);
-      const it=randomItem(slot,forgeTier(),Math.random);
-      if(it.slot==='weapon'||it.slot==='armour'||it.slot==='shield')
-        it.plus+=Math.round(memEff(save,'fqual')*15);
-      save.armory.push(it);
-      save.stat.forged++;
+      const it=doForge(save,slot);
+      if(!it)return;
       sfx.forge();
       $('forgeResult').innerHTML='<div class="itemRow bord'+it.rar+'" style="margin-top:8px">'+
         '<img src="'+tileURL(itemTile(it))+'" class="revealAnim">'+

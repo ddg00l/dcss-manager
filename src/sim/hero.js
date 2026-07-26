@@ -6,7 +6,7 @@ import {WEP_BASES,ARM_BASES,SH_BASES,itemInfo} from '../data/items.js';
 import {GODS} from '../data/gods.js';
 import {HERO_NAMES} from '../data/names.js';
 import {gHp,gAtk,gSpd,freeRollAvailable,rollCost,PITY_AT,rollCombo,pickComboOfTier,shardMul} from '../core/economy.js';
-import {memEff,memHas} from '../data/memtree.js';
+import {memEff,memHas,treeSig} from '../data/memtree.js';
 
 export function newHero(race,cls,rarity,s){
   const rd=RACES[race],cd=CLASSES[cls];
@@ -49,8 +49,40 @@ export function newHero(race,cls,rarity,s){
   if(cd.sh)h.gear.shield={slot:'shield',base:'buckler',plus:0,ego:null,rar:0,id:'ss'+h.id};
   return h;
 }
-/* hero derived stats */
+/* hero derived stats.
+   Hot path: recomputed every sim tick, so the result is cached per hero and
+   revalidated by a cheap fingerprint of everything the formula reads. Any
+   input change (gear/enchant, level, statuses, god, mutations, tree rev,
+   shop levels, stars, fame, runes, deaths, running-party size) alters the
+   fingerprint and forces a clean recompute. */
+const statCache=new WeakMap();
+function statKey(h,s){
+  const g=h.gear;
+  let k=h.xl+'|'+h.god+'|'+(h.muts?h.muts.length:0)+'|'+h.piety+'|';
+  let sk=0;
+  for(const q in h.skills)sk+=h.skills[q];
+  k+=Math.round(sk*4)+'|';
+  for(const q in h.status)if(h.status[q]>0)k+=q;
+  k+='|';
+  const slots=[g.weapon,g.armour,g.shield,g.ring1,g.ring2,g.ring3,g.ring4,g.amulet];
+  for(const it of slots)k+=it?it.id+(it.plus||0)+(it.ego||''):'-';
+  let run=0;
+  for(const x of s.heroes)if(x.state==='run')run++;
+  k+='|'+run+'|'+treeSig(s)+'|'+(s.stat.wins||0)+'|'+(s.stat.deaths||0)+'|'+(s.runesTotal||0)+'|'+(s.stars[comboKey(h.race,h.cls)]||0);
+  let zp=0;
+  for(const q in s.zupg)zp+=s.zupg[q];
+  for(const q in s.pupg)zp+=13*s.pupg[q];
+  return k+'|'+zp;
+}
 export function heroStats(h,s){
+  const key=statKey(h,s);
+  const hit=statCache.get(h);
+  if(hit&&hit.k===key)return hit.v;
+  const v=heroStatsCompute(h,s);
+  statCache.set(h,{k:key,v});
+  return v;
+}
+function heroStatsCompute(h,s){
   const rd=RACES[h.race],cd=CLASSES[h.cls];
   const starMul=1+.08*(s.stars[comboKey(h.race,h.cls)]||0);
   const rarMul=RARMUL[h.rarity];

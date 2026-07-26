@@ -16,6 +16,7 @@ import { POTIONS, SCROLLS } from '../src/data/consumables.js';
 import { PORTALS } from '../src/data/portals.js';
 import { NODES } from '../src/data/memtree.js';
 import { ZUPGRADES } from '../src/core/economy.js';
+import { PUPGRADES } from '../src/core/prestige.js';
 import { RARN } from '../src/data/combos.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -94,6 +95,7 @@ describe('dictionary coverage', () => {
     for (const p of Object.values(PORTALS)) keys.push(p.n);
     for (const n of NODES) { keys.push(n.n, n.d); if (n.ach) keys.push(n.ach.t); }
     for (const u of ZUPGRADES) keys.push(u.n, u.d);
+    for (const u of PUPGRADES) keys.push(u.n, u.d);
     keys.push(...RARN);
     const missing = {};
     for (const [lg, d] of Object.entries(DICTS))

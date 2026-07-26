@@ -173,13 +173,17 @@ export function heroDie(h,killer,s){
   h.rep.notable.push(t('☠ slain by ')+killer+t(' on ')+brTag(h)+' (+'+sh+t(' shards)'));
   
 }
-function heroWin(h,s){
+export function heroWin(h,s){
   h.state='victor';
+  /* Zot essence pays out once per cycle — the FIRST Orb is the one that matters */
+  const firstWin=((s.stat.wins||0)-((s.cycBase&&s.cycBase.wins)||0))===0;
+  s.stat.wins=(s.stat.wins||0)+1;
+  s.progress.Zot=Math.max(s.progress.Zot||0,5);
   simHooks.onWin&&simHooks.onWin(h);
   hlog(h,'🏆 '+h.name+t(' TAKES THE ORB OF ZOT! A legend forever.'),'rune');
   if(h.gold>0)s.gold+=h.gold;
-  let ess=Math.max(3,Math.floor(h.xl/3)+h.runes.length*2);
-  if(memHas(s,'k_zotplus'))ess=Math.floor(ess*1.5);
+  let ess=firstWin?Math.max(6,(Math.floor(h.xl/3)+h.runes.length*2)*2):0;
+  if(firstWin&&memHas(s,'k_zotplus'))ess=Math.floor(ess*1.5);
   s.zot+=ess;
   gainMem(s,300);
   s.fame.unshift({name:h.name,race:h.race,cls:h.cls,rarity:h.rarity,xl:h.xl,
@@ -457,11 +461,20 @@ function killMon(h,mo,s){
   }
 }
 function giveRune(h,name,s){
+  /* DCSS: each named rune exists once — repeats within a cycle pay out gold */
+  s.cycRunes=s.cycRunes||[];
+  const generic=name===t("a unique's rune");
+  if(!generic&&s.cycRunes.includes(name)){
+    const g=400+40*brDepth(h);
+    s.gold+=g;
+    hlog(h,'ᚱ '+h.name+t(' finds a duplicate rune — the guild sells it (+')+g+' 🜚)','loot');
+    return;
+  }
+  if(!generic)s.cycRunes.push(name);
   h.runes.push(name);
   s.runes++;s.runesTotal++;
   hlog(h,'ᚱ '+h.name+t(' collects a rune: ')+t(name)+'!','rune');
   h.rep.notable.push(t('ᚱ obtained: ')+t(name));
-  
 }
 function monAttack(h,st,mo,s){
   const hit=Math.random()<clamp((mo.acc+8)/(mo.acc+8+st.ev),.1,.92);
@@ -544,6 +557,10 @@ function moveOrAttack(h,nx,ny,s){
 }
 /* BFS distance field from the hero: monsters walk down the gradient (feared ones walk up) */
 export function heroDistField(m){
+  /* the field depends on walls (static per floor) and the hero position only —
+     monsters move every tick, the hero often does not */
+  const dfKey=m.py*MW+m.px;
+  if(m._df&&m._dfKey===dfKey)return m._df;
   const N=MW*MH;
   const df=new Int16Array(N).fill(-1);
   const start=m.py*MW+m.px;
@@ -559,6 +576,7 @@ export function heroDistField(m){
       df[ni]=d+1;q.push(ni);
     }
   }
+  m._df=df;m._dfKey=dfKey;
   return df;
 }
 function monStep(h,mo,df){
@@ -686,6 +704,7 @@ function autoSummonStep(s){
 }
 export function advanceHeroes(s,dtSec,silent){
   const auto=memHas(s,'k_autosummon');
+  const herald=memHas(s,'k_herald');
   let left=dtSec;
   while(left>0){
     /* chunked so offline auto-summoned heroes get simulated for the rest of the span */
@@ -698,9 +717,17 @@ export function advanceHeroes(s,dtSec,silent){
       if(silent)n=Math.min(n,200000);
       while(n-->0&&h.state==='run')simTick(h,s);
     }
-    if(auto){
+    if(auto||herald){
       s.autoT=(s.autoT||0)+step;
-      if(s.autoT>=3){s.autoT=0;autoSummonStep(s)}
+      if(s.autoT>=3){
+        s.autoT=0;
+        if(auto)autoSummonStep(s);
+        else if(freeRollAvailable(s)){
+          /* Guild Herald keystone: a fallen party is replaced by a free seeker */
+          const r=rollHero(s,false);
+          if(r&&r.kind==='hero')startRun(r.h,s);
+        }
+      }
     }
     left-=step;
   }

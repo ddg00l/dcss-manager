@@ -5,7 +5,7 @@ import {sfx} from './audio.js';
 import {tileURL,tileImg} from '../data/tiles.js';
 import {RACES} from '../data/races.js';
 import {CLASSES} from '../data/classes.js';
-import {comboKey,comboRarity,RARN,SHARDS_PER} from '../data/combos.js';
+import {comboKey,comboRarity,RARN,SHARDS_PER,starNeed,starStr} from '../data/combos.js';
 import {GODS} from '../data/gods.js';
 import {BRANCHES,brTag} from '../data/branches.js';
 import {itemName,itemTile,randomItem,itemInfo} from '../data/items.js';
@@ -55,7 +55,7 @@ export function renderGacha(){
     const [r,c]=ck.split('/');
     const rar=comboRarity(r,c);
     const stars=save.stars[ck]||0,shards=save.shards[ck]||0;
-    const need=[2,4,8,16,32][Math.min(stars,4)];
+    const need=starNeed(stars);
     rows.push({ck,r,c,rar,stars,shards,need});
   }
   rows.sort((a,b)=>b.rar-a.rar);
@@ -64,11 +64,11 @@ export function renderGacha(){
     el.className='itemRow bord'+row.rar;
     el.innerHTML='<img src="'+tileURL(RACES[row.r].t)+'">'+
       '<div class="tInfo"><span class="rar'+row.rar+'">'+t(RACES[row.r].n)+' '+t(CLASSES[row.c].n)+'</span>'+
-      ' <span class="label">'+'★'.repeat(row.stars)+'</span>'+
+      ' <span class="label">'+starStr(row.stars)+'</span>'+
       '<div class="label">'+t('shards: ')+row.shards+'/'+row.need+t(' · star: +8% damage and HP')+'</div></div>';
     const btn=document.createElement('button');
     btn.textContent='★+';
-    btn.disabled=row.shards<row.need||row.stars>=5;
+    btn.disabled=row.shards<row.need;
     btn.onclick=()=>{
       save.shards[row.ck]-=row.need;
       save.stars[row.ck]=(save.stars[row.ck]||0)+1;
