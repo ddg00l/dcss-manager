@@ -1,4 +1,4 @@
-import {gXp,gGold,gDrop,gSpd,shardMul as shardMulF,maxSlots,rollCost,freeRollAvailable} from '../core/economy.js';
+import {gXp,gGold,gDrop,gSpd,gAtk,gHp,shardMul as shardMulF,maxSlots,rollCost,freeRollAvailable} from '../core/economy.js';
 import {gainMem,memEff,memHas} from '../data/memtree.js';
 import {clamp,fmt} from '../core/fmt.js';
 import {heroStats,rollHero} from './hero.js';
@@ -16,11 +16,13 @@ import {PORTALS} from '../data/portals.js';
 import {MONS} from '../data/monsters.js';
 import {recordVictory,recordRunnerWin,checkContract,recordNemesisKill,avengeNemesis} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
+import {ELITE_AFFIXES,FLOOR_AFFIXES} from '../data/eliteAffixes.js';
 import { t } from '../i18n/index.js';
 
 export const simHooks={onDeath:null,onWin:null};
 /* DCSS: movement and adjacency are 8-directional (Chebyshev metric) */
 const cheb=(ax,ay,bx,by)=>Math.max(Math.abs(ax-bx),Math.abs(ay-by));
+const hasAf=(mo,k)=>mo.eliteAf&&mo.eliteAf.includes(k);
 const DIRS8=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
 
 function hlog(h,txt,cls){
@@ -63,7 +65,7 @@ function nextFloor(h,s){
   const seg=route[h.segIdx];
   const br=BRANCHES[h.branch];
   h.rep.floors++;
-  gainMem(s,(2+brDepth(h)*.6)*(h.map&&h.map.elite?2:1));
+  gainMem(s,2+brDepth(h)*.6);
   /* progress tracking */
   const short=br.short;
   const pk=short==='D'?'D':short;
@@ -200,6 +202,7 @@ export function heroWin(h,s){
     if(it&&!it.id.startsWith('st'))storeItem(s,it);
   }
   h.rep.notable.push(t('🏆 VICTORY! The Orb of Zot is claimed (+')+ess+' ⚛)');
+  if(typeof window!=='undefined'&&window.__cloudPush)window.__cloudPush(true);
   
 }
 /* DCSS stealth: radius at which sleepers notice the hero (7 unskilled, down to 2 for a master) */
@@ -261,8 +264,17 @@ export function simTick(h,s){
   const cautLim=h.caution==='bold'?.15:h.caution==='cautious'?.45:.3;
   consumableAI(h,s,st,hpFrac,cautLim);
   if(h.state!=='run')return;
+  /* floor affixes shape the whole turn */
+  const fafx=m.fafx;
+  const sight=fafx==='darkness'&&!st.lantern?3:7;
+  if(fafx==='miasma'&&!st.rPois&&h.turn%4===0){
+    h.curHp-=Math.max(1,brDepth(h)*.25);
+    if(Math.random()<.05)hlog(h,h.name+t(' chokes in the miasma'),'dmg');
+    if(h.curHp<=0){heroDie(h,t('the miasma'),s);return}
+  }
+  const wading=fafx==='flooded'&&h.race!=='merfolk'&&!st.waders;
   /* find nearest visible monster; stealth delays waking them (DCSS stealth) */
-  const wakeR=wakeRadius(h);
+  const wakeR=Math.min(wakeRadius(h),sight);
   let tgt=null,td=1e9;
   for(const mo of m.monsters){
     const d=cheb(mo.x,mo.y,m.px,m.py);
@@ -271,11 +283,19 @@ export function simTick(h,s){
   }
   /* moving unnoticed trains Stealth */
   if(!m.monsters.some(mo=>mo.awake)&&h.turn%4===0)markUse(h,'stealth',.3);
-  let acted=netted; /* netted — turn lost */
+  /* basic tactical sense: a Bonecaller must die first */
+  let tgtR=null,tdR=1e9;
+  for(const mo of m.monsters){
+    if(!mo.awake||!hasAf(mo,'raiser'))continue;
+    const dR=cheb(mo.x,mo.y,m.px,m.py);
+    if(dR<tdR&&dR<=sight&&los(m,m.px,m.py,mo.x,mo.y)){tdR=dR;tgtR=mo}
+  }
+  if(tgtR){tgt=tgtR;td=tdR}
+  let acted=netted||(wading&&h.turn%2===0); /* net or deep water: the turn is lost */
   if(netted&&Math.random()<.4)hlog(h,h.name+t(' struggles out of the net...'),'sys');
   if(!acted&&tgt){
     /* DCSS: shooting/casting requires a visible target — no firing through walls */
-    if(td<=st.rng&&(td<=1||los(m,m.px,m.py,tgt.x,tgt.y))){
+    if(td<=Math.min(st.rng,sight)&&(td<=1||los(m,m.px,m.py,tgt.x,tgt.y))){
       heroAttack(h,st,tgt,s);acted=true;
     }else{
       stepToward(h,tgt.x,tgt.y,s);acted=true;
@@ -349,6 +369,12 @@ export function simTick(h,s){
   for(const mo of m.monsters){
     if(!mo.awake)continue;
     let spdEff=mo.spd;
+    if(hasAf(mo,'enrage')&&mo.hp<mo.maxHp/2)spdEff*=2; /* furious below half */
+    if(fafx==='flooded')spdEff*=.7; /* monsters wade too */
+    if(hasAf(mo,'painaura')&&mo.awake&&cheb(mo.x,mo.y,m.px,m.py)<=1){
+      h.curHp-=mo.dmg*.15;
+      if(h.curHp<=0){heroDie(h,t(mo.n),s);return}
+    }
     if(mo.chill>0){mo.chill--;spdEff*=.5}
     if(mo.poisonA&&mo.poisonA.t>0){
       mo.poisonA.t--;mo.hp-=mo.poisonA.dps;
@@ -374,7 +400,7 @@ export function simTick(h,s){
       }
     }
   }
-  reveal(h);
+  reveal(h,sight<7?sight:undefined);
 }
 export function heroAttack(h,st,mo,s){
   const cd=CLASSES[h.cls];
@@ -384,9 +410,31 @@ export function heroAttack(h,st,mo,s){
   if(!hit){
     if(Math.random()<.3)hlog(h,h.name+t(' misses ')+t(mo.n),'sys');
   }else{
+    /* elite affixes: the qualitative layer of the fight */
+    if(mo.eliteAf&&!mo._met){
+      mo._met=1;
+      hlog(h,'\u2b51 '+t(mo.n)+': '+mo.eliteAf.map(k=>t(ELITE_AFFIXES[k].n)).join(', '),'dmg');
+    }
+    if(hasAf(mo,'reflector')&&st.style==='ranged'&&Math.random()<.25){
+      h.curHp-=st.dmg*.4;
+      hlog(h,'\u27f2 '+t(mo.n)+t(' mirrors the shot back!'),'dmg');
+      if(h.curHp<=0){heroDie(h,t(mo.n),s)}
+      return;
+    }
+    if(mo.shield>0){
+      mo.shield--;
+      if(Math.random()<.4)hlog(h,'\u26e8 '+t(mo.n)+t(' shrugs the blow off its shield'),'sys');
+      return;
+    }
+    if(hasAf(mo,'phasing')){
+      mo._ph=(mo._ph||0)+1;
+      if(mo._ph%3===0){if(Math.random()<.3)hlog(h,t(mo.n)+t(' phases through the strike'),'sys');return}
+    }
     let dmg=st.dmg*(0.75+Math.random()*.5);
     let crit=Math.random()<st.critc;
     if(crit)dmg*=2;
+    if(hasAf(mo,'antimagic')&&st.style==='magic')dmg*=.5;
+    if(hasAf(mo,'stoneskin')&&mo.hp<mo.maxHp/3)dmg*=.5;
     if(asleep){
       dmg*=cd.crit?2.5:1.5;
       hlog(h,'🗡 '+h.name+t(' stabs the sleeping ')+t(mo.n)+t(' from the shadows!'),'kill');
@@ -409,7 +457,22 @@ export function heroAttack(h,st,mo,s){
     mo.hp-=dmg;
     if(st.leech>0)h.curHp=Math.min(h.maxHpCache,h.curHp+dmg*st.leech);
     if(mo.special&&mo.special.chill){}
+    if(hasAf(mo,'thorns')&&st.style==='melee'){
+      h.curHp-=dmg*.2;
+      if(h.curHp<=0){heroDie(h,t(mo.n),s);return}
+    }
+    if(hasAf(mo,'caller')&&!mo._called){
+      mo._called=1;
+      for(const o of h.map.monsters)o.awake=true;
+      hlog(h,'\ud83d\udce2 '+t(mo.n)+t(' bellows — the whole floor answers!'),'dmg');
+    }
     if(mo.hp<=0)killMon(h,mo,s);
+    else if(hasAf(mo,'blinker')&&Math.random()<.35){
+      const m2=h.map,freeC=[];
+      for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)
+        if(m2.g[y][x]===0&&!(x===m2.px&&y===m2.py)&&!m2.monsters.some(o=>o.x===x&&o.y===y))freeC.push([x,y]);
+      if(freeC.length){const c=freeC[Math.floor(Math.random()*freeC.length)];mo.x=c[0];mo.y=c[1]}
+    }
   }
   /* auto-training: mark what we fight with — the XP pool will feed these skills */
   if(st.style==='magic'){
@@ -423,9 +486,27 @@ export function heroAttack(h,st,mo,s){
 function killMon(h,mo,s){
   const m=h.map;
   m.monsters.splice(m.monsters.indexOf(mo),1);
+  /* volatile elites take the killer with them */
+  if(hasAf(mo,'volatile')&&cheb(mo.x,mo.y,m.px,m.py)<=1){
+    h.curHp-=mo.dmg*1.5;
+    hlog(h,'\ud83d\udca5 '+t(mo.n)+t(' explodes!'),'dmg');
+    if(h.curHp<=0){heroDie(h,t(mo.n),s)}
+  }
+  /* a Bonecaller nearby raises the corpse once */
+  if(!mo.revived&&!hasAf(mo,'raiser')){
+    const rz=m.monsters.find(o=>o.awake&&hasAf(o,'raiser')&&(o.raiseLeft===undefined||o.raiseLeft>0)&&cheb(o.x,o.y,mo.x,mo.y)<=4);
+    if(rz){
+      rz.raiseLeft=(rz.raiseLeft===undefined?1:rz.raiseLeft)-1;
+      const back={...mo,hp:Math.floor(mo.maxHp/2),maxHp:mo.maxHp,revived:true,awake:true,eliteAf:null,shield:0};
+      m.monsters.push(back);
+      hlog(h,'\u2620 '+t(rz.n)+t(' drags the fallen back to its feet!'),'dmg');
+      return; /* no loot from a body that stood back up */
+    }
+  }
   h.kills++;h.rep.kills++;s.stat.kills++;
   const depth=brDepth(h);
-  const goldMul=(RACES[h.race].gold||1)*gGold(s)*todayAffix().gold*(m.elite?2:1);
+  const eliteLoot=mo.eliteAf?(1+.5*mo.eliteAf.length)*(memHas(s,'k_elite')?2:1):1;
+  const goldMul=(RACES[h.race].gold||1)*gGold(s)*todayAffix().gold*eliteLoot;
   const g=Math.floor((2+Math.random()*4)*Math.pow(1.22,depth)*goldMul);
   s.gold+=Math.ceil(g*.5);h.gold+=Math.floor(g*.5);h.rep.gold+=g;
   gainXp(h,mo.xp,s);
@@ -501,6 +582,7 @@ function monAttack(h,st,mo,s){
   if(RACES[h.race].shrug)dmg*=.9; /* the dwarf shrugs off part of the damage */
   const cd=CLASSES[h.cls];
   h.curHp-=dmg;
+  if(hasAf(mo,'vampiric'))mo.hp=Math.min(mo.maxHp,mo.hp+dmg*.8);
   if(mo.special&&mo.special.pois&&!st.rPois&&Math.random()<.35){
     h.poison={dps:Math.max(1,mo.dmg*.15),t:5};
     hlog(h,'☠ '+h.name+t(' is poisoned (')+t(mo.n)+')','dmg');
@@ -1092,8 +1174,10 @@ export function summonAlly(h,s,forceKind,forceN){
     if(nx<0||nx>=MW||ny<0||ny>=MH||m.g[ny][nx]!==0)continue;
     if(m.monsters.some(o=>o.x===nx&&o.y===ny)||m.allies.some(a=>a.x===nx&&a.y===ny))continue;
     const a={kind,n:name,t:base.t,x:nx,y:ny,
-      hp:Math.floor(base.hp*(1+powSkl*.20+depth*.06)),
-      dmg:Math.floor(base.dmg*(1+powSkl*.16+depth*.05)),
+      /* the army scales with the account like the summoner himself does —
+         otherwise pets melt at deep NG while monsters keep growing */
+      hp:Math.floor(base.hp*(1+powSkl*.20+depth*.06)*gHp(s)),
+      dmg:Math.floor(base.dmg*(1+powSkl*.16+depth*.05)*gAtk(s)),
       ttl:120,mv:0,spd:base.spd||1};
     a.maxHp=a.hp;
     m.allies.push(a);

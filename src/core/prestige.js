@@ -12,7 +12,7 @@ export const ngLevel = s => (s.ng || 0) + (treeLvl(s, 'k_ngplus') > 0 ? 1 : 0);
    carried out, measuring the build's actual success instead of account age.
    The first win of a fresh cycle is always within reach — no stalls, and a
    runaway build stops itself: each win makes the next one x1.3 harder */
-export const ngMonMul = s => 1 + Math.min(1.5, .15 * ngLevel(s));
+export const ngMonMul = s => 1 + Math.min(1, .1 * ngLevel(s)); /* hybrid: numbers cap at x2, affixes carry the depth */
 
 export const PUPGRADES = [
   { k: 'p_dmg', n: 'Legendary might', d: '+8% damage for all heroes per lvl', max: 20, base: 3, g: 1.5 },
@@ -21,6 +21,7 @@ export const PUPGRADES = [
   { k: 'p_mem', n: 'Engraved paths', d: 'start each cycle with +600 Memory per lvl', max: 10, base: 5, g: 1.7 },
   { k: 'p_gold', n: 'Old treasury', d: 'start each cycle with +750 gold per lvl', max: 10, base: 3, g: 1.6 },
   { k: 'p_roll', n: 'Famous guild', d: '−5% summon cost per lvl', max: 8, base: 6, g: 1.9 },
+  { k: 'p_legacy', n: 'Legacy engraving', d: '+1% damage and health per lvl, without limit', max: 9999, base: 50, g: 1.22 },
 ];
 export const pupg = (s, k) => (s.pupg && s.pupg[k]) || 0;
 export const pupgCost = (s, u) => Math.ceil(u.base * Math.pow(u.g, pupg(s, u.k)));
@@ -42,13 +43,17 @@ export function legendsReward(s) {
   if (c.wins < 1) return 0;
   const raw = c.wins * 8 + c.runes * 3 + c.uniq + Math.sqrt(Math.max(0, c.mem) / 50);
   const runner = 1 + .15 * Math.max(0, (s.cycRunnerBest || 0) - 3); /* greed pays */
-  return Math.max(1, Math.round(raw * runner * (1 + .25 * ngLevel(s))));
+  /* the NG reward multiplier caps at +500%: difficulty is capped, so an
+     uncapped reward would arm a power->cadence->reward runaway loop */
+  return Math.max(1, Math.round(raw * runner * (1 + .25 * Math.min(20, ngLevel(s)))));
 }
 
 /* the deeper the ladder, the more Orbs a cycle must produce before it can be
    reset: the requirement runs into the in-cycle x1.3 compound, so the prestige
    cadence self-balances against the build's real power — no spam, no stall */
-export const prestigeReq = s => 1 + Math.floor(ngLevel(s) / 2);
+export const prestigeReq = s => 1 + Math.floor(Math.min(10, ngLevel(s)) / 2);
+/* capped at 6: deep-NG cycles plateau into a steady rhythm instead of freezing
+   when the requirement outruns what the in-cycle x1.3 compound allows */
 export const canPrestige = s => cycleProgress(s).wins >= prestigeReq(s);
 
 /** the reset itself; returns the Legends earned or 0 when not allowed */
@@ -90,5 +95,6 @@ export function doPrestige(s) {
     uniq: s.stat.uniqKills || 0,
     mem: s.stat.memEarned || 0,
   };
+  if (typeof window !== 'undefined' && window.__cloudPush) window.__cloudPush(true);
   return reward;
 }
