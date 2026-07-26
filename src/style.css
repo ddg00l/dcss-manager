@@ -102,6 +102,17 @@
   .fst.locked::before{content:'🔒';position:absolute;top:2px;right:3px;font-size:9px}
   .famePane{display:none}
   .famePane.shown{display:block}
+  /* install hint (iOS: manual A2HS steps; Android: real prompt button) */
+  #installBar{position:fixed;left:50%;transform:translateX(-50%);
+    bottom:calc(64px + env(safe-area-inset-bottom,0px));z-index:60;
+    display:flex;align-items:center;gap:10px;max-width:92vw;
+    padding:9px 12px;background:var(--panel2);border:1px solid var(--gold);
+    border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.5);
+    font-size:12px;color:var(--bone)}
+  #installBar span{line-height:1.35}
+  #installBar button{padding:5px 10px;font-size:12px}
+  #installBar #installX{background:transparent;border:none;color:var(--dim);
+    padding:2px 4px;font-size:14px}
   .rowBtns{display:flex;gap:6px;flex-wrap:wrap}
   .rowBtns button{flex:1;padding:9px 8px;font-size:11px}
   .rar0{color:var(--stone)} .rar1{color:var(--rare)} .rar2{color:var(--epic)} .rar3{color:var(--leg)}

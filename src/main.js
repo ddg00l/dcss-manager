@@ -27,6 +27,7 @@ import { initCloud, startAutoSync, cloudPush, cloudAvailable } from './cloud/ind
 import { openConflict } from './ui/conflict.js';
 import { setCloudMsg } from './ui/settings.js';
 import { toast } from './ui/toast.js';
+import { initInstallHint } from './ui/install.js';
 
 /* cross-module UI callbacks (avoids circular imports) */
 window.__renderAll = renderAll;
@@ -138,3 +139,4 @@ if (!save.ftue.railDone) switchPane('pHeroes', true);
 updateGates();
 renderAll();
 requestAnimationFrame(frame);
+initInstallHint();
