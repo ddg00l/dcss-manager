@@ -2,7 +2,7 @@ import { $ } from './dom.js';
 import { save, persist } from '../core/state.js';
 import { sfx } from './audio.js';
 import { t, setLang, getLang, applyStatic, LANGS } from '../i18n/index.js';
-import { cloudAvailable, isSignedIn, signIn, signOut, cloudPush, cloudPull } from '../cloud/index.js';
+import { cloudAvailable, isSignedIn, connect, disconnect, cloudPush, cloudPull } from '../cloud/index.js';
 import { exportSaveFile } from '../cloud/export.js';
 
 let cloudMsg = '';
@@ -62,11 +62,11 @@ function wireCloud() {
   const ex = $('setExport'); if (ex) ex.onclick = () => { sfx.ui(); exportSaveFile(save); };
   const si = $('setSignin'); if (si) si.onclick = async () => {
     sfx.ui(); cloudMsg = t('Signing in…'); openSettings();
-    try { await signIn(true); await cloudPull(() => save, applyRemote); cloudMsg = t('Synced'); }
+    try { await connect(); await cloudPull(() => save, applyRemote); cloudMsg = t('Synced'); }
     catch (e) { cloudMsg = t('Sign-in failed'); }
     openSettings();
   };
-  const so = $('setSignout'); if (so) so.onclick = () => { sfx.ui(); signOut(); cloudMsg = ''; openSettings(); };
+  const so = $('setSignout'); if (so) so.onclick = () => { sfx.ui(); disconnect(); cloudMsg = ''; openSettings(); };
   const pu = $('setPush'); if (pu) pu.onclick = async () => { sfx.ui(); cloudMsg = t('Uploading…'); openSettings(); await cloudPush(() => save, true); cloudMsg = t('Synced'); openSettings(); };
   const pl = $('setPull'); if (pl) pl.onclick = async () => { sfx.ui(); cloudMsg = t('Downloading…'); openSettings(); await cloudPull(() => save, applyRemote, false); cloudMsg = t('Synced'); openSettings(); };
 }

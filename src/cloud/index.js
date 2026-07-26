@@ -5,7 +5,19 @@ import { CLIENT_ID, cloudAvailable, signIn, signOut, getToken, isSignedIn } from
 import { readState, readMeta, writeState } from './drive.js';
 import { resolvePull, shouldPush, makeMeta, vectorOf } from './sync.js';
 
-export { cloudAvailable, isSignedIn, signIn, signOut, CLIENT_ID };
+export { cloudAvailable, isSignedIn, CLIENT_ID };
+
+const OPT_KEY = 'dcss.cloudOptIn';
+const optedIn = () => { try { return localStorage.getItem(OPT_KEY) === '1'; } catch { return false; } };
+const setOptIn = v => { try { v ? localStorage.setItem(OPT_KEY, '1') : localStorage.removeItem(OPT_KEY); } catch {} };
+
+/** interactive sign-in; remembers the choice so future reloads restore silently */
+export async function connect() {
+  const tok = await signIn(true);
+  setOptIn(true);
+  return tok;
+}
+export function disconnect() { setOptIn(false); signOut(); }
 
 let onConflict = null, onStatus = null, lastPushedVec = null, pushTimer = 0;
 const DEVICE_ID = 'dev-' + (Math.floor(Math.random() * 1e9) >>> 0).toString(36);
@@ -70,5 +82,12 @@ export function startAutoSync(getSave, applyState) {
   document.addEventListener('visibilitychange', onVisible);
   clearInterval(pushTimer);
   pushTimer = setInterval(() => cloudPush(getSave, false), 10 * 60 * 1000);
-  cloudPull(getSave, applyState); // boot pull
+  /* restore the session silently for returning users, then pull */
+  (async () => {
+    if (!isSignedIn() && optedIn()) {
+      try { await signIn(false); status('synced'); }
+      catch { setOptIn(false); return; } /* session lost / consent revoked → show sign-in again */
+    }
+    cloudPull(getSave, applyState);
+  })();
 }
