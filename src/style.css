@@ -188,6 +188,8 @@
     color:var(--gold);border:1px solid rgba(236,201,94,.4);background:rgba(236,201,94,.06)}
   .gmPick b{font-size:14px;letter-spacing:.04em}
   .gmPick.purple{color:var(--epic);border-color:rgba(176,107,224,.4);background:rgba(176,107,224,.06)}
+  .gmPickL{display:flex;align-items:center;gap:10px}
+  .gmPickIco{width:34px;height:34px;image-rendering:pixelated;flex-shrink:0;filter:drop-shadow(0 0 5px rgba(236,201,94,.3))}
   .gmSlots{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
   .gmSlots .gmPick{flex:0 0 calc(50% - 4px);flex-direction:column;align-items:center;gap:5px;text-align:center;padding:12px 10px}
   .gmSlotIco{width:42px;height:42px;image-rendering:pixelated;filter:drop-shadow(0 0 6px rgba(236,201,94,.35))}

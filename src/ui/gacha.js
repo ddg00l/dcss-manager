@@ -28,14 +28,14 @@ function renderSummonChoices(box){
     '<div class="gmOdds label">'+pityText()+'</div>';
   const b1=document.createElement('button');
   b1.className='gmPick';
-  b1.innerHTML='<b>'+t('Summon')+'</b><span class="label">'+(free?t('FREE — the party has fallen'):fmt(rollCost(save))+' 🜚')+'</span>';
+  b1.innerHTML='<span class="gmPickL"><img class="gmPickIco" src="'+tileURL('pc_minotaur')+'" alt=""><b>'+t('Summon')+'</b></span><span class="label">'+(free?t('FREE — the party has fallen'):fmt(rollCost(save))+' 🜚')+'</span>';
   b1.disabled=!free&&save.gold<rollCost(save);
   b1.onclick=e=>{e.stopPropagation();doRoll(false);};
   box.appendChild(b1);
   if(darkSummonUnlocked(save)){
     const b2=document.createElement('button');
     b2.className='gmPick purple';
-    b2.innerHTML='<b>'+t('Dark summon')+'</b><span class="label">1 ᚱ</span>';
+    b2.innerHTML='<span class="gmPickL"><img class="gmPickIco" src="'+tileURL('i_rune')+'" alt=""><b>'+t('Dark summon')+'</b></span><span class="label">1 ᚱ</span>';
     b2.disabled=save.runes<1;
     b2.onclick=e=>{e.stopPropagation();doRoll(true);};
     box.appendChild(b2);
