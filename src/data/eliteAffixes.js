@@ -38,10 +38,23 @@ export const FLOOR_AFFIXES = {
 };
 export const FLOOR_KEYS = Object.keys(FLOOR_AFFIXES);
 
-/* slow, endless escalation: elite frequency and affix count grow with NG+ */
-export const eliteChance = ng => Math.min(.45, .05 + .02 * ng);
-export const eliteAffixCount = ng => 1 + Math.min(3, Math.floor(ng / 6));
-export const floorAffixChance = ng => Math.min(.6, .08 + .025 * ng);
+/* Affix pressure scales with PLAYER POWER, not account age. The effective level
+   is min(NG, readiness): a player who out-prestiged their build faces affixes
+   capped at what their persistent power can handle — no mid-game wall — while a
+   player who kept pace gets the full NG intensity. Softened peak vs the first
+   pass (max 3 affixes, ~40% floor chance). Coefficients tuned by 30-day sim. */
+export function readiness(s) {
+  const greatCount = s.vic ? (Object.keys(s.vic.races).length + Object.keys(s.vic.classes).length) : 0;
+  let starTotal = 0; if (s.stars) for (const k in s.stars) starTotal += s.stars[k];
+  const legacy = s.pupg ? ((s.pupg.p_legacy || 0) + (s.pupg.p_dmg || 0) + (s.pupg.p_hp || 0)) : 0;
+  let zot = 0; if (s.zupg) for (const k in s.zupg) zot += s.zupg[k];
+  return greatCount * .35 + starTotal * .5 + legacy * .5 + zot * .5;
+}
+export const affixLevel = (s, ng) => Math.min(ng, Math.round(readiness(s)));
+/* the escalation curves now take the effective affix level, not raw NG */
+export const eliteChance = lvl => Math.min(.4, .05 + .018 * lvl);
+export const eliteAffixCount = lvl => 1 + Math.min(2, Math.floor(lvl / 8));
+export const floorAffixChance = lvl => Math.min(.4, .07 + .02 * lvl);
 
 /** roll elite affixes for a monster (floor rng keeps it deterministic per seed) */
 export function rollEliteAffixes(ng, rng) {

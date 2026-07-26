@@ -51,9 +51,12 @@ export function legendsReward(s) {
 /* the deeper the ladder, the more Orbs a cycle must produce before it can be
    reset: the requirement runs into the in-cycle x1.3 compound, so the prestige
    cadence self-balances against the build's real power — no spam, no stall */
-export const prestigeReq = s => 1 + Math.floor(Math.min(10, ngLevel(s)) / 2);
-/* capped at 6: deep-NG cycles plateau into a steady rhythm instead of freezing
-   when the requirement outruns what the in-cycle x1.3 compound allows */
+/* The prestige requirement scales with PLAYER POWER, not account age. A strong
+   build (many delvers, high stars) must produce more Orbs per cycle — throttling
+   the runaway; a weak build needs fewer — so the first win of a cycle is always
+   reachable and no account can freeze. readiness() lives in eliteAffixes.js. */
+import { readiness } from '../data/eliteAffixes.js';
+export const prestigeReq = s => 1 + Math.min(5, Math.floor(readiness(s) / 6));
 export const canPrestige = s => cycleProgress(s).wins >= prestigeReq(s);
 
 /** the reset itself; returns the Legends earned or 0 when not allowed */

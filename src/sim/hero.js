@@ -60,24 +60,27 @@ export function newHero(race,cls,rarity,s){
    shop levels, stars, fame, runes, deaths, running-party size) alters the
    fingerprint and forces a clean recompute. */
 const statCache=new WeakMap();
+/* numeric fingerprint of every input heroStats reads — a rolling integer hash,
+   no string allocation (was a per-tick GC/concat cost). Any input change alters
+   the number; identical inputs collide to the same number → cache hit. */
+function foldStr(hh,str){ for(let i=0;i<str.length;i++)hh=Math.imul(hh^str.charCodeAt(i),0x01000193)>>>0; return hh; }
 function statKey(h,s){
   const g=h.gear;
-  let k=h.xl+'|'+h.god+'|'+(h.muts?h.muts.length:0)+'|'+h.piety+'|';
-  let sk=0;
-  for(const q in h.skills)sk+=h.skills[q];
-  k+=Math.round(sk*4)+'|';
-  for(const q in h.status)if(h.status[q]>0)k+=q;
-  k+='|';
+  let hh=Math.imul(h.xl+1,2654435761)>>>0;
+  hh=foldStr(hh,h.god||'-');
+  hh=(hh^Math.imul((h.muts?h.muts.length:0)+1,40503)^Math.imul(h.piety|0,2246822519))>>>0;
+  let sk=0; for(const q in h.skills)sk+=h.skills[q];
+  hh=(hh^Math.imul(Math.round(sk*4)+1,3266489917))>>>0;
+  for(const q in h.status)if(h.status[q]>0)hh=foldStr(hh,q);
   const slots=[g.weapon,g.armour,g.shield,g.ring1,g.ring2,g.ring3,g.ring4,g.amulet];
-  for(const it of slots)k+=it?it.id+(it.plus||0)+(it.ego||''):'-';
-  let run=0;
-  for(const x of s.heroes)if(x.state==='run')run++;
-  k+='|'+run+'|'+treeSig(s)+'|'+(s.stat.wins||0)+'|'+(s.stat.deaths||0)+'|'+(s.runesTotal||0)+'|'+(s.stars[comboKey(h.race,h.cls)]||0);
+  for(const it of slots)hh=it?foldStr(hh,it.id+'.'+(it.plus||0)+(it.ego||'')):(Math.imul(hh,16777619)>>>0);
+  let run=0; for(const x of s.heroes)if(x.state==='run')run++;
   let zp=0;
   for(const q in s.zupg)zp+=s.zupg[q];
   for(const q in s.pupg)zp+=13*s.pupg[q];
   if(s.vic){for(const q in s.vic.races)zp+=131;for(const q in s.vic.classes)zp+=257}
-  return k+'|'+zp;
+  const acc=run*7+treeSig(s)*13+(s.stat.wins||0)*131+(s.stat.deaths||0)*17+(s.runesTotal||0)*29+(s.stars[comboKey(h.race,h.cls)]||0)*97+zp*4099;
+  return (hh^Math.imul(acc|0,2654435761))>>>0;
 }
 export function heroStats(h,s){
   const key=statKey(h,s);

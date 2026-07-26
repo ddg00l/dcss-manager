@@ -150,6 +150,7 @@ export function loadState(storage) {
    Firestore 1 MB field limit. Prune them — only living delvers stay on the
    roster. */
 export function pruneSave(state) {
+  delete state._treeSig; delete state._treeDirty; // transient cache, never persisted
   if (state.heroes) state.heroes = state.heroes.filter(h => h.state === 'run' || h.state === 'camp');
   if (state.fame && state.fame.length > 20) state.fame.length = 20; // keep the last 20
 }

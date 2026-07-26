@@ -97,17 +97,22 @@ describe('daily affixes and the endless Ziggurat', () => {
 
 describe('qualitative escalation: elite affixes and floor affixes', () => {
   it('elite frequency and affix count grow slowly and endlessly with NG', async () => {
-    const { eliteChance, eliteAffixCount, rollEliteAffixes, ELITE_KEYS } = await import('../src/data/eliteAffixes.js');
+    const { eliteChance, eliteAffixCount, rollEliteAffixes, ELITE_KEYS, affixLevel, readiness } = await import('../src/data/eliteAffixes.js');
     expect(eliteChance(0)).toBeCloseTo(.05);
-    expect(eliteChance(10)).toBeCloseTo(.25);
-    expect(eliteChance(100)).toBeCloseTo(.45); // capped frequency
+    expect(eliteChance(100)).toBeCloseTo(.4);  // capped frequency
     expect(eliteAffixCount(0)).toBe(1);
-    expect(eliteAffixCount(20)).toBe(4);       // capped count, pool combinatorics is the depth
+    expect(eliteAffixCount(20)).toBe(3);       // softened peak: max 3 affixes
     const { mulberry32 } = await import('../src/core/rng.js');
     const af = rollEliteAffixes(20, mulberry32(7));
-    expect(af.length).toBe(4);
-    expect(new Set(af).size).toBe(4);          // no duplicates
+    expect(af.length).toBe(3);
+    expect(new Set(af).size).toBe(3);          // no duplicates
     for (const k of af) expect(ELITE_KEYS).toContain(k);
+    /* affix pressure is capped by readiness, not raw NG */
+    const { makeState } = await import('../src/core/state.js');
+    const weak = makeState(); weak.ng = 30;
+    expect(affixLevel(weak, 30)).toBeLessThan(10); // out-prestiged a weak build → eased
+    const strong = makeState(); strong.ng = 30; strong.stars = { a: 60 };
+    expect(affixLevel(strong, 30)).toBe(30);       // kept pace → full intensity
   });
   it('deep-NG floors spawn affixed elites deterministically per seed', async () => {
     const { genFloor } = await import('../src/sim/mapgen.js');

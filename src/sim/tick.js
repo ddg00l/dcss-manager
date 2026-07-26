@@ -36,6 +36,10 @@ function rnd(h){
   return ((x^x>>>14)>>>0)/4294967296;
 }
 const DIRS8=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+/* reused BFS scratch: stepToward's prev-array is transient, so allocate once and
+   reset per call instead of a fresh typed array every pathfind (GC pressure) */
+const _bfsPrev=new Int32Array(MW*MH);
+const _bfsQ=new Int32Array(MW*MH);
 
 function hlog(h,txt,cls){
   h.log.push({t:brTag(h),txt,cls:cls||'sys'});
@@ -633,10 +637,10 @@ export function stepToward(h,tx,ty,s){
   }
   /* BFS */
   const N=MW*MH,start=m.py*MW+m.px;
-  const prev=new Int32Array(N).fill(-1);
+  const prev=_bfsPrev; prev.fill(-1);
   prev[start]=-2;
-  const q=[start];let qi=0,found=false;
-  while(qi<q.length){
+  const q=_bfsQ; q[0]=start; let qn=1,qi=0,found=false;
+  while(qi<qn){
     const cur=q[qi++];
     if(cur===goal){found=true;break}
     const cx=cur%MW,cy=(cur/MW)|0;
@@ -645,7 +649,7 @@ export function stepToward(h,tx,ty,s){
       if(nx<0||nx>=MW||ny<0||ny>=MH)continue;
       const ni=ny*MW+nx;
       if(m.g[ny][nx]!==0||prev[ni]!==-1)continue;
-      prev[ni]=cur;q.push(ni);
+      prev[ni]=cur;q[qn++]=ni;
     }
   }
   if(!found){h.path=null;h.pathGoal=null;return}

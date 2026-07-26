@@ -2,7 +2,7 @@ import {mulberry32} from '../core/rng.js';
 import {ngMonMul,cycleProgress,ngLevel} from '../core/prestige.js';
 import {nemesisLevel} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
-import {FLOOR_KEYS,floorAffixChance,eliteChance,rollEliteAffixes} from '../data/eliteAffixes.js';
+import {FLOOR_KEYS,floorAffixChance,eliteChance,rollEliteAffixes,affixLevel} from '../data/eliteAffixes.js';
 import {BRANCHES,brDepth,BR_OFFSET,BR_ORDER} from '../data/branches.js';
 import {MONS,UNIQUES} from '../data/monsters.js';
 import {GODKEYS} from '../data/gods.js';
@@ -20,9 +20,10 @@ export function genFloor(h,s){
   const pf=P?h.inPortal.floor:h.floor;
   h.regenN=(h.regenN||0)+1; /* every regeneration is unique — the same floor cannot be farmed in a loop */
   const rng=mulberry32(h.seed+pf*7919+h.segIdx*104729+(P?31337:0)+h.regenN*1013904);
-  /* qualitative escalation: a floor may carry its own affix; NG raises the odds */
+  /* qualitative escalation: affix pressure tracks player power, not raw NG */
   const ngl=ngLevel(s);
-  const fafx=(!P&&rng()<floorAffixChance(ngl))?FLOOR_KEYS[Math.floor(rng()*FLOOR_KEYS.length)]:null;
+  const afl=affixLevel(s,ngl);
+  const fafx=(!P&&rng()<floorAffixChance(afl))?FLOOR_KEYS[Math.floor(rng()*FLOOR_KEYS.length)]:null;
   const g=[];
   for(let y=0;y<MH;y++){g.push(new Array(MW).fill(1))}
   const rooms=[];
@@ -135,13 +136,13 @@ export function genFloor(h,s){
   /* hybrid escalation: soft stat multipliers (in-cycle compound + NG capped
      low) carry the numbers; elite monsters with qualitative affixes carry the
      depth — combinatorics instead of a growing scalar */
-  const ngPlus=ngMonMul(s)*Math.pow(1.3,Math.max(0,cycleProgress(s).wins));
-  const ech=eliteChance(ngl)*(memHas(s,'k_elite')?1.5:1);
+  const ngPlus=ngMonMul(s)*Math.pow(1.25,Math.max(0,cycleProgress(s).wins));
+  const ech=eliteChance(afl)*(memHas(s,'k_elite')?1.5:1);
   for(const mo of monsters){
     mo.hp=Math.max(1,Math.floor(mo.hp*ngPlus*afx.monHp));mo.maxHp=mo.hp;
     mo.dmg=Math.max(1,Math.floor(mo.dmg*ngPlus*afx.monDmg));
     if(!P&&!mo.uniq&&rng()<ech){
-      mo.eliteAf=rollEliteAffixes(ngl,rng);
+      mo.eliteAf=rollEliteAffixes(afl,rng);
       mo.hp=Math.floor(mo.hp*(1+.4*mo.eliteAf.length));mo.maxHp=mo.hp;
       mo.dmg=Math.floor(mo.dmg*(1+.15*mo.eliteAf.length));
       mo.xp=Math.floor(mo.xp*(1+.5*mo.eliteAf.length));

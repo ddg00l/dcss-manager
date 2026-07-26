@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Aggregate streaming NDJSON session results: python3 aggregate.py 'r5_*.ndjson'"""
-import json, sys, glob, statistics as st
+import json, sys, glob, statistics as st, math
 files = glob.glob(sys.argv[1] if len(sys.argv) > 1 else '*.ndjson')
 by = {}
 for f in files:
@@ -37,3 +37,18 @@ if sample:
             dn = med([x['byDay'][d]['ng'] for x in oo])
             row += f"{dw:>5.1f}/{dp:>4.1f}/{dn:>2.0f}"
         print(row)
+
+# 95% confidence half-width on the mean (CRN sizing aid)
+def ci(vals):
+    n=len(vals)
+    if n<2: return 0.0
+    sd=st.pstdev(vals)
+    return 1.96*sd/math.sqrt(n)
+print()
+print("=== 95% CI half-width on mean wins (lower = fewer sessions needed) ===")
+for name, o in sorted(by.items()):
+    w=[x.get('wins',0) for x in o]
+    m=sum(w)/len(w)
+    h=ci(w)
+    rel=(h/m*100) if m else 0
+    print(f"{name:<11} n={len(o):>3}  mean {m:>7.1f}  ±{h:>6.1f}  ({rel:>4.0f}% rel)")
