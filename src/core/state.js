@@ -185,5 +185,6 @@ export function resetSave() {
   try { storage && storage.removeItem(SKEY); } catch (e) { /* quota */ }
   for (const k of Object.keys(save)) delete save[k];
   Object.assign(save, makeState());
+  save.ftue = defaultFtue(); /* a fresh account is a newcomer: replay the rail + tab tours */
   persistState(save, storage);
 }
