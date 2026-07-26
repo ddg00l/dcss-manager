@@ -41,10 +41,13 @@ const DIRS8=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
 const _bfsPrev=new Int32Array(MW*MH);
 const _bfsQ=new Int32Array(MW*MH);
 
+/* verbose scrollback: log every action, but keep only the last LOG_MAX entries
+   so the buffer (and the save) stays bounded */
+export const LOG_MAX=80;
 function hlog(h,txt,cls){
   h.log.push({t:brTag(h),txt,cls:cls||'sys'});
-  h.logSeq=(h.logSeq||0)+1; /* monotonic counter: length is capped at 80, so it is useless for diffing */
-  if(h.log.length>80)h.log.shift();
+  h.logSeq=(h.logSeq||0)+1; /* monotonic counter; length is capped, so it is useless for diffing */
+  if(h.log.length>LOG_MAX)h.log.shift();
 }
 
 export function startRun(h,s){
@@ -427,7 +430,8 @@ export function heroAttack(h,st,mo,s){
   const asleep=!mo.awake;
   const hit=asleep||rnd(h)<clamp((st.acc+10)/(st.acc+10+mo.ev),.2,.95);
   if(!hit){
-    if(rnd(h)<.3)hlog(h,h.name+t(' misses ')+t(mo.n),'sys');
+    rnd(h); /* was a 30% log sample — keep the draw so the RNG stream is unchanged */
+    hlog(h,h.name+t(' misses ')+t(mo.n),'sys');
   }else{
     /* elite affixes: the qualitative layer of the fight */
     if(mo.eliteAf&&!mo._met){
@@ -576,7 +580,8 @@ function killMon(h,mo,s){
     const br=BRANCHES[h.branch];
     if(br.rune)giveRune(h,br.rune,s);
     dropForgeItem(h,s);
-  }else if(rnd(h)<.25){
+  }else{
+    rnd(h); /* was a 25% log sample — keep the draw so the RNG stream is unchanged */
     hlog(h,h.name+t(' kills: ')+t(mo.n)+' (+'+g+' 🜚)','kill');
   }
 }

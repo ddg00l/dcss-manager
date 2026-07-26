@@ -12,6 +12,7 @@ import {consTile} from '../data/consumables.js';
 import {PORTALS} from '../data/portals.js';
 
 import {heroStats} from '../sim/hero.js';
+import {LOG_MAX} from '../sim/tick.js';
 import {MW,MH,los,FOV_R} from '../sim/mapgen.js';
 import {stackHTML,heroLayers} from './portrait.js';
 import {comboKey,RARN} from '../data/combos.js';
@@ -184,17 +185,17 @@ export function renderWatch(){
   const seq=h.logSeq||0;
   if(lastLogHero!==h.id){
     lastLogHero=h.id;lastLogLen=seq;
-    lg.innerHTML=h.log.slice(-40).map(fmtLine).join('');
+    lg.innerHTML=h.log.slice(-LOG_MAX).map(fmtLine).join('');
     lg.scrollTop=lg.scrollHeight;
   }else if(seq!==lastLogLen){
     const added=Math.min(seq-lastLogLen,h.log.length);
     lastLogLen=seq;
     const atBottom=lg.scrollHeight-lg.scrollTop-lg.clientHeight<24;
-    if(added>=40){
-      lg.innerHTML=h.log.slice(-40).map(fmtLine).join('');
+    if(added>=LOG_MAX){
+      lg.innerHTML=h.log.slice(-LOG_MAX).map(fmtLine).join('');
     }else{
       lg.insertAdjacentHTML('beforeend',h.log.slice(-added).map(fmtLine).join(''));
-      while(lg.children.length>40)lg.removeChild(lg.firstChild);
+      while(lg.children.length>LOG_MAX)lg.removeChild(lg.firstChild);
     }
     if(atBottom)lg.scrollTop=lg.scrollHeight;
   }

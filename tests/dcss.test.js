@@ -271,18 +271,18 @@ describe('floor gear drops are pre-rolled', () => {
 });
 
 describe('log freshness', () => {
-  it('logSeq keeps growing after the 80-entry cap (realtime log diff)', async () => {
-    const { advanceHeroes } = await import('../src/sim/tick.js');
-    /* pinned seed: a troll berserker that reliably reaches the 80-entry cap alive */
+  it('logSeq keeps growing after the LOG_MAX cap (realtime log diff)', async () => {
+    const { advanceHeroes, LOG_MAX } = await import('../src/sim/tick.js');
+    /* pinned seed: a troll berserker that reliably reaches the log cap alive */
     const s = makeState();
     const h = runHero(s, 'troll', 'berserker', 2);
     let guard = 0;
-    while (h.state === 'run' && h.log.length < 80 && guard++ < 300) advanceHeroes(s, 60, true);
-    expect(h.log.length).toBe(80);             // buffer stays capped
+    while (h.state === 'run' && h.log.length < LOG_MAX && guard++ < 500) advanceHeroes(s, 60, true);
+    expect(h.log.length).toBe(LOG_MAX);        // buffer stays capped
     expect(h.state).toBe('run');               // still alive at the cap
     const seq = h.logSeq;
     advanceHeroes(s, 120, true);
-    expect(h.log.length).toBe(80);             // buffer stays capped
+    expect(h.log.length).toBe(LOG_MAX);        // buffer stays capped
     expect(h.logSeq).toBeGreaterThan(seq);     // monotonic counter keeps growing
   });
 });
