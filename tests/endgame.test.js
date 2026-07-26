@@ -51,8 +51,6 @@ describe('Pantheon favor', () => {
     s.prestiges = ENDGAME_GATE;                           // unlocked
     expect(godFavorMul(s, 'trog')).toBeCloseTo(1 + 4 * FAVOR_STEP);
     expect(godField(s, 'trog', 'mel')).toBeCloseTo(1.42); // 0.30 bonus * 1.40
-    // a penalty field is never eased or worsened by favor
-    expect(godField(s, 'cheibriados', 'slow')).toBe(0.75);
   });
 });
 

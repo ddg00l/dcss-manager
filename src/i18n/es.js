@@ -246,7 +246,7 @@ export const ES = {
   'Yredelemnul': 'Yredelemnul',
   '+25% HP, +20% melee — the reaper is hard to fell': '+25% de vida, +20% cuerpo a cuerpo — al segador cuesta abatirlo',
   'Cheibriados': 'Cheibriados',
-  'Ponderous but mighty: +40% damage, +30% HP, acts 25% slower': 'Lento pero poderoso: +40% daño, +30% de vida, actúa un 25% más lento',
+  'The patient titan: +30% HP, +15% damage, steady renewal': 'El titán paciente: +30% de vida, +15% daño, renovación constante',
   'Nemelex Xobeh': 'Nemelex Xobeh',
   'Pantheon': 'Panteón',
   'Bestiary': 'Bestiario',

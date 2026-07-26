@@ -246,7 +246,7 @@ export const RU = {
   'Yredelemnul': 'Иределемнул',
   '+25% HP, +20% melee — the reaper is hard to fell': '+25% HP, +20% к ближнему бою — жнеца трудно свалить',
   'Cheibriados': 'Чейбриадос',
-  'Ponderous but mighty: +40% damage, +30% HP, acts 25% slower': 'Медлителен, но могуч: +40% урона, +30% HP, действует на 25% медленнее',
+  'The patient titan: +30% HP, +15% damage, steady renewal': 'Терпеливый титан: +30% HP, +15% урона, неспешное восстановление',
   'Nemelex Xobeh': 'Немелекс Ксобех',
   'Pantheon': 'Пантеон',
   'Bestiary': 'Бестиарий',

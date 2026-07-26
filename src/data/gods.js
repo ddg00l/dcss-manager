@@ -9,7 +9,7 @@ export const GODS={
   elyvilon:{n:'Elyvilon',alt:'d_altar_ely',d:'Periodic healing, +15% HP',hp:1.15,healtick:1},
   kikubaaqudgha:{n:'Kikubaaqudgha',alt:'d_altar_kiku',d:'+28% spell damage, drains 2% HP on kill',mag:1.28,healkill:.02},
   yredelemnul:{n:'Yredelemnul',alt:'d_altar_yred',d:'+25% HP, +20% melee — the reaper is hard to fell',hp:1.25,mel:1.2},
-  cheibriados:{n:'Cheibriados',alt:'d_altar_chei',d:'Ponderous but mighty: +40% damage, +30% HP, acts 25% slower',dmg:1.4,hp:1.3,slow:.75},
+  cheibriados:{n:'Cheibriados',alt:'d_altar_chei',d:'The patient titan: +30% HP, +15% damage, steady renewal',hp:1.3,dmg:1.15,healtick:1},
   nemelex:{n:'Nemelex Xobeh',alt:'d_altar_nemelex',d:'+12% damage, draws a winning card against uniques and bosses',dmg:1.12,hero:1.2},
 };
 export const GODKEYS=Object.keys(GODS);

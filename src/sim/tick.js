@@ -811,9 +811,7 @@ export function tryAutoEquip(h,it,s){
 }
 /* ===================== time & offline ===================== */
 export function heroTps(h,s){
-  /* Cheibriados slows the delver's action rate (favor never eases the penalty) */
-  const slow=(h.god&&GODS[h.god].slow)||1;
-  return 1.4*(RACES[h.race].spd||1)*gSpd(s)*slow;
+  return 1.4*(RACES[h.race].spd||1)*gSpd(s);
 }
 let simAcc={};
 /* the "Auto-summon" keystone: fills a free slot with an idle hero, or buys a
