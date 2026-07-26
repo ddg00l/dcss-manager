@@ -134,11 +134,9 @@ describe('qualitative escalation: elite affixes and floor affixes', () => {
     const st = heroStats(h, s);
     const mo = { n: 'test', x: h.map.px + 1, y: h.map.py, hp: 1e6, maxHp: 1e6, ac: 0, ev: 0, dmg: 1, xp: 1, spd: 1, mv: 0, awake: true, eliteAf: ['shielded'], shield: 3 };
     h.map.monsters.push(mo);
-    const spy = vi.spyOn(Math, 'random').mockReturnValue(0.5); // guaranteed hits, no crits
-    for (let i = 0; i < 3; i++) heroAttack(h, st, mo, s);
+    for (let i = 0; i < 3; i++) { h.rngState = 7; heroAttack(h, st, mo, s); } // rngState 7 → guaranteed hit
     expect(mo.hp).toBe(1e6); // three hits eaten by the shield
-    heroAttack(h, st, mo, s);
-    spy.mockRestore();
+    h.rngState = 7; heroAttack(h, st, mo, s);
     expect(mo.hp).toBeLessThan(1e6); // the fourth lands
   });
   it('lantern and waders egos exist and surface in hero stats', async () => {

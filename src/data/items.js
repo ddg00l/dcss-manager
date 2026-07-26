@@ -203,6 +203,7 @@ import { CLASSES } from './classes.js';
 import { RACES } from './races.js';
 import { effSkill, speedMul } from './skills.js';
 import { forgeDisc } from '../core/economy.js';
+import { nextStream } from '../core/streams.js';
 import { memEff } from './memtree.js';
 /** Overall item score for auto-equip and the "better/worse" UI.
     A caster values a staff over a crossbow, and heavy armour is penalized for choking spellcasting. */
@@ -247,15 +248,16 @@ export const forgeTier=s=>{
   return Math.min(2,Math.floor(d/8));
 };
 /** one forging: pays gold+scrap, produces a better-than-found item; null if unaffordable */
-export function doForge(s,slot,rng=Math.random){
+export function doForge(s,slot,rng){
   const c=forgeCost(s,slot);
   if(s.gold<c||s.scrap<FORGE_SCRAP[slot])return null;
   s.gold-=c;s.scrap-=FORGE_SCRAP[slot];
-  const it=randomItem(slot,forgeTier(s),rng);
+  const r=rng||nextStream(s,'forge');
+  const it=randomItem(slot,forgeTier(s),r);
   /* forged gear is craftsmanship, not dungeon scraps: ego far more likely */
-  if(!it.ego&&rng()<.35){
+  if(!it.ego&&r()<.35){
     const pool=slot==='weapon'?WEP_EGOS:(slot==='armour'||slot==='shield')?ARM_EGOS:null;
-    if(pool)it.ego=pool[Math.floor(rng()*pool.length)].k;
+    if(pool)it.ego=pool[Math.floor(r()*pool.length)].k;
   }
   if(it.slot==='weapon'||it.slot==='armour'||it.slot==='shield')
     it.plus+=Math.round(memEff(s,'fqual')*15);

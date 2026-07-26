@@ -12,6 +12,21 @@ Owner setup: Firebase project `dcss-manager-e4668` with Google auth enabled,
 `ddg00l.github.io` in Authorized domains, Firestore in production mode, and the
 rules from `firestore.rules` published.
 
+
+## Determinism status (closed)
+
+All gameplay randomness now derives from the account `masterSeed`:
+- **gacha** — `nextStream(s,'gacha')`, summon #N is the same hero everywhere.
+- **maps** — `h.seed = hashSeed(masterSeed,'map',id)`; identical floors.
+- **combat/AI/consumables/traps** — a per-hero cursor `h.rngState` seeded from
+  `hashSeed(masterSeed,'combat',id)`, advanced by every draw (`rnd(h)` in tick.js).
+- **loot/forge** — item and craft rolls draw the hero stream / `nextStream(s,'forge')`.
+- **hero names** — `hashSeed(masterSeed,'name',id)`.
+
+Only UI-only randomness (particles, jingles) stays on `Math.random`. Verified:
+two runs with the same master seed and action sequence replay byte-identically.
+The headless simulator sets `s.masterSeed` for paired-seed (CRN) comparisons.
+
 ---
 
 # Cloud Save Sync — Design (Google Drive, no backend)

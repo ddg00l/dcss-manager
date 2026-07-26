@@ -7,13 +7,15 @@ import {GODS} from '../data/gods.js';
 import {HERO_NAMES} from '../data/names.js';
 import {gHp,gAtk,gSpd,freeRollAvailable,rollCost,PITY_AT,rollCombo,pickComboOfTier,shardMul} from '../core/economy.js';
 import {nextStream} from '../core/streams.js';
+import {hashSeed} from '../core/rng.js';
 import {memEff,memHas,treeSig} from '../data/memtree.js';
 
 export function newHero(race,cls,rarity,s){
   const rd=RACES[race],cd=CLASSES[cls];
   const stars=s.stars[comboKey(race,cls)]||0;
+  const hid=s.nextId++;
   const h={
-    id:s.nextId++,name:HERO_NAMES[Math.floor(Math.random()*HERO_NAMES.length)],
+    id:hid,name:HERO_NAMES[hashSeed(s.masterSeed,'name',hid)%HERO_NAMES.length],
     race,cls,rarity,xl:1,xp:0,
     skills:{fighting:0,short_blades:0,long_blades:0,axes:0,maces:0,polearms:0,staves:0,
       bows:0,crossbows:0,unarmed:0,dodging:0,armour:0,stealth:0,
@@ -24,7 +26,8 @@ export function newHero(race,cls,rarity,s){
     strategy:'classic',caution:'normal',
     state:'camp', // camp | run | dead | victor
     segIdx:0,branch:null,floor:0,turn:0,
-    map:null,seed:(Math.random()*1e9)|0,
+    map:null,seed:hashSeed(s.masterSeed,'map',hid)>>>0,
+    rngState:hashSeed(s.masterSeed,'combat',hid)|0,
     kills:0,maxDepth:'',runes:[],deathBy:null,
     rep:{gold:0,kills:0,floors:0,notable:[]},
     log:[],

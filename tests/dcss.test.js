@@ -58,9 +58,8 @@ describe('traps & banishment', () => {
     const h = runHero(s);
     h.floor = 3; genFloor(h, s);
     h.map.traps = [{ x: h.map.px, y: h.map.py, kind: 'shaft', seen: false }];
-    const spy = vi.spyOn(Math, 'random').mockReturnValue(0.99); // trap goes unnoticed, drop by 1 floor
+    h.rngState = 14; // deterministic stream where the shaft fires unnoticed
     checkTrap(h, s);
-    spy.mockRestore();
     expect(h.floor).toBeGreaterThanOrEqual(4);
   });
   it('banishment sends to abyss and exit returns to origin', () => {
@@ -365,21 +364,17 @@ describe('class mechanics fidelity', () => {
   it('stab: attacking a sleeping monster always hits and deals bonus damage', async () => {
     const { heroDistField } = await import('../src/sim/tick.js'); // just to import module
     const s = makeState();
-    const h = runHero(s, 'kobold', 'assassin');
+    const h = runHero(s, 'kobold', 'assassin', 1); // pinned: a floor cell sits beside monster[0]
     genFloor(h, s);
     const mo = h.map.monsters[0];
     mo.awake = false;
     mo.hp = mo.maxHp = 1e6;
-    const { simTick } = await import('../src/sim/tick.js');
     // place the hero adjacent and strike directly via the moveOrAttack path:
     h.map.px = mo.x + (mo.x > 1 ? -1 : 1); h.map.py = mo.y;
-    const vi = await import('vitest');
-    const spy = vi.vi.spyOn(Math, 'random').mockReturnValue(0.9); // no crit, but the stab guarantees a hit
     const before = mo.hp;
     const tickMod = await import('../src/sim/tick.js');
     // the private heroAttack cannot be called directly — go through stepToward onto the monster's cell
     tickMod.stepToward(h, mo.x, mo.y, s);
-    spy.mockRestore();
     expect(mo.hp).toBeLessThan(before); // the sleeper took damage (guaranteed hit)
     expect(mo.awake).toBe(true);        // and woke up
   });
@@ -622,7 +617,9 @@ describe('DCSS weapon skill schools', () => {
   it('fighting with an axe trains Axes, not other schools (XP pool follows usage)', async () => {
     const { advanceHeroes } = await import('../src/sim/tick.js');
     const s = makeState();
+    s.masterSeed = 1;
     const h = newHero('human', 'berserker', 2, s); // starts with a war axe
+    h.seed = 1; h.rngState = 1;
     s.heroes.push(h);
     const { startRun } = await import('../src/sim/tick.js');
     startRun(h, s);
@@ -788,13 +785,12 @@ describe('class/race/god fidelity fixes', () => {
     h.god = 'okawaru';
     s.heroes.push(h);
     startRun(h, s);
-    const spy = vi.spyOn(Math, 'random').mockReturnValue(0.5);
     const st = heroStats(h, s);
     const mkMon = boss => ({ n: 'dummy', t: 'm_rat', x: 1, y: 1, hp: 1e6, maxHp: 1e6, ac: 0, ev: 0, dmg: 1, xp: 1, spd: 1, mv: 0, awake: true, boss });
     const a = mkMon(false), b = mkMon(true);
-    heroAttack(h, st, a, s);
-    heroAttack(h, st, b, s);
-    spy.mockRestore();
+    /* identical variance for both: reset the hero's deterministic stream before each hit */
+    h.rngState = 98765; heroAttack(h, st, a, s);
+    h.rngState = 98765; heroAttack(h, st, b, s);
     expect(1e6 - b.hp).toBeCloseTo((1e6 - a.hp) * 1.25, 0);
   });
 });

@@ -17,12 +17,24 @@ import {MONS} from '../data/monsters.js';
 import {recordVictory,recordRunnerWin,checkContract,recordNemesisKill,avengeNemesis} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
 import {ELITE_AFFIXES,FLOOR_AFFIXES} from '../data/eliteAffixes.js';
+import { hashSeed } from '../core/rng.js';
 import { t } from '../i18n/index.js';
 
 export const simHooks={onDeath:null,onWin:null};
 /* DCSS: movement and adjacency are 8-directional (Chebyshev metric) */
 const cheb=(ax,ay,bx,by)=>Math.max(Math.abs(ax-bx),Math.abs(ay-by));
 const hasAf=(mo,k)=>mo.eliteAf&&mo.eliteAf.includes(k);
+/* Per-hero deterministic RNG: every gameplay draw advances h.rngState, seeded
+   from the account master seed — the same action sequence replays identically
+   on any device. Lazy-inits for pre-determinism saves. */
+function rnd(h){
+  let a=(h.rngState==null?(h.rngState=(hashSeed(h.seed||0,h.id||0)|0)):h.rngState)|0;
+  a=a+0x6D2B79F5|0;
+  let x=Math.imul(a^a>>>15,1|a);
+  x=x+Math.imul(x^x>>>7,61|x)^x;
+  h.rngState=a;
+  return ((x^x>>>14)>>>0)/4294967296;
+}
 const DIRS8=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
 
 function hlog(h,txt,cls){
@@ -170,7 +182,7 @@ export function heroDie(h,killer,s){
   /* gear back to armory (90%) */
   for(const slot of Object.keys(h.gear)){
     const it=h.gear[slot];
-    if(it&&!it.id.startsWith('st')&&Math.random()<.9)storeItem(s,it);
+    if(it&&!it.id.startsWith('st')&&rnd(h)<.9)storeItem(s,it);
   }
   s.fame.unshift({name:h.name,race:h.race,cls:h.cls,rarity:h.rarity,xl:h.xl,
     depth:h.maxDepth||brTag(h),by:killer,won:false,runes:h.runes.length});
@@ -245,17 +257,17 @@ export function simTick(h,s){
       let cd2=Math.max(2,brDepth(h)*1.2)*(1-st.resAll);
       if(cl.kind==='poison'&&st.rPois)cd2*=.15; /* rPois shrugs off poison clouds */
       h.curHp-=cd2;
-      if(Math.random()<.3)hlog(h,h.name+t(' is burned by a cloud (')+cl.kind+')!','dmg');
+      if(rnd(h)<.3)hlog(h,h.name+t(' is burned by a cloud (')+cl.kind+')!','dmg');
       if(cl.kind==='poison'&&!st.rPois)h.poison={dps:Math.max(1,brDepth(h)*.3),t:5};
       if(h.curHp<=0){heroDie(h,t('a cloud'),s);return}
     }
   }
   /* mutation flare-ups */
-  if(h.muts.includes('teleportitis')&&Math.random()<.002)trapTeleport(h,t('teleportitis'));
-  if(h.muts.includes('berserkitis')&&Math.random()<.003&&!h.status.berserk){
+  if(h.muts.includes('teleportitis')&&rnd(h)<.002)trapTeleport(h,t('teleportitis'));
+  if(h.muts.includes('berserkitis')&&rnd(h)<.003&&!h.status.berserk){
     h.status.berserk=20;hlog(h,h.name+t(' flies into a spontaneous rage!'),'god');
   }
-  if(h.muts.includes('screamer')&&Math.random()<.01){
+  if(h.muts.includes('screamer')&&rnd(h)<.01){
     for(const mo of m.monsters)mo.awake=true;
     hlog(h,h.name+t(' screams — the whole floor wakes up!'),'dmg');
   }
@@ -270,7 +282,7 @@ export function simTick(h,s){
   const sight=fafx==='darkness'&&!st.lantern?3:7;
   if(fafx==='miasma'&&!st.rPois&&h.turn%4===0){
     h.curHp-=Math.max(1,brDepth(h)*.25);
-    if(Math.random()<.05)hlog(h,h.name+t(' chokes in the miasma'),'dmg');
+    if(rnd(h)<.05)hlog(h,h.name+t(' chokes in the miasma'),'dmg');
     if(h.curHp<=0){heroDie(h,t('the miasma'),s);return}
   }
   const wading=fafx==='flooded'&&h.race!=='merfolk'&&!st.waders;
@@ -293,7 +305,7 @@ export function simTick(h,s){
   }
   if(tgtR){tgt=tgtR;td=tdR}
   let acted=netted||(wading&&h.turn%2===0); /* net or deep water: the turn is lost */
-  if(netted&&Math.random()<.4)hlog(h,h.name+t(' struggles out of the net...'),'sys');
+  if(netted&&rnd(h)<.4)hlog(h,h.name+t(' struggles out of the net...'),'sys');
   if(!acted&&tgt){
     /* DCSS: shooting/casting requires a visible target — no firing through walls */
     if(td<=Math.min(st.rng,sight)&&(td<=1||los(m,m.px,m.py,tgt.x,tgt.y))){
@@ -388,7 +400,7 @@ export function simTick(h,s){
       const adjAlly=m.allies&&m.allies.find(a=>cheb(mo.x,mo.y,a.x,a.y)<=1);
       const d=cheb(mo.x,mo.y,m.px,m.py);
       if(adjAlly&&d>1){
-        adjAlly.hp-=Math.max(1,mo.dmg*(0.7+Math.random()*.6));
+        adjAlly.hp-=Math.max(1,mo.dmg*(0.7+rnd(h)*.6));
         if(adjAlly.hp<=0){
           m.allies.splice(m.allies.indexOf(adjAlly),1);
           hlog(h,t('Summoned ')+t(adjAlly.n)+t(' is defeated'),'sys');
@@ -407,16 +419,16 @@ export function heroAttack(h,st,mo,s){
   const cd=CLASSES[h.cls];
   /* stabbing a sleeper: guaranteed hit, assassin ×2.5, everyone else ×1.5 */
   const asleep=!mo.awake;
-  const hit=asleep||Math.random()<clamp((st.acc+10)/(st.acc+10+mo.ev),.2,.95);
+  const hit=asleep||rnd(h)<clamp((st.acc+10)/(st.acc+10+mo.ev),.2,.95);
   if(!hit){
-    if(Math.random()<.3)hlog(h,h.name+t(' misses ')+t(mo.n),'sys');
+    if(rnd(h)<.3)hlog(h,h.name+t(' misses ')+t(mo.n),'sys');
   }else{
     /* elite affixes: the qualitative layer of the fight */
     if(mo.eliteAf&&!mo._met){
       mo._met=1;
       hlog(h,'\u2b51 '+t(mo.n)+': '+mo.eliteAf.map(k=>t(ELITE_AFFIXES[k].n)).join(', '),'dmg');
     }
-    if(hasAf(mo,'reflector')&&st.style==='ranged'&&Math.random()<.25){
+    if(hasAf(mo,'reflector')&&st.style==='ranged'&&rnd(h)<.25){
       h.curHp-=st.dmg*.4;
       hlog(h,'\u27f2 '+t(mo.n)+t(' mirrors the shot back!'),'dmg');
       if(h.curHp<=0){heroDie(h,t(mo.n),s)}
@@ -424,15 +436,15 @@ export function heroAttack(h,st,mo,s){
     }
     if(mo.shield>0){
       mo.shield--;
-      if(Math.random()<.4)hlog(h,'\u26e8 '+t(mo.n)+t(' shrugs the blow off its shield'),'sys');
+      if(rnd(h)<.4)hlog(h,'\u26e8 '+t(mo.n)+t(' shrugs the blow off its shield'),'sys');
       return;
     }
     if(hasAf(mo,'phasing')){
       mo._ph=(mo._ph||0)+1;
-      if(mo._ph%3===0){if(Math.random()<.3)hlog(h,t(mo.n)+t(' phases through the strike'),'sys');return}
+      if(mo._ph%3===0){if(rnd(h)<.3)hlog(h,t(mo.n)+t(' phases through the strike'),'sys');return}
     }
-    let dmg=st.dmg*(0.75+Math.random()*.5);
-    let crit=Math.random()<st.critc;
+    let dmg=st.dmg*(0.75+rnd(h)*.5);
+    let crit=rnd(h)<st.critc;
     if(crit)dmg*=2;
     if(hasAf(mo,'antimagic')&&st.style==='magic')dmg*=.5;
     if(hasAf(mo,'stoneskin')&&mo.hp<mo.maxHp/3)dmg*=.5;
@@ -468,11 +480,11 @@ export function heroAttack(h,st,mo,s){
       hlog(h,'\ud83d\udce2 '+t(mo.n)+t(' bellows — the whole floor answers!'),'dmg');
     }
     if(mo.hp<=0)killMon(h,mo,s);
-    else if(hasAf(mo,'blinker')&&Math.random()<.35){
+    else if(hasAf(mo,'blinker')&&rnd(h)<.35){
       const m2=h.map,freeC=[];
       for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)
         if(m2.g[y][x]===0&&!(x===m2.px&&y===m2.py)&&!m2.monsters.some(o=>o.x===x&&o.y===y))freeC.push([x,y]);
-      if(freeC.length){const c=freeC[Math.floor(Math.random()*freeC.length)];mo.x=c[0];mo.y=c[1]}
+      if(freeC.length){const c=freeC[Math.floor(rnd(h)*freeC.length)];mo.x=c[0];mo.y=c[1]}
     }
   }
   /* auto-training: mark what we fight with — the XP pool will feed these skills */
@@ -508,17 +520,17 @@ function killMon(h,mo,s){
   const depth=brDepth(h);
   const eliteLoot=mo.eliteAf?(1+.5*mo.eliteAf.length)*(memHas(s,'k_elite')?2:1):1;
   const goldMul=(RACES[h.race].gold||1)*gGold(s)*todayAffix().gold*eliteLoot;
-  const g=Math.floor((2+Math.random()*4)*Math.pow(1.22,depth)*goldMul);
+  const g=Math.floor((2+rnd(h)*4)*Math.pow(1.22,depth)*goldMul);
   s.gold+=Math.ceil(g*.5);h.gold+=Math.floor(g*.5);h.rep.gold+=g;
   gainXp(h,mo.xp,s);
-  if(Math.random()<.06*gDrop(s))s.scrap++;
+  if(rnd(h)<.06*gDrop(s))s.scrap++;
   if(h.god){h.piety=Math.min(200,h.piety+1);
     const gd=GODS[h.god];
     if(gd.healkill)h.curHp=Math.min(h.maxHpCache,h.curHp+h.maxHpCache*gd.healkill);
   }
   /* the necromancer raises the fallen: Animate Dead */
   const cdN=CLASSES[h.cls];
-  if(cdN.raise&&!mo.boss&&!mo.uniq&&Math.random()<.22){
+  if(cdN.raise&&!mo.boss&&!mo.uniq&&rnd(h)<.22){
     h.map.allies=h.map.allies||[];
     const cap=1+Math.floor((h.skills.necromancy||0)/9);
     if(h.map.allies.length<cap){
@@ -526,7 +538,7 @@ function killMon(h,mo,s){
       if(a){a.x=mo.x;a.y=mo.y}
     }
   }
-  if(RACES[h.race].eat&&Math.random()<.4)
+  if(RACES[h.race].eat&&rnd(h)<.4)
     h.curHp=Math.min(h.maxHpCache,h.curHp+h.maxHpCache*.05);
   if(mo.uniq){
     hlog(h,'⚔ '+h.name+t(' slays the unique: ')+t(mo.n)+'!','kill');
@@ -540,8 +552,8 @@ function killMon(h,mo,s){
     s.stat.uniqKills++;
     gainMem(s,10+brDepth(h));
     maybeDropUnrand(h,s,.04);
-    if(Math.random()<(.03+memEff(s,'rune')))giveRune(h,t('a unique\'s rune'),s);
-    else if(Math.random()<.35)dropForgeItem(h,s);
+    if(rnd(h)<(.03+memEff(s,'rune')))giveRune(h,t('a unique\'s rune'),s);
+    else if(rnd(h)<.35)dropForgeItem(h,s);
     const br=BRANCHES[h.branch];
     if(br.boss===mo.uniq&&br.rune)giveRune(h,br.rune,s);
   }else if(mo.boss){
@@ -551,7 +563,7 @@ function killMon(h,mo,s){
     const br=BRANCHES[h.branch];
     if(br.rune)giveRune(h,br.rune,s);
     dropForgeItem(h,s);
-  }else if(Math.random()<.25){
+  }else if(rnd(h)<.25){
     hlog(h,h.name+t(' kills: ')+t(mo.n)+' (+'+g+' 🜚)','kill');
   }
 }
@@ -572,19 +584,19 @@ function giveRune(h,name,s){
   h.rep.notable.push(t('ᚱ obtained: ')+t(name));
 }
 function monAttack(h,st,mo,s){
-  const hit=Math.random()<clamp((mo.acc+8)/(mo.acc+8+st.ev),.1,.92);
+  const hit=rnd(h)<clamp((mo.acc+8)/(mo.acc+8+st.ev),.1,.92);
   if(!hit)return;
-  if(st.dodge>0&&Math.random()<st.dodge){
-    if(Math.random()<.3)hlog(h,h.name+t(' dodges ')+t(mo.n),'sys');
+  if(st.dodge>0&&rnd(h)<st.dodge){
+    if(rnd(h)<.3)hlog(h,h.name+t(' dodges ')+t(mo.n),'sys');
     return;
   }
-  let dmg=mo.dmg*(0.7+Math.random()*.6);
+  let dmg=mo.dmg*(0.7+rnd(h)*.6);
   dmg=Math.max(1,dmg-st.ac*.7)*(1-st.resAll);
   if(RACES[h.race].shrug)dmg*=.9; /* the dwarf shrugs off part of the damage */
   const cd=CLASSES[h.cls];
   h.curHp-=dmg;
   if(hasAf(mo,'vampiric'))mo.hp=Math.min(mo.maxHp,mo.hp+dmg*.8);
-  if(mo.special&&mo.special.pois&&!st.rPois&&Math.random()<.35){
+  if(mo.special&&mo.special.pois&&!st.rPois&&rnd(h)<.35){
     h.poison={dps:Math.max(1,mo.dmg*.15),t:5};
     hlog(h,'☠ '+h.name+t(' is poisoned (')+t(mo.n)+')','dmg');
   }
@@ -594,11 +606,11 @@ function monAttack(h,st,mo,s){
     mo.hp-=st.dmg*.3;
     if(mo.hp<=0){killMon(h,mo,s);return}
   }
-  if(mo.special&&mo.special.drain&&Math.random()<.3)h.xp=Math.max(0,h.xp-3);
-  if(mo.special&&mo.special.mag&&mo.special.drain&&Math.random()<.06)applyMut(h,s,false,t('malmutation from ')+t(mo.n));
+  if(mo.special&&mo.special.drain&&rnd(h)<.3)h.xp=Math.max(0,h.xp-3);
+  if(mo.special&&mo.special.mag&&mo.special.drain&&rnd(h)<.06)applyMut(h,s,false,t('malmutation from ')+t(mo.n));
   /* distortion attacks: banishment to the Abyss */
   if(!h.inPortal&&h.branch!=='abyss'&&brDepth(h)>=11&&
-     (mo.kind==='wraith'||mo.kind==='lich'||mo.kind==='de_sorcerer')&&Math.random()<.025){
+     (mo.kind==='wraith'||mo.kind==='lich'||mo.kind==='de_sorcerer')&&rnd(h)<.025){
     banishHero(h,s,t(mo.n));return;
   }
   if(h.curHp<=0){
@@ -685,7 +697,7 @@ function monStep(h,mo,df){
   let bestX=-1,bestY=-1,bestV=cur;
   const dirs=[...DIRS8];
   /* slight order randomization so monsters don't line up in a perfect column */
-  if(Math.random()<.5)dirs.reverse();
+  if(rnd(h)<.5)dirs.reverse();
   for(const [ox,oy] of dirs){
     const nx=mo.x+ox,ny=mo.y+oy;
     if(nx<0||nx>=MW||ny<0||ny>=MH)continue;
@@ -716,7 +728,7 @@ function exploreGoal(h){
         if(d<bd){bd=d;best=[x,y]}
       }
     }
-    if(best&&h.strategy==='speed'&&Math.random()<.7)best=null;
+    if(best&&h.strategy==='speed'&&rnd(h)<.7)best=null;
   }
   return best;
 }
@@ -724,7 +736,7 @@ function pickup(h,it,s){
   if(it.kind==='gold'){
     const g=Math.floor(it.amt*(RACES[h.race].gold||1)*gGold(s));
     s.gold+=Math.ceil(g*.5);h.gold+=Math.floor(g*.5);h.rep.gold+=g;
-    if(Math.random()<.3)hlog(h,h.name+t(' picks up ')+g+t(' gold'),'loot');
+    if(rnd(h)<.3)hlog(h,h.name+t(' picks up ')+g+t(' gold'),'loot');
   }else if(it.kind==='cons'){
     h.inv[it.c.type]=(h.inv[it.c.type]||0)+1;
     hlog(h,h.name+t(' picks up: ')+consName(it.c,h.known.includes(it.c.type)),'loot');
@@ -739,7 +751,7 @@ function pickup(h,it,s){
     returnFromAbyss(h,s);
   }else if(it.kind==='item'){
     /* the item was pre-rolled at floor generation — take exactly that one */
-    acquireItem(h,s,it.it||randomItem(null,Math.min(2,Math.floor(brDepth(h)/8)),Math.random));
+    acquireItem(h,s,it.it||randomItem(null,Math.min(2,Math.floor(brDepth(h)/8)),()=>rnd(h)));
   }else if(it.kind==='potion'){
     /* legacy saves: old maps with the basic potion */
     h.inv.curing=(h.inv.curing||0)+1;
@@ -753,7 +765,7 @@ function pickup(h,it,s){
 }
 export function dropForgeItem(h,s){
   const depth=brDepth(h);
-  acquireItem(h,s,randomItem(null,Math.min(2,Math.floor(depth/8)),Math.random));
+  acquireItem(h,s,randomItem(null,Math.min(2,Math.floor(depth/8)),()=>rnd(h)));
 }
 export function acquireItem(h,s,it){
   /* auto-equip if better for this hero, else armory */
@@ -904,7 +916,7 @@ function drinkPotion(h,s,type,desperate){
     case 'brill':h.status.brill=45;break;
     case 'agility':h.status.agility=45;break;
     case 'mutation':{
-      const n=1+(Math.random()<.4?1:0);
+      const n=1+(rnd(h)<.4?1:0);
       for(let i=0;i<n;i++)applyMut(h,s,null,t('potion of mutation'));
       break}
   }
@@ -924,7 +936,7 @@ function readScroll(h,s,type){
       hlog(h,t('✨ armour enchanted: ')+itemName(h.gear.armour),'rune')}break;
     case 'brand':if(h.gear.weapon&&!h.gear.weapon.ego){
       const egos=['flaming','freezing','venom','electro','speed','vamp'];
-      h.gear.weapon.ego=egos[Math.floor(Math.random()*egos.length)];
+      h.gear.weapon.ego=egos[Math.floor(rnd(h)*egos.length)];
       hlog(h,t('✨ weapon gains a brand: ')+itemName(h.gear.weapon),'rune')}break;
     case 'mapping':for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)
       if(m.g[y][x]===0)m.explored[y][x]=true;
@@ -936,13 +948,13 @@ function readScroll(h,s,type){
       }
       hlog(h,'😱 '+n+t(' enemies flee in terror'),'god');break}
     case 'acquire':{
-      const it=randomItem(null,Math.min(2,Math.floor(brDepth(h)/7)+1),Math.random);
+      const it=randomItem(null,Math.min(2,Math.floor(brDepth(h)/7)+1),()=>rnd(h));
       const eq=tryAutoEquip(h,it,s);
       hlog(h,t('🎁 acquirement: ')+itemName(it)+(eq?t(' (equipped)'):t(' (to armory)')),'rune');
       if(!eq)storeItem(s,it);break}
     case 'identify':{
       const unk=[...Object.keys(h.inv)].filter(k=>h.inv[k]>0&&!h.known.includes(k));
-      if(unk.length){const k=unk[Math.floor(Math.random()*unk.length)];
+      if(unk.length){const k=unk[Math.floor(rnd(h)*unk.length)];
         know(h,k);
         hlog(h,t('🔍 identified: ')+(POTIONS[k]?t(POTIONS[k].n):t(SCROLLS[k].n)),'loot')}break}
   }
@@ -993,7 +1005,7 @@ function trapTeleport(h,reason){
   const m=h.map;
   const free=[];
   for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)if(m.g[y][x]===0)free.push([x,y]);
-  const c=free[Math.floor(Math.random()*free.length)];
+  const c=free[Math.floor(rnd(h)*free.length)];
   m.px=c[0];m.py=c[1];h.path=null;
   hlog(h,'✦ '+h.name+t(' is teleported (')+reason+')','sys');
 }
@@ -1002,7 +1014,7 @@ export function checkTrap(h,s){
   const tr=m.traps&&m.traps.find(t=>t.x===m.px&&t.y===m.py&&!t.done);
   if(!tr)return;
   const st=heroStats(h,s);
-  if(!tr.seen&&Math.random()<.35+st.ev*.008){
+  if(!tr.seen&&rnd(h)<.35+st.ev*.008){
     tr.seen=true;
     hlog(h,h.name+t(' spots a trap (')+trapName(tr.kind)+t(') and walks around it'),'sys');
     return;
@@ -1010,7 +1022,7 @@ export function checkTrap(h,s){
   tr.done=true;tr.seen=true;
   switch(tr.kind){
     case 'shaft':{
-      const drop=1+(Math.random()<.3?1:0);
+      const drop=1+(rnd(h)<.3?1:0);
       hlog(h,'⬇ '+h.name+t(' falls through a shaft to ')+drop+t(' floors!'),'dmg');
       const br=BRANCHES[h.branch];
       h.floor=Math.min(br.floors,h.floor+drop);
@@ -1084,20 +1096,20 @@ export function shopVisit(h,s,stype){
   const frac={thrifty:.3,balanced:.6,lavish:1}[h.spend||'balanced'];
   let budget=Math.floor(h.gold*frac);
   const bought=[];
-  const offers=3+Math.floor(Math.random()*3);
+  const offers=3+Math.floor(rnd(h)*3);
   for(let i=0;i<offers;i++){
-    const wantGear=(stype==='weapon'||stype==='armour')?Math.random()<.6:Math.random()<.25;
+    const wantGear=(stype==='weapon'||stype==='armour')?rnd(h)<.6:rnd(h)<.25;
     if(wantGear){
       const slot=stype==='weapon'?'weapon':stype==='armour'?'armour':null;
-      const it=randomItem(slot,Math.min(2,Math.floor(depth/7)),Math.random);
-      const price=Math.floor((60+depth*20)*(1+it.rar)*(.8+Math.random()*.5));
+      const it=randomItem(slot,Math.min(2,Math.floor(depth/7)),()=>rnd(h));
+      const price=Math.floor((60+depth*20)*(1+it.rar)*(.8+rnd(h)*.5));
       if(price<=budget){
         const eq=tryAutoEquip(h,it,s);
         if(eq){budget-=price;h.gold-=price;bought.push(itemName(it))}
       }
     }else{
-      const c=randConsumable(Math.random);
-      const price=Math.floor((15+depth*6)*(.8+Math.random()*.5));
+      const c=randConsumable(()=>rnd(h));
+      const price=Math.floor((15+depth*6)*(.8+rnd(h)*.5));
       if(price<=budget){
         budget-=price;h.gold-=price;
         h.inv[c.type]=(h.inv[c.type]||0)+1;
@@ -1112,8 +1124,8 @@ export function shopVisit(h,s,stype){
 export function applyMut(h,s,goodOnly,reason){
   /* DCSS: undead flesh does not mutate */
   if(RACES[h.race].und){hlog(h,h.name+t(' is immune to mutation'),'sys');return}
-  const good=goodOnly===null?Math.random()<.55:goodOnly;
-  const mk=randomMut(h,Math.random,good);
+  const good=goodOnly===null?rnd(h)<.55:goodOnly;
+  const mk=randomMut(h,()=>rnd(h),good);
   if(!mk)return;
   h.muts.push(mk);
   const md=MUTS[mk];
@@ -1211,7 +1223,7 @@ export function alliesAct(h,s,mArg){
       a.mv-=1;
       const d=Math.max(Math.abs(tgt.x-a.x),Math.abs(tgt.y-a.y));
       if(d<=1){
-        const adm=Math.max(1,a.dmg*(0.7+Math.random()*.6)-tgt.ac*.5);
+        const adm=Math.max(1,a.dmg*(0.7+rnd(h)*.6)-tgt.ac*.5);
         tgt.hp-=adm;
         if(tgt.hp<=0){killMon(h,tgt,s);break}
       }else allyStep(m,a,tgt.x,tgt.y);
@@ -1234,10 +1246,10 @@ function allyStep(m,a,tx,ty){
 /* unrand drop: only ones not yet obtained, one copy per account */
 export function maybeDropUnrand(h,s,chance){
   s.unrandsOwned=s.unrandsOwned||[];
-  if(Math.random()>=chance)return false;
+  if(rnd(h)>=chance)return false;
   const pool=UNRANDS.filter(u=>!s.unrandsOwned.includes(u.id));
   if(!pool.length)return false;
-  const u=pool[Math.floor(Math.random()*pool.length)];
+  const u=pool[Math.floor(rnd(h)*pool.length)];
   s.unrandsOwned.push(u.id);
   const it=makeUnrand(u.id);
   hlog(h,t('🌟 LEGEND! Artefact found: ')+t(u.n)+' — '+t(u.lore),'rune');

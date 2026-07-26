@@ -111,12 +111,12 @@ describe('full run lifecycle', () => {
   });
   it('dead heroes return non-starter gear to armory and grant shards', () => {
     const s = makeState();
+    s.masterSeed = 2;
     const h = freshHero(s, 'kobold', 'assassin', 1);
+    h.seed = 2; h.rngState = 2 * 3 + 7; // pinned: the amulet's gear-return roll passes
     startRun(h, s);
     h.gear.amulet = { slot: 'amulet', base: 'am_regen', plus: 0, ego: null, rar: 2, id: 'i_test' };
-    const spy = vi.spyOn(Math, 'random').mockReturnValue(0.05); // gear-return roll < .9 → always returns
     heroDie(h, 'test hydra', s);
-    spy.mockRestore();
     expect(h.state).toBe('dead');
     expect(s.armory.some(it => it.id === 'i_test')).toBe(true);
     expect(s.armory.some(it => it.id.startsWith('st'))).toBe(false); // starter kit is not returned

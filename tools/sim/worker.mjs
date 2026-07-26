@@ -155,14 +155,15 @@ function depthScore(s) {
   return { score: best, tag: bestTag };
 }
 
-let simDay = 0;
+let simDay = 0, GAMEPLAY_SEED = 1;
 setAffixDateProvider(() => '2026-01-' + String(1 + (simDay % 28)).padStart(2, '0'));
 /* CRN: every session index draws the same random stream regardless of tactic
    or code revision — paired comparisons cut variance dramatically */
 const trueRandom = Math.random;
 function session(tactic, days = 1, seed = 0) {
-  Math.random = mulberry32(0x9e3779b9 ^ seed);
-  const s = makeState();
+  Math.random = mulberry32(0x9e3779b9 ^ seed); /* bot decisions (tactic/forge choices) */
+  GAMEPLAY_SEED = (0x1234567 ^ seed) >>> 0; /* gameplay determinism via the account master seed */
+  const s = makeState(); s.masterSeed = GAMEPLAY_SEED; s.seq = {};
   const m = { summons: 0, prestiges: 0, spentLegends: 0 };
   const step = tactic.checkin;
   const byDay = [];
