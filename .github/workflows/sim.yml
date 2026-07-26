@@ -1,0 +1,55 @@
+name: Balance simulation
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Game days per session'
+        default: '7'
+      sessions:
+        description: 'Sessions per tactic per shard'
+        default: '6'
+
+permissions:
+  contents: read
+
+jobs:
+  simulate:
+    strategy:
+      fail-fast: false
+      matrix:
+        tactic: [afk, lazy, active, rush_slots, keystoner, whale, smith, speedrun, shardwhale]
+        shard: [a, b]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Run ${{ matrix.tactic }} shard ${{ matrix.shard }}
+        env:
+          SEED_BASE: ${{ matrix.shard == 'a' && '0' || '500' }}
+        run: |
+          bun tools/sim/worker.mjs "${{ matrix.tactic }}" "${{ github.event.inputs.sessions }}" "${{ github.event.inputs.days }}" \
+            > "${{ matrix.tactic }}_${{ matrix.shard }}.ndjson"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sim-${{ matrix.tactic }}-${{ matrix.shard }}
+          path: '*.ndjson'
+
+  aggregate:
+    needs: simulate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: results
+          merge-multiple: true
+      - name: Aggregate
+        run: |
+          python3 tools/sim/aggregate.py 'results/*.ndjson' | tee summary.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sim-summary
+          path: |
+            summary.txt
+            results/*.ndjson
