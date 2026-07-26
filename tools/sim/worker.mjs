@@ -18,6 +18,7 @@ const achMetSafe = (s, n) => { try { return achMet(s, n); } catch { return false
 import { randomItem, doForge, forgeCost as fCost, forgeScrap as fScrap } from '../../src/data/items.js';
 import { BR_OFFSET } from '../../src/data/branches.js';
 import { starNeed } from '../../src/data/combos.js';
+import { greatRaces, greatClasses } from '../../src/core/chronicle.js';
 
 
 
@@ -177,6 +178,8 @@ function session(tactic, days = 1) {
     zlv: Object.values(s.zupg||{}).reduce((a,b)=>a+b,0),
     plv: Object.values(s.pupg||{}).reduce((a,b)=>a+b,0),
     ng: ngLevel(s), byDay, debug: m.debug,
+    greats: greatRaces(s).length + greatClasses(s).length,
+    zig: s.stat.zigBest || 0, contracts: s.stat.contracts || 0,
   };
 }
 

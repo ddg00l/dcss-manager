@@ -10,14 +10,15 @@ for f in files:
         r = json.loads(line)
         by.setdefault(r['tactic'], []).append(r)
 med = st.median
-hdr = f"{'tactic':<11}{'n':>5}{'win%':>6}{'wins':>6}{'depth':>7}{'deaths':>7}{'runes':>6}{'mem':>8}{'zlv':>5}{'plv':>5}{'prest':>6}{'⚜':>6}"
+hdr = f"{'tactic':<11}{'n':>5}{'win%':>6}{'wins':>6}{'depth':>7}{'deaths':>7}{'runes':>6}{'mem':>8}{'zlv':>5}{'plv':>5}{'prest':>6}{'⚜':>6}{'grt':>5}{'zig':>5}{'ctr':>5}"
 print(hdr); print('-' * len(hdr))
 for name, o in sorted(by.items()):
     g = lambda k: [x.get(k, 0) for x in o]
     wins = g('wins'); n = len(o)
     print(f"{name:<11}{n:>5}{sum(1 for w in wins if w>0)/n*100:>6.0f}{sum(wins)/n:>6.2f}"
           f"{med(g('depth')):>7.0f}{med(g('deaths')):>7.0f}{med(g('runes')):>6.0f}{med(g('mem')):>8.0f}"
-          f"{med(g('zlv')):>5.0f}{med(g('plv')):>5.0f}{sum(g('prestiges'))/n:>6.2f}{med(g('legends')):>6.0f}")
+          f"{med(g('zlv')):>5.0f}{med(g('plv')):>5.0f}{sum(g('prestiges'))/n:>6.2f}{med(g('legends')):>6.0f}"
+          f"{med(g('greats')):>5.0f}{med(g('zig')):>5.0f}{med(g('contracts')):>5.0f}")
 
 # per-day dynamics when byDay snapshots are present
 sample = next((x for o in by.values() for x in o if x.get('byDay')), None)
