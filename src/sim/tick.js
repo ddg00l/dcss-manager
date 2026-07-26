@@ -297,11 +297,14 @@ export function simTick(h,s){
   const wading=fafx==='flooded'&&h.race!=='merfolk'&&!st.waders;
   /* find nearest visible monster; stealth delays waking them (DCSS stealth) */
   const wakeR=Math.min(wakeRadius(h),sight);
+  const df=heroDistField(m); /* reachability field from the hero (also used by monsters) */
   let tgt=null,td=1e9;
   for(const mo of m.monsters){
     const d=cheb(mo.x,mo.y,m.px,m.py);
     if(d<=wakeR&&los(m,m.px,m.py,mo.x,mo.y))mo.awake=true;
-    if(mo.awake&&d<td){td=d;tgt=mo}
+    /* only lock onto foes the hero can actually reach or see — chasing a phantom
+       walled off from us used to livelock the hero on its start cell */
+    if(mo.awake&&d<td&&(df[mo.y*MW+mo.x]>=0||los(m,m.px,m.py,mo.x,mo.y))){td=d;tgt=mo}
   }
   /* moving unnoticed trains Stealth */
   if(!m.monsters.some(mo=>mo.awake)&&h.turn%4===0)markUse(h,'stealth',.3);
@@ -329,8 +332,8 @@ export function simTick(h,s){
     if(here>=0){pickup(h,m.items[here],s);m.items.splice(here,1);acted=true}
   }
   if(!acted){
-    /* explore: nearest item or unexplored, else stairs */
-    const goal=exploreGoal(h);
+    /* explore: nearest reachable item or unexplored, else stairs */
+    const goal=exploreGoal(h,df);
     if(goal){stepToward(h,goal[0],goal[1],s);acted=true}
     else{
       if(m.px===m.stairs.x&&m.py===m.stairs.y){
@@ -733,12 +736,14 @@ function monStep(h,mo,df){
   }
   if(bestX>=0){mo.x=bestX;mo.y=bestY}
 }
-function exploreGoal(h){
+function exploreGoal(h,df){
   const m=h.map;
+  const reach=(x,y)=>!df||df[y*MW+x]>=0; /* only pursue goals the hero can path to */
   /* items first */
   let best=null,bd=1e9;
   for(const it of m.items){
     if(it.kind==='altar'&&h.god)continue;
+    if(!reach(it.x,it.y))continue;
     const d=Math.abs(it.x-m.px)+Math.abs(it.y-m.py);
     if(d<bd){bd=d;best=[it.x,it.y]}
   }
@@ -746,7 +751,7 @@ function exploreGoal(h){
   /* unexplored (classic/cautious only) */
   if(h.caution!=='bold'||h.strategy!=='speed'){
     for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
-      if(m.g[y][x]===0&&!m.explored[y][x]){
+      if(m.g[y][x]===0&&!m.explored[y][x]&&reach(x,y)){
         const d=Math.abs(x-m.px)+Math.abs(y-m.py);
         if(d<bd){bd=d;best=[x,y]}
       }

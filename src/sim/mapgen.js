@@ -54,7 +54,8 @@ export function genFloor(h,s){
   const isBossFloor=P?false:((br.floors===h.floor&&(br.boss||br.bossMon))||(br.every&&h.floor%br.every===0));
   const monsters=[];
   const afx=todayAffix(); /* the daily affix colours every floor */
-  const pool=P?br.mobs:br.mobs.filter(m=>h.floor>=m[1]&&h.floor<=m[2]);
+  let pool=P?br.mobs:br.mobs.filter(m=>h.floor>=m[1]&&h.floor<=m[2]);
+  if(!pool.length)pool=br.mobs; /* floors past the branch's tabled depth still get its mobs, never an empty pool */
   let n=P?(P.mobs.length?6+Math.floor(rng()*5):0):(5+Math.floor(rng()*5)+(h.branch==='zot'?2:0));
   if(n>0)n=Math.max(2,n+(afx.extraMobs||0)-(afx.lessMobs||0));
   for(let i=0;i<n&&free.length>4;i++){

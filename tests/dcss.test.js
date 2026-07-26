@@ -184,6 +184,36 @@ describe('save migration from pre-DCSS-content version', () => {
 });
 
 describe('death recap & monster pathing', () => {
+  it('a hero locked onto an unreachable target escapes to the stairs (no livelock)', async () => {
+    const { simTick, startRun } = await import('../src/sim/tick.js');
+    const { makeMon } = await import('../src/sim/mapgen.js');
+    const MW = 24, MH = 15;
+    const s = makeState(); s.masterSeed = 12345; s.seq = {};
+    const h = newHero('minotaur', 'fighter', 2, s); s.heroes.push(h); startRun(h, s);
+    /* a room with reachable stairs at (18,7), plus an isolated awake monster at
+       (2,2) the hero can never reach or see. The AI targets the nearest awake
+       monster regardless of reachability, so without the anti-livelock guard the
+       hero stays pinned on it — standing still on its start cell forever. */
+    const g = Array.from({ length: MH }, () => new Array(MW).fill(1));
+    for (let y = 6; y <= 8; y++) for (let x = 4; x <= 19; x++) g[y][x] = 0;
+    g[2][2] = 0;
+    const explored = Array.from({ length: MH }, () => new Array(MW).fill(false));
+    for (let y = 6; y <= 8; y++) for (let x = 4; x <= 19; x++) explored[y][x] = true;
+    const mon = makeMon('rat', 1, 2, 2, () => 0.5); mon.awake = true;
+    h.map = { g, monsters: [mon], items: [], stairs: { x: 18, y: 7 }, px: 5, py: 7,
+      explored, bossFloor: false, fafx: null, traps: [], clouds: [] };
+    h.path = null; h.pathGoal = null; h.branch = 'dungeon'; h.turn = 0;
+    const cells = new Set();
+    let reachedStairs = false;
+    for (let i = 0; i < 45 && h.state === 'run'; i++) {
+      simTick(h, s);
+      if (h.map) { cells.add(h.map.px + ',' + h.map.py); if (h.map.px === 18 && h.map.py === 7) reachedStairs = true; }
+    }
+    /* with the guard the hero gives up the unreachable foe and makes the stairs;
+       without it, it never leaves its start cell */
+    expect(reachedStairs).toBe(true);
+    expect(cells.size).toBeGreaterThan(5);
+  });
   it('heroDie leaves a morgue snapshot in pendingDeaths', async () => {
     const { heroDie } = await import('../src/sim/tick.js');
     const s = makeState();
