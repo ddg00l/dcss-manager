@@ -95,13 +95,15 @@
     padding:6px 3px;background:var(--panel);border:1px solid var(--line);border-radius:6px;
     color:var(--dim);font-size:9px;position:relative;cursor:pointer}
   .fst i{font-style:normal;font-size:16px;line-height:1;filter:grayscale(1) brightness(.85)}
+  .fst img{width:24px;height:24px;image-rendering:pixelated;filter:grayscale(1) brightness(.85)}
   .fst.active{color:var(--gold);border-color:var(--gold);background:var(--panel2)}
-  .fst.active i{filter:none}
+  .fst.active i,.fst.active img{filter:none}
   .fst.locked{opacity:.5}
   .fst.locked i{filter:grayscale(1)}
   .fst.locked::before{content:'🔒';position:absolute;top:2px;right:3px;font-size:9px}
   .famePane{display:none}
   .famePane.shown{display:block}
+  .heroPane{display:none}.heroPane.shown{display:block}
   /* armory filter/sort chips */
   .armBar{display:flex;flex-direction:column;gap:5px;margin:4px 0 10px}
   .chipRow{display:flex;flex-wrap:wrap;gap:5px}

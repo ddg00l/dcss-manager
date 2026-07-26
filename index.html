@@ -30,12 +30,16 @@
     <div id="wlog"></div>
   </div>
   <div id="pHeroes" class="pane">
-    <button id="btnSummon" class="bigAction summon"><i>✦</i><span data-i18n>Summon a Seeker</span></button>
-    <h3 data-i18n>Seekers</h3>
-    <div id="heroList" class="grid"></div>
-    <div class="hint" data-i18n>Death in the dungeon is forever (shards and gear return). Heroes train the skills they fight with. Strategy sets the route and caution.</div>
-    <h3 data-i18n>Combo collection</h3>
-    <div id="comboList"></div>
+    <div id="heroTabs" class="subtabs"></div>
+    <div id="heroesSeekers" class="heroPane">
+      <button id="btnSummon" class="bigAction summon"><i>✦</i><span data-i18n>Summon a Seeker</span></button>
+      <div id="heroList" class="grid"></div>
+      <div class="hint" data-i18n>Death in the dungeon is forever (shards and gear return). Heroes train the skills they fight with. Strategy sets the route and caution.</div>
+    </div>
+    <div id="heroesCollection" class="heroPane">
+      <div class="hint" data-i18n>Every race+class combo you have summoned. Tap one to spend its shards on stars.</div>
+      <div id="comboList"></div>
+    </div>
   </div>
   <div id="pForge" class="pane">
     <button id="btnForge" class="bigAction forge"><i>⚒</i><span data-i18n>Forge an item</span></button>
@@ -97,6 +101,7 @@
 <div id="equip" class="overlay"><div class="panelBox" id="equipBox"></div></div>
 <div id="settings" class="overlay"><div class="panelBox" id="settingsBox"></div></div>
 <div id="inspect" class="overlay"><div class="panelBox" id="inspectBox"></div></div>
+<div id="combo" class="overlay"><div class="panelBox" id="comboBox"></div></div>
 <div id="gachaModal" class="gm">
   <canvas id="gmFx"></canvas>
   <div class="gmRays"></div>

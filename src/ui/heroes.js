@@ -18,7 +18,8 @@ import { t } from '../i18n/index.js';
 /* ===================== heroes pane ===================== */
 export function renderHeroes(){
   const box=$('heroList');box.innerHTML='';
-  const heroes=save.heroes.filter(h=>h.state!=='dead'&&h.state!=='victor');
+  const heroes=save.heroes.filter(h=>h.state!=='dead'&&h.state!=='victor')
+    .sort((a,b)=>(b.state==='run')-(a.state==='run')); /* delving heroes first, then camp */
   for(const h of heroes){
     const st=heroStats(h,save);
     const el=document.createElement('div');

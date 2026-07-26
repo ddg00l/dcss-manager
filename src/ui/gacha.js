@@ -50,8 +50,56 @@ export function doRoll(premium){
   if(window.__renderAll)window.__renderAll();
 }
 $('btnSummon').onclick=openSummonModal;
+/* ---- Heroes tab sub-tabs: Seekers / Collection ---- */
+let activeHeroSub='heroesSeekers';
+const HERO_SUBTABS=[
+  {id:'heroesSeekers',tile:'pc_human',label:'Seekers'},
+  {id:'heroesCollection',tile:'i_orb',label:'Collection'},
+];
+function renderHeroTabs(){
+  const bar=$('heroTabs'); if(!bar)return;
+  bar.innerHTML='';
+  for(const st of HERO_SUBTABS){
+    const b=document.createElement('button');
+    b.className='fst'+(st.id===activeHeroSub?' active':'');
+    b.innerHTML='<img src="'+tileURL(st.tile)+'" alt=""><span>'+t(st.label)+'</span>';
+    b.onclick=()=>{sfx.ui();activeHeroSub=st.id;renderHeroTabs();};
+    bar.appendChild(b);
+  }
+  for(const st of HERO_SUBTABS){const p=$(st.id);if(p)p.classList.toggle('shown',st.id===activeHeroSub);}
+}
+
+/* ---- combo detail: spend shards on stars, with an explanation of what stars do ---- */
+function openCombo(ck){
+  sfx.ui();
+  const [r,c]=ck.split('/');
+  const rar=comboRarity(r,c);
+  const box=$('comboBox');
+  const draw=()=>{
+    const stars=save.stars[ck]||0,shards=save.shards[ck]||0,need=starNeed(stars);
+    box.innerHTML=
+      '<div class="sheetHead"><img src="'+tileURL(RACES[r].t)+'" class="pt">'+
+      '<div><div class="nm rar'+rar+'">'+t(RACES[r].n)+' '+t(CLASSES[c].n)+'</div>'+
+      '<div class="label">'+t(RARN[rar])+' · '+(starStr(stars)||t('no stars yet'))+'</div></div></div>'+
+      '<div class="meta" style="font-size:10px;line-height:1.55;color:var(--dim);margin:6px 0 12px">'+
+      t('Stars permanently strengthen every hero of this race and class — +8% damage and +8% HP per star, forever, kept through every prestige. Summoning a combo you already own turns into shards for it; spend them here to add stars.')+'</div>'+
+      '<div class="kv"><span>'+t('Stars')+'</span><b class="rar'+rar+'">'+(starStr(stars)||'—')+'</b></div>'+
+      '<div class="kv"><span>'+t('Current bonus')+'</span><b>+'+(stars*8)+'% '+t('damage & HP')+'</b></div>'+
+      '<div class="kv"><span>'+t('Shards')+'</span><b>'+shards+' / '+need+'</b></div>'+
+      '<button id="comboUp" class="blue" style="width:100%;margin-top:12px">★ '+t('Add a star')+' · '+need+' '+t('shards')+'</button>'+
+      '<button id="comboClose" style="width:100%;margin-top:8px">'+t('Done')+'</button>';
+    const up=$('comboUp'); up.disabled=shards<need;
+    up.onclick=()=>{ save.shards[ck]-=need; save.stars[ck]=(save.stars[ck]||0)+1; sfx.leg(); persist(); draw(); renderGacha(); };
+    $('comboClose').onclick=()=>{sfx.ui();$('combo').classList.remove('show')};
+  };
+  draw();
+  $('combo').classList.add('show');
+}
+$('combo').addEventListener('click',e=>{if(e.target.id==='combo')$('combo').classList.remove('show')});
+
 export function renderGacha(){
-  /* the summon controls live in the modal now; the tab shows the collection */
+  renderHeroTabs();
+  /* the collection: every summoned combo; tap one to spend shards on stars */
   const box=$('comboList');box.innerHTML='';
   const rows=[];
   for(const ck of Object.keys(save.seen)){
@@ -63,21 +111,16 @@ export function renderGacha(){
   }
   rows.sort((a,b)=>b.rar-a.rar);
   for(const row of rows){
+    const ready=row.shards>=row.need;
     const el=document.createElement('div');
-    el.className='itemRow bord'+row.rar;
+    el.className='itemRow bord'+row.rar;el.style.cursor='pointer';
     el.innerHTML='<img src="'+tileURL(RACES[row.r].t)+'">'+
       '<div class="tInfo"><span class="rar'+row.rar+'">'+t(RACES[row.r].n)+' '+t(CLASSES[row.c].n)+'</span>'+
       ' <span class="label">'+starStr(row.stars)+'</span>'+
-      '<div class="label">'+t('shards: ')+row.shards+'/'+row.need+t(' · star: +8% damage and HP')+'</div></div>';
-    const btn=document.createElement('button');
-    btn.textContent='★+';
-    btn.disabled=row.shards<row.need;
-    btn.onclick=()=>{
-      save.shards[row.ck]-=row.need;
-      save.stars[row.ck]=(save.stars[row.ck]||0)+1;
-      sfx.leg();persist();renderGacha();
-    };
-    el.appendChild(btn);
+      '<div class="label">'+t('shards: ')+row.shards+'/'+row.need+
+      (ready?' · <span style="color:var(--good)">'+t('★ ready')+'</span>':'')+'</div></div>'+
+      '<span class="label" style="font-size:14px;color:'+(ready?'var(--gold)':'var(--dim)')+'">'+(ready?'★+':'›')+'</span>';
+    el.onclick=()=>openCombo(row.ck);
     box.appendChild(el);
   }
   if(!rows.length)box.innerHTML='<div class="hint">'+t('Summon your first hero!')+'</div>';
