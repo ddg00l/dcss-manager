@@ -79,7 +79,8 @@ export function updateGates() {
   document.querySelectorAll('#nav .tb').forEach(b => {
     const p = b.dataset.p;
     const open = tabUnlocked(save, p);
-    b.style.display = open ? '' : 'none';
+    b.style.display = ''; /* all tabs are always visible — locked ones show the depth ahead */
+    b.classList.toggle('locked', !open);
     if (open && !save.ftue.tours[p] && save.ftue.railDone && p !== 'pDun' && p !== 'pHeroes')
       b.classList.add('newBadge');
     else b.classList.remove('newBadge');

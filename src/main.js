@@ -18,8 +18,8 @@ import { openSheet } from './ui/sheet.js';
 import { showOfflineReport } from './ui/offline.js';
 import { maybeShowDeath } from './ui/death.js';
 import { ftueTick, updateGates, maybeTour } from './ui/ftue.js';
-import { tabUnlocked } from './core/ftue.js';
-import { setLang, applyStatic, DEFAULT_LANG } from './i18n/index.js';
+import { tabUnlocked, TAB_HINT } from './core/ftue.js';
+import { setLang, applyStatic, DEFAULT_LANG, t } from './i18n/index.js';
 import { openSettings } from './ui/settings.js';
 import { canPrestige } from './core/prestige.js';
 import './ui/update.js';
@@ -49,8 +49,23 @@ function switchPane(p, silent) {
   if (!silent && p === 'pFame' && save.ftue.tours.pFame && canPrestige(save)) maybeTour('prestige');
 }
 document.querySelectorAll('#nav .tb').forEach(b => {
-  b.onclick = () => { sfx.ui(); switchPane(b.dataset.p); };
+  b.onclick = () => {
+    sfx.ui();
+    const p = b.dataset.p;
+    if (!tabUnlocked(save, p)) { toast(t(TAB_HINT[p] || 'Locked')); return; }
+    switchPane(p);
+  };
 });
+
+let toastTimer = 0;
+function toast(msg) {
+  let el = $('toast');
+  if (!el) { el = document.createElement('div'); el.id = 'toast'; document.body.appendChild(el); }
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
 $('btnSettings').onclick = () => { sfx.ui(); openSettings(); };
 $('btnRoll1').onclick = () => doRoll(false);
 $('btnRollRune').onclick = () => doRoll(true);

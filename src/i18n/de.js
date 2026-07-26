@@ -929,4 +929,9 @@ export const DE = {
   'Reset everything and start over? All progress — heroes, upgrades, prestige, the Hall of Fame — is permanently lost.': 'Alles zurücksetzen und neu beginnen? Der gesamte Fortschritt — Helden, Upgrades, Prestige, die Ruhmeshalle — geht unwiderruflich verloren.',
   'Are you absolutely sure? This cannot be undone.': 'Bist du ganz sicher? Das kann nicht rückgängig gemacht werden.',
   'Resetting…': 'Zurücksetzen…',
+  'Send a hero into the Dungeon to watch the delve': 'Schicke einen Helden ins Verlies, um die Expedition zu verfolgen',
+  'Find loot or forge an item to open the Forge': 'Finde Beute oder schmiede einen Gegenstand, um die Schmiede zu öffnen',
+  'A hero must fall — Memory is born from the first death': 'Ein Held muss fallen — die Erinnerung entsteht aus dem ersten Tod',
+  'Win the Orb or lose a hero to open the Hall of Fame': 'Errings den Orb oder verliere einen Helden, um die Ruhmeshalle zu öffnen',
+  'Locked': 'Gesperrt',
 };

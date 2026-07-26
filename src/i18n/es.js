@@ -929,4 +929,9 @@ export const ES = {
   'Reset everything and start over? All progress — heroes, upgrades, prestige, the Hall of Fame — is permanently lost.': '¿Reiniciar todo y empezar de nuevo? Todo el progreso — héroes, mejoras, prestigio, el Salón de la Fama — se perderá para siempre.',
   'Are you absolutely sure? This cannot be undone.': '¿Estás totalmente seguro? Esto no se puede deshacer.',
   'Resetting…': 'Reiniciando…',
+  'Send a hero into the Dungeon to watch the delve': 'Envía un héroe a la Mazmorra para ver la expedición',
+  'Find loot or forge an item to open the Forge': 'Consigue botín o forja un objeto para abrir la Fragua',
+  'A hero must fall — Memory is born from the first death': 'Un héroe debe caer — la Memoria nace de la primera muerte',
+  'Win the Orb or lose a hero to open the Hall of Fame': 'Gana el Orbe o pierde un héroe para abrir el Salón de la Fama',
+  'Locked': 'Bloqueado',
 };

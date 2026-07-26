@@ -929,4 +929,9 @@ export const UK = {
   'Reset everything and start over? All progress — heroes, upgrades, prestige, the Hall of Fame — is permanently lost.': 'Скинути все й почати заново? Весь прогрес — герої, апгрейди, престиж, Зала Слави — буде втрачено назавжди.',
   'Are you absolutely sure? This cannot be undone.': 'Ви точно впевнені? Це не можна скасувати.',
   'Resetting…': 'Скидання…',
+  'Send a hero into the Dungeon to watch the delve': 'Відправ героя в Підземелля, щоб спостерігати за походом',
+  'Find loot or forge an item to open the Forge': 'Знайди здобич або скуй предмет, щоб відкрити Кузню',
+  'A hero must fall — Memory is born from the first death': 'Герой має полягти — Пам\'ять народжується з першої смерті',
+  'Win the Orb or lose a hero to open the Hall of Fame': 'Винеси Кулю або втрать героя, щоб відкрити Залу Слави',
+  'Locked': 'Заблоковано',
 };

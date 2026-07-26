@@ -242,3 +242,15 @@
   .dangerBtn{background:var(--hp);color:#fff;border-color:var(--hp);margin-top:6px}
   .dangerBtn:hover{filter:brightness(1.1)}
   .dangerBtn:disabled{opacity:.6}
+  /* locked nav tab: visible but gated, shows the depth ahead */
+  #nav .tb.locked{opacity:.5}
+  #nav .tb.locked i{filter:grayscale(1)}
+  #nav .tb.locked::before{content:'🔒';position:absolute;top:3px;right:16%;font-size:10px;
+    filter:none;opacity:.9}
+  #nav .tb{position:relative}
+  /* toast: brief message for a locked-tab tap */
+  #toast{position:fixed;left:50%;bottom:72px;transform:translateX(-50%) translateY(10px);
+    z-index:210;max-width:80vw;padding:10px 16px;border-radius:10px;
+    background:var(--panel2);border:1px solid var(--gold);color:var(--text);
+    font-size:12px;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
