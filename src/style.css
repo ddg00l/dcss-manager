@@ -189,7 +189,9 @@
   .gmPick b{font-size:14px;letter-spacing:.04em}
   .gmPick.purple{color:var(--epic);border-color:rgba(176,107,224,.4);background:rgba(176,107,224,.06)}
   .gmSlots{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
-  .gmSlots .gmPick{flex:0 0 calc(50% - 4px);flex-direction:column;align-items:flex-start;gap:3px}
+  .gmSlots .gmPick{flex:0 0 calc(50% - 4px);flex-direction:column;align-items:center;gap:5px;text-align:center;padding:12px 10px}
+  .gmSlotIco{width:42px;height:42px;image-rendering:pixelated;filter:drop-shadow(0 0 6px rgba(236,201,94,.35))}
+  .gmSlotTxt{display:flex;flex-direction:column;gap:2px;align-items:center}
   .gmActions{display:flex;gap:10px;justify-content:center;margin-top:18px;pointer-events:auto;flex-wrap:wrap}
   .gmActions button{min-width:120px}
   /* install hint (iOS: manual A2HS steps; Android: real prompt button) */

@@ -26,12 +26,15 @@ const SLOTN={weapon:'Weapon',armour:'Armour',shield:'Shield',ring:'Ring',amulet:
 /** the forge modal: pick a slot, then the item reveal plays in the window with
     Keep / Dismantle so junk can be scrapped on the spot */
 export function openForgeModal(){ sfx.ui(); openModal(renderForgeChoices); }
+/* flagship tile per slot, purely for the forge-picker icon */
+const FORGE_ICON={weapon:'ur_singing',armour:'a_crystal_plate',shield:'s_tower',ring:'r_ring2',amulet:'am_amulet'};
 function renderForgeChoices(box){
   box.innerHTML='<div class="gmTitle">'+t('Forge an item')+'</div>';
   const grid=document.createElement('div');grid.className='gmSlots';
   for(const [slot,nm] of [['weapon',t('Weapon')],['armour',t('Armour')],['shield',t('Shield')],['ring',t('Ring')],['amulet',t('Amulet')]]){
     const b=document.createElement('button');b.className='gmPick';
-    b.innerHTML='<b>'+nm+'</b><span class="label">'+fmt(forgeCost(slot))+' 🜚 + '+forgeScrap(slot)+' ⚙</span>';
+    b.innerHTML='<img class="gmSlotIco" src="'+tileURL(FORGE_ICON[slot])+'" alt="">'+
+      '<div class="gmSlotTxt"><b>'+nm+'</b><span class="label">'+fmt(forgeCost(slot))+' 🜚 + '+forgeScrap(slot)+' ⚙</span></div>';
     b.disabled=save.gold<forgeCost(slot)||save.scrap<forgeScrap(slot);
     b.onclick=e=>{e.stopPropagation();forgeSlot(slot);};
     grid.appendChild(b);
