@@ -30,14 +30,7 @@
     <div id="wlog"></div>
   </div>
   <div id="pHeroes" class="pane">
-    <div id="gachaStage"><span class="label" data-i18n>Summon a seeker</span>
-      <div id="gachaResult"><img src="" style="display:none" alt=""><div class="big"></div><div class="sub"></div></div>
-    </div>
-    <div class="rowBtns" style="margin-top:10px">
-      <button id="btnRoll1"><span data-i18n>Summon ·</span> <span id="rollCost"></span> 🜚</button>
-      <button id="btnRollRune" class="purple" data-i18n>Dark summon · 1 ᚱ</button>
-    </div>
-    <div class="pityTxt" id="pityTxt" style="margin-top:8px"></div>
+    <button id="btnSummon" class="bigAction summon"><i>✦</i><span data-i18n>Summon a Seeker</span></button>
     <h3 data-i18n>Seekers</h3>
     <div id="heroList" class="grid"></div>
     <div class="hint" data-i18n>Death in the dungeon is forever (shards and gear return). Heroes train the skills they fight with. Strategy sets the route and caution.</div>
@@ -45,9 +38,7 @@
     <div id="comboList"></div>
   </div>
   <div id="pForge" class="pane">
-    <h3 data-i18n>Forging (item gacha)</h3>
-    <div class="rowBtns" id="forgeBtns"></div>
-    <div id="forgeResult"></div>
+    <button id="btnForge" class="bigAction forge"><i>⚒</i><span data-i18n>Forge an item</span></button>
     <h3 data-i18n>Armory</h3>
     <div id="armoryList"></div>
   </div>
@@ -105,6 +96,21 @@
 <div id="death" class="overlay"><div class="panelBox" id="deathBox"></div></div>
 <div id="equip" class="overlay"><div class="panelBox" id="equipBox"></div></div>
 <div id="settings" class="overlay"><div class="panelBox" id="settingsBox"></div></div>
+<div id="gachaModal" class="gm">
+  <canvas id="gmFx"></canvas>
+  <div class="gmRays"></div>
+  <button id="gmClose" aria-label="close">✕</button>
+  <div id="gmChoose" class="gmChoose"></div>
+  <div class="gmCore">
+    <div class="gmRing"></div>
+    <img id="gmImg" class="gmImg" alt="">
+    <div id="gmName" class="gmName"></div>
+    <div id="gmRar" class="gmRar"></div>
+    <div id="gmSub" class="gmSub label"></div>
+    <div id="gmActions" class="gmActions"></div>
+    <div id="gmHint" class="gmHint label"></div>
+  </div>
+</div>
 
 <script type="module" src="/src/main.js"></script>
 <script>

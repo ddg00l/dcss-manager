@@ -14,6 +14,7 @@ import {heroStats} from '../sim/hero.js';
 import {MW,MH} from '../sim/mapgen.js';
 import {comboKey,RARN} from '../data/combos.js';
 import { t } from '../i18n/index.js';
+import { openModal, playForgeReveal } from './reveal.js';
 /* ===================== forge & armory ===================== */
 
 const forgeCost=slot=>fCost(save,slot);
@@ -21,25 +22,37 @@ const forgeScrap=slot=>fScrap(slot);
 /* armory filter/sort state (session-scoped) so a big roster stays manageable */
 const armF={slot:'all',rar:'all',asc:false};
 const SLOTN={weapon:'Weapon',armour:'Armour',shield:'Shield',ring:'Ring',amulet:'Amulet'};
-export function renderForge(){
-  const btns=$('forgeBtns');btns.innerHTML='';
+
+/** the forge modal: pick a slot, then the item reveal plays in the window with
+    Keep / Dismantle so junk can be scrapped on the spot */
+export function openForgeModal(){ sfx.ui(); openModal(renderForgeChoices); }
+function renderForgeChoices(box){
+  box.innerHTML='<div class="gmTitle">'+t('Forge an item')+'</div>';
+  const grid=document.createElement('div');grid.className='gmSlots';
   for(const [slot,nm] of [['weapon',t('Weapon')],['armour',t('Armour')],['shield',t('Shield')],['ring',t('Ring')],['amulet',t('Amulet')]]){
-    const b=document.createElement('button');
-    b.innerHTML=nm+'<br><span class="label">'+fmt(forgeCost(slot))+'🜚 + '+forgeScrap(slot)+'⚙</span>';
+    const b=document.createElement('button');b.className='gmPick';
+    b.innerHTML='<b>'+nm+'</b><span class="label">'+fmt(forgeCost(slot))+' 🜚 + '+forgeScrap(slot)+' ⚙</span>';
     b.disabled=save.gold<forgeCost(slot)||save.scrap<forgeScrap(slot);
-    b.onclick=()=>{
-      const it=doForge(save,slot);
-      if(!it)return;
-      sfx.forge();
-      $('forgeResult').innerHTML='<div class="itemRow bord'+it.rar+'" style="margin-top:8px">'+
-        '<img src="'+tileURL(itemTile(it))+'" class="revealAnim">'+
-        '<div class="tInfo"><span class="rar'+it.rar+'">'+itemName(it)+'</span>'+
-        '<div class="label">'+t(RARN[it.rar])+(it.rand?t(' · RANDART'):'')+'</div></div></div>';
-      persist();renderForge();updTop();
-    };
-    btns.appendChild(b);
+    b.onclick=e=>{e.stopPropagation();forgeSlot(slot);};
+    grid.appendChild(b);
   }
-  /* armory */
+  box.appendChild(grid);
+}
+function forgeSlot(slot){
+  const it=doForge(save,slot);
+  if(!it)return;
+  persist();renderForge();
+  playForgeReveal(it,[
+    {label:t('Keep'),cls:'blue',onClick:()=>{}},
+    {label:'⚙ '+t('Dismantle')+' +'+(2+it.rar*2),cls:'danger',onClick:()=>{
+      const i=save.armory.indexOf(it);if(i>=0)save.armory.splice(i,1);
+      save.scrap+=2+it.rar*2;save.stat.dismantled++;sfx.coin();persist();renderForge();
+    }},
+  ]);
+}
+$('btnForge').onclick=openForgeModal;
+export function renderForge(){
+  /* the forge controls live in the modal now; the tab shows the armory */
   const box=$('armoryList');box.innerHTML='';
   const header=txt=>{
     const hd=document.createElement('div');

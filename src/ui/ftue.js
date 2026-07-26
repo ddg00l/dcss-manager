@@ -7,7 +7,7 @@ import { coach, coachActive, playTour } from './coach.js';
 import { sfx } from './audio.js';
 
 const RAIL = {
-  0: { sel: '#btnRoll1', mode: 'click',
+  0: { sel: '#btnSummon', mode: 'click',
     text: 'I am the shade of one who never reached Zot. Now I am only a voice in these walls, and yours is to guide the new. <b>Summon your first seeker</b> — the guild pays for the first call.' },
   1: { sel: '[data-ftue="dispatch"]', mode: 'click',
     text: 'A worthy choice. But heroes don\'t live in barracks — their home is below. <b>Send them into the Dungeon.</b>' },
@@ -27,7 +27,7 @@ export const TOURS = {
     { sel: '[data-ftue="recall"]', mode: 'next', text: 'Recall brings the hero back and frees the slot — but all run progress burns away. Forever.' },
   ],
   pForge: [
-    { sel: '#forgeBtns', mode: 'next', text: 'The forge crafts a random item of the chosen slot — for gold and scrap ⚙. Egos, pluses, the occasional randart.' },
+    { sel: '#btnForge', mode: 'next', text: 'The forge crafts a random item of the chosen slot — for gold and scrap ⚙. Egos, pluses, the occasional randart. Keep it or dismantle it on the spot.' },
     { sel: '#armoryList', mode: 'next', text: 'The armory holds everything found and forged. Dismantle what you don\'t need back into scrap.' },
   ],
   pUpg: [
@@ -85,8 +85,6 @@ export function updateGates() {
       b.classList.add('newBadge');
     else b.classList.remove('newBadge');
   });
-  const dark = $('btnRollRune');
-  if (dark) dark.style.display = darkSummonUnlocked(save) ? '' : 'none';
   /* prestige just unlocked: pull attention to the Fame tab */
   if (save.ftue.railDone && !save.ftue.tours.prestige && canPrestige(save)) {
     const fb = document.querySelector('#nav .tb[data-p="pFame"]');

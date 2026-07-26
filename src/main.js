@@ -60,8 +60,6 @@ document.querySelectorAll('#nav .tb').forEach(b => {
 });
 
 $('btnSettings').onclick = () => { sfx.ui(); openSettings(); };
-$('btnRoll1').onclick = () => doRoll(false);
-$('btnRollRune').onclick = () => doRoll(true);
 
 function updTop() {
   $('goldTxt').textContent = fmt(save.gold) + ' 🜚';
