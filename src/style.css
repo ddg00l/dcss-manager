@@ -216,6 +216,7 @@
     border:1px solid var(--line);padding:9px 8px;min-height:40px;width:100%}
   .kv{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px dashed rgba(42,52,66,.5)}
   .kv b{color:var(--bone)}
+  .kvList{margin-top:6px}
 
   /* gacha */
   #gachaStage{border:1px solid var(--line);background:radial-gradient(circle at 50% 40%,#1a2029,#0a0c10 75%);

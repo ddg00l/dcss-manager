@@ -15,6 +15,7 @@ import {MW,MH} from '../sim/mapgen.js';
 import {comboKey,RARN} from '../data/combos.js';
 import { t } from '../i18n/index.js';
 import { openModal, playForgeReveal } from './reveal.js';
+import { openInspect } from './inspect.js';
 /* ===================== forge & armory ===================== */
 
 const forgeCost=slot=>fCost(save,slot);
@@ -66,30 +67,31 @@ export function renderForge(){
   };
   const itemRow=(it,wearer)=>{
     const el=document.createElement('div');
-    el.className='itemRow bord'+it.rar;
+    el.className='itemRow bord'+it.rar;el.style.cursor='pointer';
     el.innerHTML='<img src="'+tileURL(itemTile(it))+'">'+
       '<div class="tInfo"><span class="rar'+it.rar+'">'+itemName(it)+'</span>'+
       '<div class="label">'+it.slot+(it.rand?t(' · randart'):'')+
       (wearer?' · <span style="color:var(--rare)">'+t('⚔ worn by: ')+wearer.name+'</span>':'')+
       '</div></div>';
+    const dismantle=()=>{
+      save.scrap+=2+it.rar*2;save.stat.dismantled++;
+      save.armory.splice(save.armory.indexOf(it),1);
+      sfx.coin();persist();renderForge();
+    };
     if(wearer){
       const b=document.createElement('button');
       b.className='blue';
       b.textContent=t('Equipment');
-      b.onclick=()=>window.__openEquip(wearer.id);
+      b.onclick=e=>{e.stopPropagation();window.__openEquip(wearer.id)};
       el.appendChild(b);
     }else{
       const d=document.createElement('button');
       d.textContent='⚙+'+(2+it.rar*2);
       d.title=t('Dismantle');
-      d.onclick=()=>{
-        save.scrap+=2+it.rar*2;
-        save.stat.dismantled++;
-        save.armory.splice(save.armory.indexOf(it),1);
-        sfx.coin();persist();renderForge();updTop();
-      };
+      d.onclick=e=>{e.stopPropagation();dismantle()};
       el.appendChild(d);
     }
+    el.onclick=()=>openInspect(it,wearer?null:dismantle); /* click the item to inspect */
     box.appendChild(el);
   };
   /* --- filter + sort bar so a large armory stays manageable on small screens --- */
