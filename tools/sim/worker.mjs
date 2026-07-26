@@ -230,5 +230,9 @@ for (let i = 0; i < n; i++) {
   r.tactic = name;
   r.i = i;
   console.log(JSON.stringify(r));
+  /* progress to stderr (stdout is the NDJSON artifact) — visible live in CI logs */
+  const secs = ((Date.now() - t0) / 1000);
+  const eta = (secs / (i + 1)) * (n - i - 1);
+  console.error(`[${name}] ${i + 1}/${n} done · ${secs.toFixed(0)}s elapsed · ~${eta.toFixed(0)}s left`);
 }
-console.error(JSON.stringify({ name, n, ms: Date.now() - t0 }));
+console.error(`[${name}] all ${n} done in ${((Date.now() - t0) / 1000).toFixed(0)}s`);
