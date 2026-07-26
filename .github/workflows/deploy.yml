@@ -26,6 +26,10 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npx vite build
+        env:
+          BUILD_ID: ${{ github.sha }}
+      - name: Publish version manifest for the in-game update check
+        run: echo "{\"build\":\"${{ github.sha }}\"}" > dist/version.json
       - name: Inject Cloudflare Web Analytics (Pages build only)
         env:
           CF_TOKEN: ${{ vars.CF_ANALYTICS_TOKEN }}

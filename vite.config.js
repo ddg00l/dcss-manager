@@ -2,6 +2,9 @@ import { defineConfig } from 'vite';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 
 export default defineConfig({
+  define: {
+    __BUILD__: JSON.stringify(process.env.BUILD_ID || 'dev'),
+  },
   plugins: [viteSingleFile()],
   build: {
     assetsInlineLimit: 100_000_000,
