@@ -36,6 +36,13 @@ export const TAB_UNLOCK = {
   pUpg: s => s.stat.deaths > 0,                          // Memory is born from the first death
   pFame: s => s.stat.deaths > 0 || s.runesTotal > 0,
 };
+/* what the player must do to unlock each gated tab — shown on a locked-tab click */
+export const TAB_HINT = {
+  pDun: 'Send a hero into the Dungeon to watch the delve',
+  pForge: 'Find loot or forge an item to open the Forge',
+  pUpg: 'A hero must fall — Memory is born from the first death',
+  pFame: 'Win the Orb or lose a hero to open the Hall of Fame',
+};
 export const tabUnlocked = (s, p) => (s.ftue && s.ftue.railDone && p !== 'pDun' && p !== 'pHeroes')
   ? (TAB_UNLOCK[p] ? TAB_UNLOCK[p](s) : true)
   : (TAB_UNLOCK[p] ? TAB_UNLOCK[p](s) : true);
