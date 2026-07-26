@@ -331,6 +331,7 @@
   .coachBubble{position:fixed;z-index:72;left:50%;transform:translateX(-50%);
     width:min(92vw,420px);background:var(--panel);border:1px solid var(--gold);
     padding:12px 14px;display:flex;gap:10px;align-items:flex-start;
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
     box-shadow:0 4px 30px rgba(0,0,0,.7)}
   .coachBubble img{width:34px;height:34px;image-rendering:pixelated;flex-shrink:0;
     filter:drop-shadow(0 0 6px rgba(94,158,224,.8))}

@@ -26,11 +26,17 @@ function place(target, pad) {
   Object.assign(right.style, { left: (x + w) + 'px', top: y + 'px', width: 'calc(100vw - ' + (x + w) + 'px)', height: h + 'px' });
   Object.assign(bottom.style, { left: 0, top: (y + h) + 'px', width: '100vw', height: 'calc(100vh - ' + (y + h) + 'px)' });
   Object.assign(ring.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' });
-  /* narrator bubble: above or below the cutout */
+  /* narrator bubble: sit on whichever side of the cutout has more room, and cap
+     its height to that room so it never spills off-screen (scrolls inside if long) */
   const bub = els[5];
-  const below = y < window.innerHeight / 2;
-  bub.style.top = below ? (y + h + 12) + 'px' : '';
-  bub.style.bottom = below ? '' : ('calc(100vh - ' + (y - 12) + 'px)');
+  const gap = 12, margin = 8;
+  const roomBelow = window.innerHeight - (y + h) - gap - margin;
+  const roomAbove = y - gap - margin;
+  if (roomBelow >= roomAbove) {
+    Object.assign(bub.style, { top: (y + h + gap) + 'px', bottom: '', maxHeight: Math.max(120, roomBelow) + 'px' });
+  } else {
+    Object.assign(bub.style, { top: '', bottom: 'calc(100vh - ' + (y - gap) + 'px)', maxHeight: Math.max(120, roomAbove) + 'px' });
+  }
 }
 
 /** step: {sel, text, mode:'click'|'next', skip?:fn} → onDone() */
