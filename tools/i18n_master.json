@@ -5104,5 +5104,437 @@
 "Weniger, aber mächtige Feinde; fürstliche Beute",
 "Menos enemigos pero poderosos; botín principesco",
 "Менше ворогів, але могутніх; княжа здобич"
+],
+"Гравировка наследия": [
+"Legacy engraving",
+"Vermächtnis-Gravur",
+"Grabado del legado",
+"Гравіювання спадку"
+],
+"+1% урона и здоровья за ур., без предела": [
+"+1% damage and health per lvl, without limit",
+"+1% Schaden und Lebenspunkte pro Stufe, ohne Limit",
+"+1% de daño y vida por nivel, sin límite",
+"+1% шкоди й здоров'я за рів., без межі"
+],
+"Мигун": [
+"Blinker",
+"Blinzler",
+"Parpadeante",
+"Мигун"
+],
+"телепортируется при ударе": [
+"teleports away when struck",
+"teleportiert sich bei Treffern weg",
+"se teletransporta al ser golpeado",
+"телепортується при ударі"
+],
+"Зазывала": [
+"Caller",
+"Rufer",
+"Pregonero",
+"Закликач"
+],
+"будит и стягивает весь этаж к бою": [
+"wakes and pulls the whole floor toward the fight",
+"weckt die ganze Ebene und zieht sie in den Kampf",
+"despierta y arrastra todo el piso a la pelea",
+"будить і стягує весь поверх до бою"
+],
+"Косторёв": [
+"Bonecaller",
+"Knochenrufer",
+"Llamahuesos",
+"Костоклич"
+],
+"единожды поднимает убитых монстров": [
+"raises slain monsters back once",
+"erweckt getötete Monster einmal erneut",
+"alza a los monstruos caídos una vez",
+"одного разу піднімає вбитих монстрів"
+],
+"Взрывной": [
+"Volatile",
+"Explosiv",
+"Volátil",
+"Вибуховий"
+],
+"взрывается при смерти": [
+"explodes on death",
+"explodiert beim Tod",
+"explota al morir",
+"вибухає при смерті"
+],
+"Аура боли": [
+"Pain aura",
+"Schmerzaura",
+"Aura de dolor",
+"Аура болю"
+],
+"жжёт героя каждый ход вблизи": [
+"burns the hero every turn nearby",
+"versengt den Helden in der Nähe jede Runde",
+"quema al héroe cada turno cercano",
+"палить героя щохода поблизу"
+],
+"Вампирический": [
+"Vampiric",
+"Vampirisch",
+"Vampírico",
+"Вампіричний"
+],
+"лечится каждым своим ударом": [
+"heals off every hit it lands",
+"heilt sich mit jedem eigenen Treffer",
+"se cura con cada golpe que asesta",
+"лікується кожним своїм ударом"
+],
+"Яростный": [
+"Furious",
+"Rasend",
+"Furioso",
+"Лютий"
+],
+"бьёт вдвое чаще ниже половины здоровья": [
+"attacks twice as fast below half health",
+"greift unter halber Gesundheit doppelt so schnell an",
+"ataca el doble de rápido bajo media vida",
+"б'є вдвічі частіше нижче половини здоров'я"
+],
+"Щитоносный": [
+"Shielded",
+"Beschildet",
+"Escudado",
+"Щитоносний"
+],
+"игнорирует первые три удара": [
+"ignores the first three hits",
+"ignoriert die ersten drei Treffer",
+"ignora los tres primeros golpes",
+"ігнорує перші три удари"
+],
+"Фазовый": [
+"Phasing",
+"Phasend",
+"Fasante",
+"Фазовий"
+],
+"каждый третий удар проходит сквозь него": [
+"every third hit passes through it",
+"jeder dritte Schlag geht durch ihn hindurch",
+"cada tercer golpe lo atraviesa",
+"кожен третій удар проходить крізь нього"
+],
+"Каменная кожа": [
+"Stoneskin",
+"Steinhaut",
+"Piel de piedra",
+"Кам'яна шкіра"
+],
+"получает вдвое меньше урона ниже трети здоровья": [
+"takes half damage below a third of health",
+"erleidet unter einem Drittel Gesundheit halben Schaden",
+"recibe la mitad de daño bajo un tercio de vida",
+"отримує вдвічі менше шкоди нижче третини здоров'я"
+],
+"Антимаг": [
+"Antimagic",
+"Antimagisch",
+"Antimagia",
+"Антимаг"
+],
+"заклинания наносят ему вдвое меньше урона": [
+"spells deal half damage to it",
+"Zauber fügen ihm halben Schaden zu",
+"los hechizos le hacen la mitad de daño",
+"закляття завдають йому вдвічі менше шкоди"
+],
+"Шипастый": [
+"Thorned",
+"Dornig",
+"Espinoso",
+"Шипастий"
+],
+"ближние атаки возвращают пятую часть урона": [
+"melee attackers take a fifth of dealt damage back",
+"Nahkämpfer erleiden ein Fünftel des Schadens zurück",
+"los atacantes cuerpo a cuerpo reciben un quinto del daño",
+"ближні атаки повертають п'яту частину шкоди"
+],
+"Зеркальный": [
+"Mirrored",
+"Verspiegelt",
+"Espejado",
+"Дзеркальний"
+],
+"иногда отражает выстрелы обратно": [
+"ranged shots sometimes bounce back",
+"Fernschüsse prallen manchmal zurück",
+"los disparos a veces rebotan",
+"іноді відбиває постріли назад"
+],
+"Тьма": [
+"Darkness",
+"Finsternis",
+"Oscuridad",
+"Темрява"
+],
+"видимость сжата до пары клеток (эго фонаря снимает)": [
+"sight is cut to a few tiles (a lantern ego negates it)",
+"die Sicht ist auf wenige Felder begrenzt (Laternen-Ego hebt es auf)",
+"la visión se reduce a unas casillas (el ego de linterna lo anula)",
+"видимість стиснута до кількох клітин (его ліхтаря знімає)"
+],
+"Затопление": [
+"Flooded",
+"Überflutet",
+"Inundado",
+"Затоплення"
+],
+"все, кроме мерфолков, бредут вполскорости (сапоги-болотоходы снимают)": [
+"everyone but merfolk wades at half speed (waders negate it)",
+"alle außer Merfolk waten mit halber Geschwindigkeit (Watstiefel heben es auf)",
+"todos menos los merfolk vadean a media velocidad (las botas de vadeo lo anulan)",
+"усі, крім мерфолків, бредуть напівшвидкості (болотоходи знімають)"
+],
+"Миазмы": [
+"Miasma",
+"Miasma",
+"Miasma",
+"Міазми"
+],
+"яд сочится каждый ход (rPois защищает)": [
+"poison seeps every turn (rPois shrugs it off)",
+"Gift sickert jede Runde (rPois wehrt es ab)",
+"el veneno rezuma cada turno (rPois lo resiste)",
+"отрута сочиться щохода (rPois захищає)"
+],
+"Лабиринт": [
+"Maze",
+"Labyrinth",
+"Laberinto",
+"Лабіринт"
+],
+"плотный лабиринт коридоров": [
+"a dense labyrinth of corridors",
+"ein dichtes Labyrinth aus Korridoren",
+"un denso laberinto de pasillos",
+"щільний лабіринт коридорів"
+],
+"Проклятая земля": [
+"Cursed ground",
+"Verfluchter Boden",
+"Tierra maldita",
+"Проклята земля"
+],
+"ловушек вдвое больше, и они не выдают себя": [
+"traps are twice as common and stay hidden",
+"Fallen sind doppelt so häufig und bleiben verborgen",
+"las trampas abundan el doble y permanecen ocultas",
+"пасток удвічі більше, і вони не виказують себе"
+],
+" отражает выстрел обратно!": [
+" mirrors the shot back!",
+" spiegelt den Schuss zurück!",
+" ¡refleja el disparo de vuelta!",
+" віддзеркалює постріл назад!"
+],
+" принимает удар на щит": [
+" shrugs the blow off its shield",
+" lässt den Schlag am Schild abprallen",
+" desvía el golpe con su escudo",
+" приймає удар на щит"
+],
+" фазирует сквозь удар": [
+" phases through the strike",
+" phast durch den Schlag",
+" se desfasa a través del golpe",
+" фазує крізь удар"
+],
+" ревёт — весь этаж отвечает!": [
+" bellows — the whole floor answers!",
+" brüllt — die ganze Ebene antwortet!",
+" ¡brama — todo el piso responde!",
+" реве — весь поверх відповідає!"
+],
+" взрывается!": [
+" explodes!",
+" explodiert!",
+" ¡explota!",
+" вибухає!"
+],
+" поднимает павшего на ноги!": [
+" drags the fallen back to its feet!",
+" zerrt den Gefallenen zurück auf die Beine!",
+" ¡levanta al caído de nuevo!",
+" піднімає полеглого на ноги!"
+],
+" задыхается в миазмах": [
+" chokes in the miasma",
+" erstickt im Miasma",
+" se ahoga en el miasma",
+" задихається в міазмах"
+],
+"миазмы": [
+"the miasma",
+"das Miasma",
+"el miasma",
+"міазми"
+],
+"фонаря": [
+"of the lantern",
+"der Laterne",
+"de linterna",
+"ліхтаря"
+],
+"болотохода": [
+"of wading",
+"des Watens",
+"de vadeo",
+"болотохода"
+],
+"⟐ Охотник на меченых": [
+"⟐ Hunter of the Marked",
+"⟐ Jäger der Gezeichneten",
+"⟐ Cazador de los Marcados",
+"⟐ Мисливець на мічених"
+],
+"Элитные монстры в полтора раза чаще, их добыча ×2.": [
+"Elite monsters are half again as common; their spoils ×2.",
+"Elitemonster sind anderthalbmal so häufig; ihre Beute ×2.",
+"Los monstruos de élite aparecen un 50% más; su botín ×2.",
+"Елітні монстри в півтора раза частіші, їхня здобич ×2."
+],
+"Облачная синхронизация": [
+"Cloud sync",
+"Cloud-Synchronisierung",
+"Sincronización en la nube",
+"Хмарна синхронізація"
+],
+"Облачная синхронизация доступна в веб-версии": [
+"Cloud sync is available on the web version",
+"Cloud-Synchronisierung ist in der Web-Version verfügbar",
+"La sincronización en la nube está disponible en la versión web",
+"Хмарна синхронізація доступна у веб-версії"
+],
+"Войдите, чтобы синхронизировать прогресс между устройствами": [
+"Sign in to sync progress across devices",
+"Melde dich an, um den Fortschritt geräteübergreifend zu synchronisieren",
+"Inicia sesión para sincronizar el progreso entre dispositivos",
+"Увійдіть, щоб синхронізувати прогрес між пристроями"
+],
+"Войти через Google": [
+"Sign in with Google",
+"Mit Google anmelden",
+"Iniciar sesión con Google",
+"Увійти через Google"
+],
+"Выйти": [
+"Sign out",
+"Abmelden",
+"Cerrar sesión",
+"Вийти"
+],
+"Выгрузить сейчас": [
+"Upload now",
+"Jetzt hochladen",
+"Subir ahora",
+"Вивантажити зараз"
+],
+"Загрузить": [
+"Download",
+"Herunterladen",
+"Descargar",
+"Завантажити"
+],
+"Экспорт сейва в файл": [
+"Export save to file",
+"Spielstand in Datei exportieren",
+"Exportar partida a archivo",
+"Експорт збереження у файл"
+],
+"Синхронизировано": [
+"Synced",
+"Synchronisiert",
+"Sincronizado",
+"Синхронізовано"
+],
+"Вход…": [
+"Signing in…",
+"Anmeldung…",
+"Iniciando sesión…",
+"Вхід…"
+],
+"Не удалось войти": [
+"Sign-in failed",
+"Anmeldung fehlgeschlagen",
+"Error al iniciar sesión",
+"Не вдалося увійти"
+],
+"Выгрузка…": [
+"Uploading…",
+"Hochladen…",
+"Subiendo…",
+"Вивантаження…"
+],
+"Загрузка…": [
+"Downloading…",
+"Herunterladen…",
+"Descargando…",
+"Завантаження…"
+],
+"Конфликт сохранений": [
+"Save conflict",
+"Speicherkonflikt",
+"Conflicto de guardado",
+"Конфлікт збережень"
+],
+"Это устройство и облако оба ушли вперёд. Выберите, что оставить — другое сохранится в истории облака и его можно восстановить.": [
+"This device and the cloud both moved ahead. Pick which to keep — the other is saved to cloud history and can be restored.",
+"Dieses Gerät und die Cloud sind beide vorangeschritten. Wähle, was behalten wird — das andere bleibt im Cloud-Verlauf und kann wiederhergestellt werden.",
+"Este dispositivo y la nube avanzaron ambos. Elige cuál conservar — el otro se guarda en el historial de la nube y puede restaurarse.",
+"Цей пристрій і хмара обидва пішли вперед. Оберіть, що залишити — інше збережеться в історії хмари й можна відновити."
+],
+"Это устройство": [
+"This device",
+"Dieses Gerät",
+"Este dispositivo",
+"Цей пристрій"
+],
+"Облако": [
+"Cloud",
+"Cloud",
+"Nube",
+"Хмара"
+],
+"Победы": [
+"Victories",
+"Siege",
+"Victorias",
+"Перемоги"
+],
+"Престижи": [
+"Prestiges",
+"Prestige",
+"Prestigios",
+"Престижі"
+],
+"Руны": [
+"Runes",
+"Runen",
+"Runas",
+"Руни"
+],
+"Оставить это устройство": [
+"Keep this device",
+"Dieses Gerät behalten",
+"Conservar este dispositivo",
+"Залишити цей пристрій"
+],
+"Использовать облако": [
+"Use cloud",
+"Cloud verwenden",
+"Usar la nube",
+"Використати хмару"
 ]
 }
