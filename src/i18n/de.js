@@ -249,6 +249,7 @@ export const DE = {
   'The patient titan: +30% HP, +15% damage, steady renewal': 'Der geduldige Titan: +30% TP, +15% Schaden, stetige Regeneration',
   'Nemelex Xobeh': 'Nemelex Xobeh',
   'Pantheon': 'Pantheon',
+  ' hits ': ' trifft ',
   'Summon a Seeker': 'Einen Sucher beschwören',
   'Summon': 'Beschwören',
   'Dark summon': 'Dunkle Beschwörung',

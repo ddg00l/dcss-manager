@@ -249,6 +249,7 @@ export const UK = {
   'The patient titan: +30% HP, +15% damage, steady renewal': 'Терплячий титан: +30% HP, +15% шкоди, неквапливе відновлення',
   'Nemelex Xobeh': 'Немелекс Ксобех',
   'Pantheon': 'Пантеон',
+  ' hits ': ' б\'є ',
   'Summon a Seeker': 'Призвати шукача',
   'Summon': 'Призвати',
   'Dark summon': 'Темний призов',

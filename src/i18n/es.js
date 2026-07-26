@@ -249,6 +249,7 @@ export const ES = {
   'The patient titan: +30% HP, +15% damage, steady renewal': 'El titán paciente: +30% de vida, +15% daño, renovación constante',
   'Nemelex Xobeh': 'Nemelex Xobeh',
   'Pantheon': 'Panteón',
+  ' hits ': ' golpea a ',
   'Summon a Seeker': 'Invocar un buscador',
   'Summon': 'Invocar',
   'Dark summon': 'Invocación oscura',

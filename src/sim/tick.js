@@ -493,11 +493,14 @@ export function heroAttack(h,st,mo,s){
       hlog(h,'\ud83d\udce2 '+t(mo.n)+t(' bellows — the whole floor answers!'),'dmg');
     }
     if(mo.hp<=0)killMon(h,mo,s);
-    else if(hasAf(mo,'blinker')&&rnd(h)<.35){
-      const m2=h.map,freeC=[];
-      for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)
-        if(m2.g[y][x]===0&&!(x===m2.px&&y===m2.py)&&!m2.monsters.some(o=>o.x===x&&o.y===y))freeC.push([x,y]);
-      if(freeC.length){const c=freeC[Math.floor(rnd(h)*freeC.length)];mo.x=c[0];mo.y=c[1]}
+    else{
+      hlog(h,h.name+t(' hits ')+t(mo.n)+' ('+Math.round(dmg)+')','sys');
+      if(hasAf(mo,'blinker')&&rnd(h)<.35){
+        const m2=h.map,freeC=[];
+        for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)
+          if(m2.g[y][x]===0&&!(x===m2.px&&y===m2.py)&&!m2.monsters.some(o=>o.x===x&&o.y===y))freeC.push([x,y]);
+        if(freeC.length){const c=freeC[Math.floor(rnd(h)*freeC.length)];mo.x=c[0];mo.y=c[1]}
+      }
     }
   }
   /* auto-training: mark what we fight with — the XP pool will feed these skills */
@@ -603,9 +606,10 @@ function giveRune(h,name,s){
 }
 function monAttack(h,st,mo,s){
   const hit=rnd(h)<clamp((mo.acc+8)/(mo.acc+8+st.ev),.1,.92);
-  if(!hit)return;
+  if(!hit){hlog(h,t(mo.n)+t(' misses ')+h.name,'sys');return}
   if(st.dodge>0&&rnd(h)<st.dodge){
-    if(rnd(h)<.3)hlog(h,h.name+t(' dodges ')+t(mo.n),'sys');
+    rnd(h); /* was a 30% log sample — keep the draw so the RNG stream is unchanged */
+    hlog(h,h.name+t(' dodges ')+t(mo.n),'sys');
     return;
   }
   let dmg=mo.dmg*(0.7+rnd(h)*.6);
@@ -613,6 +617,7 @@ function monAttack(h,st,mo,s){
   if(RACES[h.race].shrug)dmg*=.9; /* the dwarf shrugs off part of the damage */
   const cd=CLASSES[h.cls];
   h.curHp-=dmg;
+  hlog(h,t(mo.n)+t(' hits ')+h.name+' ('+Math.round(dmg)+')','dmg');
   if(hasAf(mo,'vampiric'))mo.hp=Math.min(mo.maxHp,mo.hp+dmg*.8);
   if(mo.special&&mo.special.pois&&!st.rPois&&rnd(h)<.35){
     h.poison={dps:Math.max(1,mo.dmg*.15),t:5};
@@ -754,7 +759,7 @@ function pickup(h,it,s){
   if(it.kind==='gold'){
     const g=Math.floor(it.amt*(RACES[h.race].gold||1)*gGold(s));
     s.gold+=Math.ceil(g*.5);h.gold+=Math.floor(g*.5);h.rep.gold+=g;
-    if(rnd(h)<.3)hlog(h,h.name+t(' picks up ')+g+t(' gold'),'loot');
+    rnd(h);hlog(h,h.name+t(' picks up ')+g+t(' gold'),'loot'); /* keep the draw; log every pickup */
   }else if(it.kind==='cons'){
     h.inv[it.c.type]=(h.inv[it.c.type]||0)+1;
     hlog(h,h.name+t(' picks up: ')+consName(it.c,h.known.includes(it.c.type)),'loot');
