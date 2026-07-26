@@ -19,6 +19,8 @@ import { randomItem, doForge, forgeCost as fCost, forgeScrap as fScrap } from '.
 import { BR_OFFSET } from '../../src/data/branches.js';
 import { starNeed } from '../../src/data/combos.js';
 import { greatRaces, greatClasses } from '../../src/core/chronicle.js';
+import { setAffixDateProvider, todayAffixKey } from '../../src/data/affixes.js';
+import { mulberry32 } from '../../src/core/rng.js';
 
 
 
@@ -82,6 +84,7 @@ function playerActions(s, tactic, m) {
     const buy = PUPGRADES.filter(u => pupg(s, u.k) < u.max && pupgCost(s, u) <= (s.legends || 0))
       .sort((a, b) => pupgCost(s, a) - pupgCost(s, b))[0];
     if (!buy) break;
+    m.spentLegends += pupgCost(s, buy);
     s.legends -= pupgCost(s, buy);
     s.pupg[buy.k] = pupg(s, buy.k) + 1;
   }
@@ -112,6 +115,14 @@ function playerActions(s, tactic, m) {
       .filter(h => h.state === 'run' && h.runes.length === 0 && h.rarity <= 1)
       .sort((a, b) => a.xl - b.xl)[0];
     if (weakest && s.heroes.filter(h => h.state === 'camp').length === 0) recallHero(weakest, s);
+  }
+  /* shard whale: burn the treasury on rolls purely for duplicate shards */
+  if (tactic.shardFarm) {
+    let f = 0;
+    while (f++ < 15 && s.gold >= rollCost(s) * 1.2) {
+      if (!rollHero(s, false)) break;
+      m.summons++;
+    }
   }
   /* summons */
   let guard = 0;
@@ -144,19 +155,27 @@ function depthScore(s) {
   return { score: best, tag: bestTag };
 }
 
-function session(tactic, days = 1) {
+let simDay = 0;
+setAffixDateProvider(() => '2026-01-' + String(1 + (simDay % 28)).padStart(2, '0'));
+/* CRN: every session index draws the same random stream regardless of tactic
+   or code revision — paired comparisons cut variance dramatically */
+const trueRandom = Math.random;
+function session(tactic, days = 1, seed = 0) {
+  Math.random = mulberry32(0x9e3779b9 ^ seed);
   const s = makeState();
-  const m = { summons: 0, prestiges: 0 };
+  const m = { summons: 0, prestiges: 0, spentLegends: 0 };
   const step = tactic.checkin;
   const byDay = [];
   for (let day = 0; day < days; day++) {
+    simDay = day; /* each game day gets its own affix, deterministically */
     for (let t = 0; t < 24 * 3600; t += step) {
       playerActions(s, tactic, m);
       advanceHeroes(s, step, true);
     }
-    byDay.push({ wins: s.stat.wins, prest: m.prestiges, ng: ngLevel(s), mem: s.stat.memEarned });
+    byDay.push({ wins: s.stat.wins, prest: m.prestiges, ng: ngLevel(s), mem: s.stat.memEarned, afx: todayAffixKey() });
   }
   playerActions(s, tactic, m);
+  Math.random = trueRandom;
   if (process.env.SIM_DEBUG) {
     m.debug = {
       gold: Math.round(s.gold), mem: Math.round(s.mem), scrap: s.scrap,
@@ -180,6 +199,10 @@ function session(tactic, days = 1) {
     ng: ngLevel(s), byDay, debug: m.debug,
     greats: greatRaces(s).length + greatClasses(s).length,
     zig: s.stat.zigBest || 0, contracts: s.stat.contracts || 0,
+    gold: Math.round(s.gold), spentLegends: m.spentLegends,
+    clsWins: (s.vic && s.vic.classes) || {},
+    stars: Object.values(s.stars || {}).reduce((a, b) => a + b, 0),
+    nemMax: Math.max(0, ...Object.values(s.nemeses || {})),
   };
 }
 
@@ -192,6 +215,7 @@ const TACTICS = {
   whale:      { checkin: 300, tree: 'balanced', route: 'classic', caution: 'normal', rollFactor: 1, dark: true, goldReserve: 0, forge: false , prestige: true, prestigeAfter: 2 },
   smith:      { checkin: 300, tree: 'combat', route: 'classic', caution: 'normal', rollFactor: 2, goldReserve: 300, forge: true , prestige: true, prestigeAfter: 2 },
   speedrun:   { checkin: 300, tree: 'combat', route: 'speed', caution: 'bold', rollFactor: 1, goldReserve: 0, forge: false, prestige: true },
+  shardwhale: { checkin: 300, tree: 'balanced', route: 'classic', caution: 'normal', rollFactor: 1, dark: true, shardFarm: true, goldReserve: 0, forge: false, prestige: true, prestigeAfter: 2 },
 };
 
 const [, , name, countStr, daysStr] = process.argv;
@@ -201,7 +225,7 @@ const t0 = Date.now();
 /* streaming NDJSON: one line per finished session, flushed immediately —
    progress is monitorable in realtime with `wc -l *.ndjson` */
 for (let i = 0; i < n; i++) {
-  const r = session(TACTICS[name], days);
+  const r = session(TACTICS[name], days, parseInt(process.env.SEED_BASE || '0', 10) + i);
   r.tactic = name;
   r.i = i;
   console.log(JSON.stringify(r));
