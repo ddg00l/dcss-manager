@@ -398,20 +398,28 @@ describe('racial fidelity: aptitudes, minuses, synergy is real', () => {
   });
   it('training speed diverges in an actual run', async () => {
     const { advanceHeroes } = await import('../src/sim/tick.js');
+    /* CRN: both heroes get the same seed and the same starting floor, so the
+       only difference is race aptitude — isolating the variable under test */
     const mkRun = race => {
       const s = makeState();
+      s.masterSeed = 4242;
       const h = newHero(race, 'fighter', 2, s);
+      h.seed = 4242; // identical dungeon for both races
       s.heroes.push(h);
       return { s, h };
     };
     const a = mkRun('minotaur'), b = mkRun('deep_elf');
     const { startRun } = await import('../src/sim/tick.js');
     startRun(a.h, a.s); startRun(b.h, b.s);
+    /* compare training efficiency per fight, not per wall-clock: even on the
+       same seed the two races kill at different rates, and aptitude is a
+       per-XP-gained multiplier, so normalise by kills */
     const w0a = a.h.skills.long_blades, w0b = b.h.skills.long_blades;
-    advanceHeroes(a.s, 600, true); advanceHeroes(b.s, 600, true);
-    const gainA = a.h.skills.long_blades - w0a, gainB = b.h.skills.long_blades - w0b;
-    if (gainA > 0.1 && gainB > 0.1) // both got to fight
-      expect(gainA).toBeGreaterThan(gainB); // the minotaur trains weapons faster than the elf
+    advanceHeroes(a.s, 900, true); advanceHeroes(b.s, 900, true);
+    const rateA = (a.h.skills.long_blades - w0a) / Math.max(1, a.h.kills);
+    const rateB = (b.h.skills.long_blades - w0b) / Math.max(1, b.h.kills);
+    if (a.h.kills > 3 && b.h.kills > 3) // both got to fight
+      expect(rateA).toBeGreaterThan(rateB); // minotaur trains weapons faster per kill
   });
   it('mp gate: troll conjurer is a markedly worse caster than deep elf', () => {
     const s = makeState();
