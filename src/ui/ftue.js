@@ -2,6 +2,7 @@
 import { $ } from './dom.js';
 import { save, persist } from '../core/state.js';
 import { railStage, tabUnlocked, darkSummonUnlocked } from '../core/ftue.js';
+import { canPrestige } from '../core/prestige.js';
 import { coach, coachActive, playTour } from './coach.js';
 import { sfx } from './audio.js';
 
@@ -37,6 +38,10 @@ export const TOURS = {
   pFame: [
     { sel: '#fameSummary', mode: 'next', text: 'Victors grant eternal bonuses to the whole guild. Zot essence ⚛ buys elite upgrades.' },
     { sel: '#fameList', mode: 'next', text: 'Here rest the fallen. I was on this list once too. Their shards empower those to come.' },
+  ],
+  prestige: [
+    { sel: '#prestigeBox .card', mode: 'next', text: 'The Orb is carried out — the cycle has peaked. <b>Prestige</b> burns heroes, armory and the small nodes of the tree; keystones, fame and the collection remain. In return — Legends ⚜ and a new depth.' },
+    { sel: '#prestigeBox .upgRow', mode: 'next', text: 'Legends ⚜ buy eternal upgrades that survive every cycle. The richer the cycle lived, the more Legends it pays out.' },
   ],
   equip: [
     { sel: '#equipBox .eqRow', mode: 'next', text: 'Tap a slot to see what\'s equipped and every matching armory item. The ↑ arrow means “better than current”.' },
@@ -81,6 +86,11 @@ export function updateGates() {
   });
   const dark = $('btnRollRune');
   if (dark) dark.style.display = darkSummonUnlocked(save) ? '' : 'none';
+  /* prestige just unlocked: pull attention to the Fame tab */
+  if (save.ftue.railDone && !save.ftue.tours.prestige && canPrestige(save)) {
+    const fb = document.querySelector('#nav .tb[data-p="pFame"]');
+    if (fb && fb.style.display !== 'none') fb.classList.add('newBadge');
+  }
 }
 
 /** tab tour on first open (after the rail); skippable */

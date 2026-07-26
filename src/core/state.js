@@ -23,13 +23,15 @@ const SKEY = 'dcssmanager.save.v2';
 
 export function makeState() {
   return {
-    gold: 200, runes: 0, zot: 0, scrap: 0, rolls: 0, pity: 0,
+    gold: 200, runes: 0, zot: 0, scrap: 0, rolls: 0, forges: 0, pity: 0,
     heroes: [], armory: [], nextId: 1,
     stars: {}, shards: {}, seen: {},
     upg: {}, zupg: {}, fame: [],
     mem: 0, tree: { root: 1 },
-    stat: { kills: 0, deaths: 0, uniqKills: 0, forged: 0, dismantled: 0, memEarned: 0, bestXL: {} },
+    stat: { kills: 0, deaths: 0, uniqKills: 0, forged: 0, dismantled: 0, memEarned: 0, wins: 0, bestXL: {} },
     runesTotal: 0, pendingDeaths: [], unrandsOwned: [],
+    ng: 0, legends: 0, prestiges: 0, pupg: {}, balV: 2,
+    cycBase: { wins: 0, runes: 0, uniq: 0, mem: 0 }, cycRunes: [],
     ftue: null,
     progress: { D: 0, Lair: 0, Orc: 0, Elf: 0, Vaults: 0, Depths: 0, Zot: 0, Abyss: 0 },
     last: Date.now(), muted: false, lang: 'en',
@@ -49,6 +51,8 @@ export function loadState(storage) {
         progress: { ...state.progress, ...(s.progress || {}) },
         tree: { root: 1, ...(s.tree || {}) },
         stat: { ...state.stat, ...(s.stat || {}) },
+        pupg: { ...(s.pupg || {}) },
+        cycBase: { ...state.cycBase, ...(s.cycBase || {}) },
       });
       /* FTUE: veterans with progress never see the tutorial */
       if (!state.ftue) {
@@ -68,6 +72,43 @@ export function loadState(storage) {
         if (h.gear && h.gear.ring3 === undefined) h.gear.ring3 = null;
         if (h.map) { h.map.traps = h.map.traps || []; h.map.clouds = h.map.clouds || []; }
       }
+      /* old saves: derive lifetime wins from the Hall of Fame */
+      if (s.stat && s.stat.wins === undefined)
+        state.stat.wins = (s.fame || []).filter(f => f.won).length;
+      /* one-time graceful migration to the prestige-era balance (balV 2).
+         Veterans of the rune-inflation era keep what they built, but:
+         - past feats convert into a single compressed Legends grant (capped)
+           instead of fueling one colossal first prestige;
+         - the cycle snapshot starts from their current lifetime stats, so
+           prestige requires a NEW victory;
+         - the dark-summon rune stockpile is capped, the guild sells the
+           excess for gold (same rate as duplicate runes). */
+      if (s.balV === undefined) {
+        const wins = state.stat.wins || 0;
+        const grant = Math.min(400, Math.round(
+          wins * 4 + Math.sqrt(state.runesTotal || 0) * 8 + Math.sqrt((state.stat.memEarned || 0) / 50)));
+        if (grant > 0 && (wins > 0 || (state.runesTotal || 0) > 0)) state.legends = (state.legends || 0) + grant;
+        state.cycBase = {
+          wins, runes: state.runesTotal || 0,
+          uniq: state.stat.uniqKills || 0, mem: state.stat.memEarned || 0,
+        };
+        if ((state.runes || 0) > 40) {
+          state.gold += (state.runes - 40) * 800;
+          state.runes = 40;
+        }
+        /* bought elite levels keep their paid-for power: the per-level effect
+           was halved (+20%→+10%, gold +20%→+15%), so levels are recomputed —
+           the doubled levels land above the prestige cap, which then throttles
+           further purchases exactly as the new curve intends */
+        const zscale = { zatk: [2, 20], zhp: [2, 20], zloot: [4 / 3, 15] };
+        for (const k in zscale) {
+          if (state.zupg[k]) {
+            const [m, cap] = zscale[k];
+            state.zupg[k] = Math.min(cap, Math.ceil(state.zupg[k] * m));
+          }
+        }
+      }
+      state.balV = 2;
       /* migration: old CIFI upgrades convert into Memory */
       if (s.upg && Object.keys(s.upg).length) {
         const total = Object.values(s.upg).reduce((a, b) => a + b, 0);

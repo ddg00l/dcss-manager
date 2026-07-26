@@ -4720,5 +4720,233 @@
 " ist immun gegen Mutation",
 " es inmune a la mutación",
 " несприйнятливий до мутацій"
+],
+"Престиж": [
+"Prestige",
+"Prestige",
+"Prestigio",
+"Престиж"
+],
+"Легенды: ": [
+"Legends: ",
+"Legenden: ",
+"Leyendas: ",
+"Легенди: "
+],
+"цикл: ": [
+"cycle: ",
+"Zyklus: ",
+"ciclo: ",
+"цикл: "
+],
+"Престиж сбрасывает героев, арсенал, валюты и малые узлы древа Памяти. Кистоуны, Зал Славы, коллекция, унранды и зот-апгрейды остаются. Каждый престиж повышает НГ+: монстры и награды растут.": [
+"Prestige resets heroes, armory, currencies and the small nodes of the Memory tree. Keystones, the Hall of Fame, the collection, unrands and zot upgrades remain. Each prestige raises NG+: monsters and rewards grow.",
+"Prestige setzt Helden, Arsenal, Währungen und die kleinen Knoten des Erinnerungsbaums zurück. Schlusssteine, Ruhmeshalle, Sammlung, Unrands und Zot-Upgrades bleiben. Jedes Prestige erhöht NG+: Monster und Belohnungen wachsen.",
+"El prestigio reinicia héroes, arsenal, monedas y los nodos pequeños del árbol de Memoria. Las claves, el Salón de la Fama, la colección, los unrands y las mejoras de Zot permanecen. Cada prestigio sube el NG+: monstruos y recompensas crecen.",
+"Престиж скидає героїв, арсенал, валюти й малі вузли древа Пам'яті. Кістоуни, Зала Слави, колекція, унранди й зот-апгрейди залишаються. Кожен престиж підвищує НГ+: монстри й нагороди ростуть."
+],
+"Престиж сейчас: +": [
+"Prestige now: +",
+"Jetzt Prestige: +",
+"Prestigiar ahora: +",
+"Престиж зараз: +"
+],
+"Для престижа нужна победа в этом цикле": [
+"Prestige needs a victory this cycle",
+"Prestige erfordert einen Sieg in diesem Zyklus",
+"El prestigio requiere una victoria en este ciclo",
+"Для престижу потрібна перемога в цьому циклі"
+],
+"Престиж и Легенды (⚜)": [
+"Prestige and Legends (⚜)",
+"Prestige und Legenden (⚜)",
+"Prestigio y Leyendas (⚜)",
+"Престиж і Легенди (⚜)"
+],
+"Легендарная мощь": [
+"Legendary might",
+"Legendäre Macht",
+"Poder legendario",
+"Легендарна міць"
+],
+"+5% урона всех героев за ур.": [
+"+5% damage for all heroes per lvl",
+"+5% Schaden aller Helden pro Stufe",
+"+5% de daño de todos los héroes por nivel",
+"+5% шкоди всіх героїв за рів."
+],
+"Легендарная стойкость": [
+"Legendary vigour",
+"Legendäre Vitalität",
+"Vigor legendario",
+"Легендарна стійкість"
+],
+"+5% здоровья всех героев за ур.": [
+"+5% health for all heroes per lvl",
+"+5% Lebenspunkte aller Helden pro Stufe",
+"+5% de vida de todos los héroes por nivel",
+"+5% здоров'я всіх героїв за рів."
+],
+"Эхо циклов": [
+"Echo of cycles",
+"Echo der Zyklen",
+"Eco de los ciclos",
+"Відлуння циклів"
+],
+"+10% Памяти за ур.": [
+"+10% Memory gain per lvl",
+"+10% Erinnerungsgewinn pro Stufe",
+"+10% de ganancia de Memoria por nivel",
+"+10% Пам'яті за рів."
+],
+"Гравированные тропы": [
+"Engraved paths",
+"Gravierte Pfade",
+"Sendas grabadas",
+"Гравійовані стежки"
+],
+"старт цикла с +400 Памяти за ур.": [
+"start each cycle with +400 Memory per lvl",
+"Zyklusstart mit +400 Erinnerung pro Stufe",
+"empieza cada ciclo con +400 de Memoria por nivel",
+"старт циклу з +400 Пам'яті за рів."
+],
+"Старая казна": [
+"Old treasury",
+"Alte Schatzkammer",
+"Viejo tesoro",
+"Стара скарбниця"
+],
+"старт цикла с +500 золота за ур.": [
+"start each cycle with +500 gold per lvl",
+"Zyklusstart mit +500 Gold pro Stufe",
+"empieza cada ciclo con +500 de oro por nivel",
+"старт циклу з +500 золота за рів."
+],
+"Именитая гильдия": [
+"Famous guild",
+"Namhafte Gilde",
+"Gremio renombrado",
+"Іменита гільдія"
+],
+"−5% цены призыва за ур.": [
+"−5% summon cost per lvl",
+"−5% Beschwörungskosten pro Stufe",
+"−5% de coste de invocación por nivel",
+"−5% ціни призову за рів."
+],
+" находит повторную руну — гильдия продаёт её (+": [
+" finds a duplicate rune — the guild sells it (+",
+" findet eine doppelte Rune — die Gilde verkauft sie (+",
+" encuentra una runa repetida — el gremio la vende (+",
+" знаходить повторну руну — гільдія продає її (+"
+],
+"+10% урона всех героев за ур.": [
+"+10% damage for all heroes per lvl",
+"+10% Schaden aller Helden pro Stufe",
+"+10% de daño de todos los héroes por nivel",
+"+10% шкоди всіх героїв за рів."
+],
+"+10% здоровья всех героев за ур.": [
+"+10% health for all heroes per lvl",
+"+10% Lebenspunkte aller Helden pro Stufe",
+"+10% de vida de todos los héroes por nivel",
+"+10% здоров'я всіх героїв за рів."
+],
+"+15% золота за ур.": [
+"+15% gold per lvl",
+"+15% Gold pro Stufe",
+"+15% de oro por nivel",
+"+15% золота за рів."
+],
+"+8% урона всех героев за ур.": [
+"+8% damage for all heroes per lvl",
+"+8% Schaden aller Helden pro Stufe",
+"+8% de daño de todos los héroes por nivel",
+"+8% шкоди всіх героїв за рів."
+],
+"+8% здоровья всех героев за ур.": [
+"+8% health for all heroes per lvl",
+"+8% Lebenspunkte aller Helden pro Stufe",
+"+8% de vida de todos los héroes por nivel",
+"+8% здоров'я всіх героїв за рів."
+],
+"+15% Памяти за ур.": [
+"+15% Memory gain per lvl",
+"+15% Erinnerungsgewinn pro Stufe",
+"+15% de ganancia de Memoria por nivel",
+"+15% Пам'яті за рів."
+],
+"старт цикла с +600 Памяти за ур.": [
+"start each cycle with +600 Memory per lvl",
+"Zyklusstart mit +600 Erinnerung pro Stufe",
+"empieza cada ciclo con +600 de Memoria por nivel",
+"старт циклу з +600 Пам'яті за рів."
+],
+"старт цикла с +750 золота за ур.": [
+"start each cycle with +750 gold per lvl",
+"Zyklusstart mit +750 Gold pro Stufe",
+"empieza cada ciclo con +750 de oro por nivel",
+"старт циклу з +750 золота за рів."
+],
+"требует престижа": [
+"requires prestige",
+"erfordert Prestige",
+"requiere prestigio",
+"потребує престижу"
+],
+"⟐ Вестник гильдии": [
+"⟐ Guild Herald",
+"⟐ Gildenherold",
+"⟐ Heraldo del Gremio",
+"⟐ Вісник гільдії"
+],
+"Когда вся партия пала, гильдия присылает бесплатного искателя, и он выходит сам — даже офлайн.": [
+"When the whole party has fallen, the guild sends a free seeker who sets out on his own — even offline.",
+"Wenn der ganze Trupp gefallen ist, schickt die Gilde einen kostenlosen Sucher, der von selbst aufbricht — auch offline.",
+"Cuando todo el grupo ha caído, el gremio envía un buscador gratuito que parte por su cuenta — incluso sin conexión.",
+"Коли вся партія полягла, гільдія надсилає безкоштовного шукача, і він виходить сам — навіть офлайн."
+],
+"3 смерти": [
+"3 deaths",
+"3 Tode",
+"3 muertes",
+"3 смерті"
+],
+"первая смерть": [
+"first death",
+"erster Tod",
+"primera muerte",
+"перша смерть"
+],
+"Шар вынесен — цикл достиг вершины. <b>Престиж</b> сожжёт героев, арсенал и малые узлы древа; кистоуны, слава и коллекция останутся. Взамен — Легенды ⚜ и новая глубина.": [
+"The Orb is carried out — the cycle has peaked. <b>Prestige</b> burns heroes, armory and the small nodes of the tree; keystones, fame and the collection remain. In return — Legends ⚜ and a new depth.",
+"Der Orb ist geborgen — der Zyklus hat seinen Gipfel erreicht. <b>Prestige</b> verbrennt Helden, Arsenal und die kleinen Knoten des Baums; Schlusssteine, Ruhm und Sammlung bleiben. Dafür gibt es Legenden ⚜ und eine neue Tiefe.",
+"El Orbe ha salido — el ciclo llegó a su cima. El <b>prestigio</b> quema héroes, arsenal y los nodos pequeños del árbol; las claves, la fama y la colección permanecen. A cambio: Leyendas ⚜ y una nueva profundidad.",
+"Кулю винесено — цикл досяг вершини. <b>Престиж</b> спалить героїв, арсенал і малі вузли древа; кістоуни, слава й колекція залишаться. Натомість — Легенди ⚜ і нова глибина."
+],
+"Легенды ⚜ покупают вечные усиления, которые переживают любые циклы. Чем богаче прожит цикл, тем больше Легенд он приносит.": [
+"Legends ⚜ buy eternal upgrades that survive every cycle. The richer the cycle lived, the more Legends it pays out.",
+"Legenden ⚜ kaufen ewige Verbesserungen, die jeden Zyklus überdauern. Je reicher der Zyklus gelebt wurde, desto mehr Legenden zahlt er aus.",
+"Las Leyendas ⚜ compran mejoras eternas que sobreviven a todos los ciclos. Cuanto más rico fue el ciclo vivido, más Leyendas paga.",
+"Легенди ⚜ купують вічні підсилення, що переживають будь-які цикли. Чим багатше прожито цикл, тим більше Легенд він приносить."
+],
+"Доступна новая версия игры": [
+"A new version of the game is ready",
+"Eine neue Version des Spiels ist verfügbar",
+"Hay una nueva versión del juego disponible",
+"Доступна нова версія гри"
+],
+"Обновить": [
+"Refresh",
+"Aktualisieren",
+"Actualizar",
+"Оновити"
+],
+"Для престижа нужно {n} побед за цикл (пока {w})": [
+"Prestige needs {n} victories this cycle ({w} so far)",
+"Prestige erfordert {n} Siege in diesem Zyklus (bisher {w})",
+"El prestigio requiere {n} victorias en este ciclo (por ahora {w})",
+"Для престижу потрібно {n} перемог за цикл (поки {w})"
 ]
 }

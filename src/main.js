@@ -21,9 +21,12 @@ import { ftueTick, updateGates, maybeTour } from './ui/ftue.js';
 import { tabUnlocked } from './core/ftue.js';
 import { setLang, applyStatic, DEFAULT_LANG } from './i18n/index.js';
 import { openSettings } from './ui/settings.js';
+import { canPrestige } from './core/prestige.js';
+import './ui/update.js';
 
 /* cross-module UI callbacks (avoids circular imports) */
 window.__renderAll = renderAll;
+window.__save = save; /* debugging/cheat access from the console */
 window.__setWatch = id => { setWatch(id); switchPane('pDun'); };
 window.__openEquip = openEquip;
 window.__openSheet = openSheet;
@@ -39,6 +42,8 @@ function switchPane(p, silent) {
   renderAll();
   if (p === 'pUpg') centerMemTree(); /* Memory always opens centered on the tree */
   if (!silent) maybeTour(p);
+  /* the prestige coachmark waits until the pane tour is done and a victory unlocks it */
+  if (!silent && p === 'pFame' && save.ftue.tours.pFame && canPrestige(save)) maybeTour('prestige');
 }
 document.querySelectorAll('#nav .tb').forEach(b => {
   b.onclick = () => { sfx.ui(); switchPane(b.dataset.p); };
