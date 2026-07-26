@@ -4,6 +4,7 @@
    milestones/interval/tab-hide, and surface genuine disputes to a dialog. */
 import { cloudAvailable, watchAuth, signIn, signOut, isSignedIn, readState, writeState } from './firebase.js';
 import { resolvePull, shouldPush, makeMeta, vectorOf } from './sync.js';
+import { pruneSave } from '../core/state.js';
 
 export { cloudAvailable, isSignedIn };
 
@@ -58,6 +59,7 @@ async function pull(getSave, applyState) {
 async function push(getSave, milestone) {
   if (!isSignedIn()) return;
   const save = getSave();
+  pruneSave(save); /* never upload accumulated dead heroes */
   const vec = vectorOf(save);
   if (!milestone && !shouldPush(vec, lastPushedVec)) return;
   const meta = makeMeta(save, DEVICE_ID, deviceName(), Date.now());

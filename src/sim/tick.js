@@ -174,7 +174,7 @@ export function heroDie(h,killer,s){
   }
   s.fame.unshift({name:h.name,race:h.race,cls:h.cls,rarity:h.rarity,xl:h.xl,
     depth:h.maxDepth||brTag(h),by:killer,won:false,runes:h.runes.length});
-  if(s.fame.length>40)s.fame.pop();
+  if(s.fame.length>20)s.fame.length=20;
   h.rep.notable.push(t('☠ slain by ')+killer+t(' on ')+brTag(h)+' (+'+sh+t(' shards)'));
   
 }
@@ -197,6 +197,7 @@ export function heroWin(h,s){
   gainMem(s,300);
   s.fame.unshift({name:h.name,race:h.race,cls:h.cls,rarity:h.rarity,xl:h.xl,
     depth:t('Zot:5 — THE ORB'),by:null,won:true,runes:h.runes.length});
+  if(s.fame.length>20)s.fame.length=20;
   for(const slot of Object.keys(h.gear)){
     const it=h.gear[slot];
     if(it&&!it.id.startsWith('st'))storeItem(s,it);

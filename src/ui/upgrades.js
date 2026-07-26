@@ -104,7 +104,7 @@ export function renderFame(){
     zbox.appendChild(el);
   }
   const box=$('fameList');box.innerHTML='';
-  for(const f of save.fame.slice(0,25)){
+  for(const f of save.fame.slice(0,20)){
     const el=document.createElement('div');
     el.className='itemRow '+(f.won?'bord3':'bord0');
     el.innerHTML='<img src="'+tileURL(RACES[f.race].t)+'">'+

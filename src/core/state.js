@@ -124,6 +124,7 @@ export function loadState(storage) {
             state.vic.classes[f.cls] = (state.vic.classes[f.cls] || 0) + 1;
           }
       state.balV = 2;
+      pruneSave(state); /* shrink pre-existing bloated saves (accumulated dead heroes) */
       if (s.masterSeed === undefined) {
         /* derive a stable seed from immutable account facts so it never shifts */
         state.masterSeed = (hashSeed(s.nextId || 1, (s.fame || []).length, s.mem || 0) || 1) >>> 0;
@@ -143,8 +144,19 @@ export function loadState(storage) {
   return state;
 }
 
+/* Dead and victorious heroes are fully recorded in the Hall of Fame and the
+   morgue (pendingDeaths); keeping their objects in state.heroes only bloats the
+   save unboundedly (each carries an 80-line log) and eventually blows the
+   Firestore 1 MB field limit. Prune them — only living delvers stay on the
+   roster. */
+export function pruneSave(state) {
+  if (state.heroes) state.heroes = state.heroes.filter(h => h.state === 'run' || h.state === 'camp');
+  if (state.fame && state.fame.length > 20) state.fame.length = 20; // keep the last 20
+}
+
 export function persistState(state, storage) {
   state.last = Date.now();
+  pruneSave(state);
   try { storage && storage.setItem(SKEY, JSON.stringify(state)); } catch (e) { /* quota */ }
 }
 
