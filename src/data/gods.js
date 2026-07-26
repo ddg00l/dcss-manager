@@ -1,3 +1,5 @@
+import { endgameUnlocked } from './endgame.js';
+
 export const GODS={
   trog:{n:'Trog',alt:'d_altar_trog',d:'+30% melee damage, berserk below 30% HP',mel:1.3,berserk30:1},
   okawaru:{n:'Okawaru',alt:'d_altar_oka',d:'+8% damage, heroism against uniques and bosses',dmg:1.08,hero:1.25},
@@ -15,11 +17,14 @@ export const GODKEYS=Object.keys(GODS);
 /* Pantheon: favor is lifetime Orbs carried out while pledged to a god. It never
    resets across cycles. Reaching a threshold raises that god's favor tier, which
    permanently amplifies the god's own bonuses for any future hero who pledges to
-   it — a hard-capped eternal power (max tier 4 → +20% of the bonus, never more,
-   so it extends the curve without re-arming a runaway). */
+   it. Favor accrues from the first cycle, but the amplification is gated behind
+   ENDGAME_GATE prestiges — so at unlock the favor already earned across the run
+   switches on at once. Hard-capped (max tier 4 → +40% of the bonus) so it
+   extends the curve without re-arming a runaway. */
 export const FAVOR_TIERS=[1,5,15,40]; /* Orbs for tiers 1..4 */
+export const FAVOR_STEP=.10;          /* +10% of the bonus per favor tier, cap +40% */
 export const godFavor=(s,g)=>{const w=(s.pantheon&&s.pantheon[g])||0;let t=0;for(const need of FAVOR_TIERS)if(w>=need)t++;return t;};
-export const godFavorMul=(s,g)=>1+godFavor(s,g)*.05; /* +5% of the bonus per tier, cap +20% */
+export const godFavorMul=(s,g)=>endgameUnlocked(s)?1+godFavor(s,g)*FAVOR_STEP:1;
 /* Multiplicative combat fields whose "bonus" (value − 1) is amplified by favor. */
 const MULT_FIELDS=new Set(['mel','dmg','mag','hp','hero']);
 /** a god's effect field for a hero, with favor amplification applied */

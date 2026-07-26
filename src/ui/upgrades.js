@@ -6,7 +6,8 @@ import {tileURL,tileImg} from '../data/tiles.js';
 import {RACES} from '../data/races.js';
 import {CLASSES} from '../data/classes.js';
 import {GODS,GODKEYS,godFavor,FAVOR_TIERS} from '../data/gods.js';
-import {MONS,FAMILY_KEYS,FAMILY_META,FAMILIES,familyKills,familyTier,familyDmgBonus,monTier} from '../data/monsters.js';
+import {MONS,FAMILY_KEYS,FAMILY_META,FAMILIES,familyKills,familyMastery,familyDmgBonus,monTier} from '../data/monsters.js';
+import {ENDGAME_GATE,endgameUnlocked} from '../data/endgame.js';
 import {BRANCHES,brTag} from '../data/branches.js';
 import {itemName,itemTile,randomItem,itemInfo} from '../data/items.js';
 import {ZUPGRADES,zupg,zupgCost,zupgCap,fameMul} from '../core/economy.js';
@@ -48,11 +49,15 @@ export function renderFame(){
       CKEYS.map(c=>'<span style="opacity:'+(gc.includes(c)?1:.35)+'">'+t(CLASSES[c].n)+'</span>').join(' · ')+'</div>';
     chB.appendChild(hall);
   }
-  /* Pantheon: eternal favor per god (wins-while-pledged), capped boon amplifier */
+  /* the endgame powers accrue always but stay dormant until the prestige gate */
+  const egOn=endgameUnlocked(save);
+  const gateNote=egOn?'':' <span style="color:var(--epic)">'+
+    t('Locked until {n} prestiges — {x} so far',{n:ENDGAME_GATE,x:save.prestiges||0})+'</span>';
+  /* Pantheon: eternal favor per god (wins-while-pledged), gated boon amplifier */
   const pth=$('pantheonBox');
   if(pth){
     pth.innerHTML='<div class="card"><div class="nm" style="color:var(--gold)">'+t('Pantheon')+'</div>'+
-      '<div class="meta">'+t("Favor deepens each god's boon — carry the Orb pledged to a god. Capped at +20%.")+'</div>'+
+      '<div class="meta">'+t("Favor deepens each god's boon — carry the Orb pledged to a god.")+gateNote+'</div>'+
       '<div class="godGrid">'+
       GODKEYS.map(g=>{
         const w=(save.pantheon&&save.pantheon[g])||0,tier=godFavor(save,g),next=FAVOR_TIERS[tier];
@@ -63,16 +68,16 @@ export function renderFame(){
           '</span></div></div>';
       }).join('')+'</div></div>';
   }
-  /* Bestiary: eternal per-monster codex, capped damage bonus per family */
+  /* Bestiary: eternal per-monster codex, gated logarithmic damage bonus per family */
   const bst=$('bestiaryBox');
   if(bst){
     bst.innerHTML='<div class="card"><div class="nm" style="color:var(--gold)">'+t('Bestiary')+'</div>'+
-      '<div class="meta">'+t('Every kind slain forever strengthens you against its family — capped at +12% per family.')+'</div>'+
+      '<div class="meta">'+t('Every kind slain forever strengthens you against its family.')+gateNote+'</div>'+
       FAMILY_KEYS.map(fam=>{
-        const meta=FAMILY_META[fam],fk=familyKills(save,fam),ft=familyTier(save,fam),fb=familyDmgBonus(save,fam);
+        const meta=FAMILY_META[fam],fk=familyKills(save,fam),ms=familyMastery(save,fam),fb=familyDmgBonus(save,fam);
         return '<div style="margin-top:8px"><div class="ds">'+meta.ico+' '+t(meta.n)+
-          ' · <span style="color:var(--gold)">+'+Math.round(fb*100)+'%</span> '+
-          '<span class="label">'+t('{n} slain · tier {t}/4',{n:fk,t:ft})+'</span></div>'+
+          ' · <span style="color:var(--gold)">'+(egOn?'+'+Math.round(fb*100)+'%':'—')+'</span> '+
+          '<span class="label">'+t('{n} slain · mastery {t}/4',{n:fk,t:ms})+'</span></div>'+
           '<div class="label" style="line-height:1.9">'+
           FAMILIES[fam].map(k=>{
             const n=(save.bestiary&&save.bestiary[k])||0,mt=monTier(save,k);

@@ -14,6 +14,8 @@ import { NODES, canBuy, buyNode, treeLvl, nodeCost, memHas } from '../../src/dat
 import { rollCost, maxSlots, forgeDisc, freeRollAvailable, ZUPGRADES, zupg, zupgCost, zupgCap } from '../../src/core/economy.js';
 import { canPrestige, doPrestige, PUPGRADES, pupg, pupgCost, cycleProgress, ngLevel, prestigeReq } from '../../src/core/prestige.js';
 import { readiness } from '../../src/data/eliteAffixes.js';
+import { godFavor, GODKEYS } from '../../src/data/gods.js';
+import { familyKills, familyMastery, familyDmgBonus, FAMILY_KEYS } from '../../src/data/monsters.js';
 import { achMet } from '../../src/data/memtree.js';
 const achMetSafe = (s, n) => { try { return achMet(s, n); } catch { return false; } };
 import { randomItem, doForge, forgeCost as fCost, forgeScrap as fScrap } from '../../src/data/items.js';
@@ -187,6 +189,9 @@ function session(tactic, days = 1, seed = 0) {
       running: s.heroes.filter(h => h.state === 'run').length,
       rolls: s.rolls, cycWins: (s.stat.wins || 0) - ((s.cycBase && s.cycBase.wins) || 0),
       readiness: +readiness(s).toFixed(1), prestigeReq: prestigeReq(s), canPrestige: canPrestige(s),
+      pantheon: s.pantheon, panFavor: Object.fromEntries(GODKEYS.map(g => [g, godFavor(s, g)]).filter(e => e[1] > 0)),
+      famKills: Object.fromEntries(FAMILY_KEYS.map(f => [f, familyKills(s, f)])),
+      famBonus: Object.fromEntries(FAMILY_KEYS.map(f => [f, +(familyDmgBonus(s, f) * 100).toFixed(1)])),
     };
   }
   const d = depthScore(s);

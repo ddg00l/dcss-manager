@@ -1,3 +1,5 @@
+import { endgameUnlocked } from './endgame.js';
+
 export const MONS={
   rat:{n:'rat',t:'m_rat',hp:4,dmg:2,ac:0,ev:8,xp:1},
   bat:{n:'bat',t:'m_bat',hp:5,dmg:2,ac:0,ev:14,xp:1,spd:1.6},
@@ -84,20 +86,21 @@ export const monTier = (s, kind) => {
   let t = 0; for (const need of TYPE_TIERS) if (n >= need) t++; return t;
 };
 
-/* Family damage bonus — the capped eternal power. Total kills across a family
-   raise its tier; each tier is +3% damage dealt to that family, hard-capped at
-   +12% (tier 4). A hero only ever gets the bonus for the family it is striking,
-   so the effective average is far below the cap — it extends the curve without
-   re-arming a runaway. */
-export const FAMILY_TIERS = [100, 500, 2000, 8000];
 export const familyKills = (s, fam) => {
   let n = 0; for (const k of FAMILIES[fam] || []) n += (s.bestiary && s.bestiary[k]) || 0; return n;
 };
-export const familyTier = (s, fam) => {
-  const n = familyKills(s, fam);
-  let t = 0; for (const need of FAMILY_TIERS) if (n >= need) t++; return t;
-};
-export const familyDmgBonus = (s, fam) => familyTier(s, fam) * 0.03;
+/* Family damage bonus — the capped eternal power, gated behind ENDGAME_GATE
+   prestiges. A logarithmic curve on total family kills: it never saturates (each
+   10x kills is another +FAM_STEP) and log naturally compresses the ~30x spread
+   in how fast families are slain, so common and rare families land close
+   together. A hero only ever gets the bonus for the family it is striking, so
+   the effective average is well under the cap — it extends the curve without
+   re-arming a runaway. Zero until the endgame unlocks. */
+export const FAM_STEP = 0.05, FAM_CAP = 0.30;
+export const familyDmgBonus = (s, fam) =>
+  endgameUnlocked(s) ? Math.min(FAM_CAP, FAM_STEP * Math.log10(1 + familyKills(s, fam))) : 0;
+/** display-only 0..4 "mastery" derived from the bonus, for the codex grid */
+export const familyMastery = (s, fam) => Math.round((familyDmgBonus(s, fam) / FAM_CAP) * 4);
 export const UNIQUES={
   ijyb:{n:'Ijyb',t:'u_ijyb',base:'goblin',mul:3,fl:[1,3],phr:'Ijyb shrieks, clutching his club!'},
   terence:{n:'Terence',t:'u_terence',base:'hobgoblin',mul:2.6,fl:[2,4],phr:'Terence thirsts for your blood!'},
