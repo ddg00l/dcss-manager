@@ -9,6 +9,12 @@ export { cloudAvailable, isSignedIn, CLIENT_ID };
 
 const OPT_KEY = 'dcss.cloudOptIn';
 const setOptIn = v => { try { v ? localStorage.setItem(OPT_KEY, '1') : localStorage.removeItem(OPT_KEY); } catch {} };
+const optedIn = () => { try { return localStorage.getItem(OPT_KEY) === '1'; } catch { return false; } };
+/* a returning user whose token has expired: the UI shows a re-login banner */
+export const sessionExpired = () => optedIn() && !isSignedIn();
+export async function reconnect(getSave, applyState) {
+  await signIn(); setOptIn(true); await pull(getSave, applyState);
+}
 
 /** interactive sign-in; remembers the choice so future reloads restore silently */
 export async function connect() {
@@ -32,9 +38,10 @@ const status = (k, extra) => onStatus && onStatus(k, extra);
 
 /** adopt a remote state into the running game (UI passes an applier) */
 async function pull(getSave, applyState, force) {
-  if (!cloudAvailable() || !isSignedIn()) return;
+  if (!cloudAvailable()) return;
+  if (!isSignedIn()) { if (optedIn()) status('expired'); return; }
   const token = getToken();
-  if (!token) return;
+  if (!token) { if (optedIn()) status('expired'); return; }
   const meta = await readMeta(token);
   const decision = resolvePull(vectorOf(getSave()), meta);
   if (decision.action === 'conflict' && !force) {
@@ -56,12 +63,13 @@ async function pull(getSave, applyState, force) {
 
 /** upload local, optionally pinning a milestone revision */
 async function push(getSave, pin) {
-  if (!cloudAvailable() || !isSignedIn()) return;
+  if (!cloudAvailable()) return;
+  if (!isSignedIn()) { if (optedIn() && pin) status('expired'); return; }
   const save = getSave();
   const vec = vectorOf(save);
   if (!pin && !shouldPush(vec, lastPushedVec)) return;
   const token = getToken();
-  if (!token) return;
+  if (!token) { if (optedIn() && pin) status('expired'); return; }
   const meta = makeMeta(save, DEVICE_ID, deviceName(), Date.now());
   save.__syncRev = meta.rev;
   await writeState(token, save, meta, pin);

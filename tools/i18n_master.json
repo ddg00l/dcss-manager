@@ -5536,5 +5536,17 @@
 "Cloud verwenden",
 "Usar la nube",
 "Використати хмару"
+],
+"Сессия облака истекла — войдите снова, чтобы продолжить синхронизацию": [
+"Cloud session expired — sign in again to keep syncing",
+"Cloud-Sitzung abgelaufen — melde dich erneut an, um die Synchronisierung fortzusetzen",
+"La sesión en la nube caducó — inicia sesión de nuevo para seguir sincronizando",
+"Сесія хмари закінчилася — увійдіть знову, щоб продовжити синхронізацію"
+],
+"Войти": [
+"Sign in",
+"Anmelden",
+"Iniciar sesión",
+"Увійти"
 ]
 }

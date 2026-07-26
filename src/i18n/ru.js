@@ -922,4 +922,6 @@ export const RU = {
   'Runes': 'Руны',
   'Keep this device': 'Оставить это устройство',
   'Use cloud': 'Использовать облако',
+  'Cloud session expired — sign in again to keep syncing': 'Сессия облака истекла — войдите снова, чтобы продолжить синхронизацию',
+  'Sign in': 'Войти',
 };

@@ -26,6 +26,7 @@ import './ui/update.js';
 import { initCloud, startAutoSync, cloudPush, cloudAvailable } from './cloud/index.js';
 import { openConflict } from './ui/conflict.js';
 import { setCloudMsg } from './ui/settings.js';
+import { maybeCloudBanner, resetCloudBanner } from './ui/cloudbanner.js';
 
 /* cross-module UI callbacks (avoids circular imports) */
 window.__renderAll = renderAll;
@@ -115,11 +116,15 @@ document.addEventListener('visibilitychange', () => {
 
 /* cloud sync: adopt remote saves, surface disputes, push on milestones */
 window.__cloudPush = m => cloudPush(() => save, m); /* called by heroWin/doPrestige via UI */
+const applyRemote = st => { Object.assign(save, st); persist(); renderAll(); };
 initCloud({
   onConflict: openConflict,
-  onStatus: (k, extra) => setCloudMsg(k === 'error' ? 'Sync error' : k === 'synced' ? 'Synced' : k),
+  onStatus: (k) => {
+    setCloudMsg(k === 'error' ? 'Sync error' : k === 'synced' ? 'Synced' : k);
+    if (k === 'expired') maybeCloudBanner(() => save, applyRemote);
+    if (k === 'synced') resetCloudBanner();
+  },
 });
-const applyRemote = st => { Object.assign(save, st); persist(); renderAll(); };
 if (cloudAvailable()) startAutoSync(() => save, applyRemote);
 
 setLang(save.lang || DEFAULT_LANG);

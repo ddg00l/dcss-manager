@@ -922,4 +922,6 @@ export const ES = {
   'Runes': 'Runas',
   'Keep this device': 'Conservar este dispositivo',
   'Use cloud': 'Usar la nube',
+  'Cloud session expired — sign in again to keep syncing': 'La sesión en la nube caducó — inicia sesión de nuevo para seguir sincronizando',
+  'Sign in': 'Iniciar sesión',
 };

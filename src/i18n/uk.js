@@ -922,4 +922,6 @@ export const UK = {
   'Runes': 'Руни',
   'Keep this device': 'Залишити цей пристрій',
   'Use cloud': 'Використати хмару',
+  'Cloud session expired — sign in again to keep syncing': 'Сесія хмари закінчилася — увійдіть знову, щоб продовжити синхронізацію',
+  'Sign in': 'Увійти',
 };

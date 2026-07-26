@@ -232,3 +232,9 @@
     background:var(--panel2);border-bottom:1px solid var(--gold);font-size:12px}
   #updBar button{min-height:30px;padding:4px 14px}
   #updBar .updX{background:none;border:none;color:var(--dim);font-size:16px;min-height:30px;padding:4px 8px}
+  /* cloud session banner (mirrors the update bar) */
+  #cloudBar{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;gap:12px;
+    align-items:center;justify-content:center;padding:9px 14px;
+    background:var(--panel2);border-bottom:1px solid var(--epic);font-size:12px}
+  #cloudBar button{min-height:30px;padding:4px 14px}
+  #cloudBar .updX{background:none;border:none;color:var(--dim);font-size:16px;min-height:30px;padding:4px 8px}
