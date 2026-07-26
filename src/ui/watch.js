@@ -174,13 +174,29 @@ export function renderWatch(){
     ' · 💰'+fmt(h.gold||0)+' · ᚱ'+h.runes.length+(stIcons?' · '+stIcons:'');
   $('wSheetBtn').textContent=t('Status');
   $('wSheetBtn').onclick=()=>window.__openSheet(h.id);
-  /* log */
-  if(lastLogHero!==h.id||(h.logSeq||0)!==lastLogLen){
-    lastLogHero=h.id;lastLogLen=h.logSeq||0;
-    const lg=$('wlog');
-    lg.innerHTML=h.log.slice(-40).map(e=>
-      '<div class="lg-'+e.cls+'"><span class="t">['+e.t+']</span>'+e.txt+'</div>').join('');
+  /* log: append-only so a burst of lines never rebuilds all 40 (which thrashes
+     the DOM and lets the text paint fall a frame behind the canvas). Only the
+     lines added since last frame are inserted; the list is trimmed to 40; and
+     the view auto-scrolls only when the reader is already at the bottom, so
+     scrolling up to read a fight is never yanked back down. */
+  const fmtLine=e=>'<div class="lg-'+e.cls+'"><span class="t">['+e.t+']</span>'+e.txt+'</div>';
+  const lg=$('wlog');
+  const seq=h.logSeq||0;
+  if(lastLogHero!==h.id){
+    lastLogHero=h.id;lastLogLen=seq;
+    lg.innerHTML=h.log.slice(-40).map(fmtLine).join('');
     lg.scrollTop=lg.scrollHeight;
+  }else if(seq!==lastLogLen){
+    const added=Math.min(seq-lastLogLen,h.log.length);
+    lastLogLen=seq;
+    const atBottom=lg.scrollHeight-lg.scrollTop-lg.clientHeight<24;
+    if(added>=40){
+      lg.innerHTML=h.log.slice(-40).map(fmtLine).join('');
+    }else{
+      lg.insertAdjacentHTML('beforeend',h.log.slice(-added).map(fmtLine).join(''));
+      while(lg.children.length>40)lg.removeChild(lg.firstChild);
+    }
+    if(atBottom)lg.scrollTop=lg.scrollHeight;
   }
 }
 
