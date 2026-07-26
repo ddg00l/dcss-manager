@@ -52,6 +52,52 @@ export const MONS={
   ghoul_mon:{n:'ghoul',t:'m_ghoul',hp:36,dmg:15,ac:4,ev:6,xp:13,und:1},
   mummy:{n:'mummy',t:'m_mummy',hp:38,dmg:16,ac:3,ev:5,xp:14,spd:.8,und:1},
 };
+
+/* Bestiary families: every MONS key belongs to exactly one. The eternal
+   Bestiary grants a permanent, hard-capped damage bonus against a family once
+   enough of its members have been slain across all cycles. Uniques inherit
+   their family from their `base` monster. Grouping is thematic, not by tier. */
+export const FAMILIES = {
+  beast:     ['rat','bat','jackal','adder','killer_bee','scorpion','centaur','wolf_spider','yak','blink_frog','komodo','black_mamba','elephant','death_yak','hydra','ghost_moth'],
+  humanoid:  ['kobold','goblin','hobgoblin','gnoll','orc','orc_warrior','orc_priest','orc_knight','de_mage','de_knight','de_archer','de_sorcerer','de_high_priest','vault_guard','ironbound','draconian_mon'],
+  giant:     ['ogre','two_headed_ogre','cyclops','troll_mon','minotaur_mon','stone_giant','fire_giant','frost_giant','ettin'],
+  undead:    ['skeleton','zombie','wight','wraith','lich','ghoul_mon','mummy'],
+  construct: ['war_gargoyle','stone_golem','orb_guardian','orb_of_fire'],
+};
+export const FAMILY_META = {
+  beast:     { n:'Beasts',     ico:'🐺' },
+  humanoid:  { n:'Humanoids',  ico:'⚔'  },
+  giant:     { n:'Giants',     ico:'👹' },
+  undead:    { n:'Undead',     ico:'💀' },
+  construct: { n:'Constructs', ico:'🗿' },
+};
+export const FAMILY_KEYS = Object.keys(FAMILIES);
+/** monster key → family key */
+export const FAMILY_OF = {};
+for (const fam in FAMILIES) for (const k of FAMILIES[fam]) FAMILY_OF[k] = fam;
+
+/* Per-monster codex milestones — purely a display/collection track (discovered,
+   hunted, nemesis, slayer). Kills are lifetime, across all cycles. */
+export const TYPE_TIERS = [1, 10, 50, 200];
+export const monTier = (s, kind) => {
+  const n = (s.bestiary && s.bestiary[kind]) || 0;
+  let t = 0; for (const need of TYPE_TIERS) if (n >= need) t++; return t;
+};
+
+/* Family damage bonus — the capped eternal power. Total kills across a family
+   raise its tier; each tier is +3% damage dealt to that family, hard-capped at
+   +12% (tier 4). A hero only ever gets the bonus for the family it is striking,
+   so the effective average is far below the cap — it extends the curve without
+   re-arming a runaway. */
+export const FAMILY_TIERS = [100, 500, 2000, 8000];
+export const familyKills = (s, fam) => {
+  let n = 0; for (const k of FAMILIES[fam] || []) n += (s.bestiary && s.bestiary[k]) || 0; return n;
+};
+export const familyTier = (s, fam) => {
+  const n = familyKills(s, fam);
+  let t = 0; for (const need of FAMILY_TIERS) if (n >= need) t++; return t;
+};
+export const familyDmgBonus = (s, fam) => familyTier(s, fam) * 0.03;
 export const UNIQUES={
   ijyb:{n:'Ijyb',t:'u_ijyb',base:'goblin',mul:3,fl:[1,3],phr:'Ijyb shrieks, clutching his club!'},
   terence:{n:'Terence',t:'u_terence',base:'hobgoblin',mul:2.6,fl:[2,4],phr:'Terence thirsts for your blood!'},

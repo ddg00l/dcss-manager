@@ -85,6 +85,10 @@
   .card .nm{font-size:13px;font-weight:700;color:var(--bone)}
   .card .sub{font-size:10px;color:var(--dim);margin-top:2px}
   .card .meta{font-size:10px;color:var(--text);line-height:1.6}
+  .card .ds{font-size:11px;color:var(--bone)}
+  .godGrid{display:flex;flex-wrap:wrap;gap:8px 14px}
+  .godCell{display:flex;align-items:center;gap:6px;min-width:150px}
+  .godCell img{width:28px;height:28px;image-rendering:pixelated;flex-shrink:0}
   .rowBtns{display:flex;gap:6px;flex-wrap:wrap}
   .rowBtns button{flex:1;padding:9px 8px;font-size:11px}
   .rar0{color:var(--stone)} .rar1{color:var(--rare)} .rar2{color:var(--epic)} .rar3{color:var(--leg)}

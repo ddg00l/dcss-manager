@@ -7,13 +7,13 @@ import {BRANCHES,buildRoute,brDepth,brTag} from '../data/branches.js';
 import {RACES,aptMul} from '../data/races.js';
 import {crossBoost} from '../data/skills.js';
 import {CLASSES} from '../data/classes.js';
-import {GODS} from '../data/gods.js';
+import {GODS,godField} from '../data/gods.js';
 import {comboKey,SHARDS_PER} from '../data/combos.js';
 import {randomItem,itemName,itemInfo,scoreItem,WEP_BASES,UNRANDS,makeUnrand} from '../data/items.js';
 import {POTIONS,SCROLLS,consName,randConsumable} from '../data/consumables.js';
 import {MUTS,randomMut} from '../data/mutations.js';
 import {PORTALS} from '../data/portals.js';
-import {MONS} from '../data/monsters.js';
+import {MONS,FAMILY_OF,familyDmgBonus} from '../data/monsters.js';
 import {recordVictory,recordRunnerWin,checkContract,recordNemesisKill,avengeNemesis} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
 import {ELITE_AFFIXES,FLOOR_AFFIXES} from '../data/eliteAffixes.js';
@@ -200,6 +200,8 @@ export function heroWin(h,s){
   const firstWin=((s.stat.wins||0)-((s.cycBase&&s.cycBase.wins)||0))===0;
   s.stat.wins=(s.stat.wins||0)+1;
   s.progress.Zot=Math.max(s.progress.Zot||0,5);
+  /* eternal Pantheon: an Orb carried out while pledged deepens that god's favor */
+  if(h.god)s.pantheon[h.god]=(s.pantheon[h.god]||0)+1;
   recordVictory(s,h);
   recordRunnerWin(s,h);
   const cReward=checkContract(s,h);
@@ -463,10 +465,13 @@ export function heroAttack(h,st,mo,s){
     if(st.venom&&mo.hp>0&&!(mo.special&&mo.special.und))
       mo.poisonA={dps:Math.max(1,st.dmg*.12),t:4}; /* venom blade (undead are immune to poison) */
     dmg=Math.max(1,dmg-mo.ac*.8);
+    /* eternal Bestiary: capped damage bonus vs the struck monster's family */
+    const fam=FAMILY_OF[mo.kind];
+    if(fam){const fb=familyDmgBonus(s,fam);if(fb)dmg*=1+fb;}
     /* berserker rage */
     if(cd.rage&&h.curHp/h.maxHpCache<.5)dmg*=1.5;
-    /* Okawaru's heroism: vs uniques and bosses */
-    if(h.god&&GODS[h.god].hero&&(mo.boss||mo.uniq))dmg*=GODS[h.god].hero;
+    /* Okawaru-style heroism vs uniques and bosses (Pantheon favor amplifies it) */
+    if(h.god&&(mo.boss||mo.uniq)){const hb=godField(s,h.god,'hero');if(hb)dmg*=hb;}
     if(cd.aoe){
       for(const o of h.map.monsters)
         if(o!==mo&&Math.abs(o.x-mo.x)<=1&&Math.abs(o.y-mo.y)<=1)o.hp-=dmg*.5;
@@ -521,6 +526,9 @@ function killMon(h,mo,s){
     }
   }
   h.kills++;h.rep.kills++;s.stat.kills++;
+  /* eternal Bestiary: lifetime kills per monster kind (uniques count under their
+     base kind, so they feed the same family codex) */
+  if(mo.kind)s.bestiary[mo.kind]=(s.bestiary[mo.kind]||0)+1;
   const depth=brDepth(h);
   const eliteLoot=mo.eliteAf?(1+.5*mo.eliteAf.length)*(memHas(s,'k_elite')?2:1):1;
   const goldMul=(RACES[h.race].gold||1)*gGold(s)*todayAffix().gold*eliteLoot;
@@ -530,7 +538,8 @@ function killMon(h,mo,s){
   if(rnd(h)<.06*gDrop(s))s.scrap++;
   if(h.god){h.piety=Math.min(200,h.piety+1);
     const gd=GODS[h.god];
-    if(gd.healkill)h.curHp=Math.min(h.maxHpCache,h.curHp+h.maxHpCache*gd.healkill);
+    const hk=godField(s,h.god,'healkill'); /* Pantheon favor amplifies the lifesteal */
+    if(hk)h.curHp=Math.min(h.maxHpCache,h.curHp+h.maxHpCache*hk);
   }
   /* the necromancer raises the fallen: Animate Dead */
   const cdN=CLASSES[h.cls];
@@ -802,7 +811,9 @@ export function tryAutoEquip(h,it,s){
 }
 /* ===================== time & offline ===================== */
 export function heroTps(h,s){
-  return 1.4*(RACES[h.race].spd||1)*gSpd(s);
+  /* Cheibriados slows the delver's action rate (favor never eases the penalty) */
+  const slow=(h.god&&GODS[h.god].slow)||1;
+  return 1.4*(RACES[h.race].spd||1)*gSpd(s)*slow;
 }
 let simAcc={};
 /* the "Auto-summon" keystone: fills a free slot with an idle hero, or buys a

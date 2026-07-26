@@ -263,7 +263,7 @@ describe('graceful migration of rune-inflation-era saves (balV 2)', () => {
     expect(s.gold).toBe(1000 + 260 * 800);             // excess sold for gold
     const { canPrestige } = await import('../src/core/prestige.js');
     expect(canPrestige(s)).toBe(false);                // needs a NEW victory
-    expect(s.balV).toBe(3);
+    expect(s.balV).toBe(4);
   });
   it('bought elite levels keep their paid-for power after the effect nerf', async () => {
     const { gAtk, zupgCap, ZUPGRADES } = await import('../src/core/economy.js');
@@ -300,9 +300,9 @@ describe('graceful migration of rune-inflation-era saves (balV 2)', () => {
     expect(s.legends).toBeLessThan(80);
     expect(s.mem).toBe(5000); // memory balance untouched
   });
-  it('fresh accounts are born on balV 3 with no grant', () => {
+  it('fresh accounts are born on balV 4 with no grant', () => {
     const s = makeState();
-    expect(s.balV).toBe(3);
+    expect(s.balV).toBe(4);
     expect(s.legends).toBe(0);
   });
 });

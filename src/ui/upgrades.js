@@ -5,7 +5,8 @@ import {sfx} from './audio.js';
 import {tileURL,tileImg} from '../data/tiles.js';
 import {RACES} from '../data/races.js';
 import {CLASSES} from '../data/classes.js';
-import {GODS} from '../data/gods.js';
+import {GODS,GODKEYS,godFavor,FAVOR_TIERS} from '../data/gods.js';
+import {MONS,FAMILY_KEYS,FAMILY_META,FAMILIES,familyKills,familyTier,familyDmgBonus,monTier} from '../data/monsters.js';
 import {BRANCHES,brTag} from '../data/branches.js';
 import {itemName,itemTile,randomItem,itemInfo} from '../data/items.js';
 import {ZUPGRADES,zupg,zupgCost,zupgCap,fameMul} from '../core/economy.js';
@@ -46,6 +47,38 @@ export function renderFame(){
       RKEYS.map(r=>'<span style="opacity:'+(gr.includes(r)?1:.35)+'">'+t(RACES[r].n)+'</span>').join(' · ')+'<br>'+
       CKEYS.map(c=>'<span style="opacity:'+(gc.includes(c)?1:.35)+'">'+t(CLASSES[c].n)+'</span>').join(' · ')+'</div>';
     chB.appendChild(hall);
+  }
+  /* Pantheon: eternal favor per god (wins-while-pledged), capped boon amplifier */
+  const pth=$('pantheonBox');
+  if(pth){
+    pth.innerHTML='<div class="card"><div class="nm" style="color:var(--gold)">'+t('Pantheon')+'</div>'+
+      '<div class="meta">'+t("Favor deepens each god's boon — carry the Orb pledged to a god. Capped at +20%.")+'</div>'+
+      '<div class="godGrid">'+
+      GODKEYS.map(g=>{
+        const w=(save.pantheon&&save.pantheon[g])||0,tier=godFavor(save,g),next=FAVOR_TIERS[tier];
+        return '<div class="godCell" style="opacity:'+(w?1:.4)+'">'+
+          '<img src="'+tileURL(GODS[g].alt)+'" alt="">'+
+          '<div><b>'+t(GODS[g].n)+'</b><br><span class="label">'+
+          '★'.repeat(tier)+'☆'.repeat(4-tier)+' · '+w+' 🏆'+(next?' · '+t('next at ')+next:'')+
+          '</span></div></div>';
+      }).join('')+'</div></div>';
+  }
+  /* Bestiary: eternal per-monster codex, capped damage bonus per family */
+  const bst=$('bestiaryBox');
+  if(bst){
+    bst.innerHTML='<div class="card"><div class="nm" style="color:var(--gold)">'+t('Bestiary')+'</div>'+
+      '<div class="meta">'+t('Every kind slain forever strengthens you against its family — capped at +12% per family.')+'</div>'+
+      FAMILY_KEYS.map(fam=>{
+        const meta=FAMILY_META[fam],fk=familyKills(save,fam),ft=familyTier(save,fam),fb=familyDmgBonus(save,fam);
+        return '<div style="margin-top:8px"><div class="ds">'+meta.ico+' '+t(meta.n)+
+          ' · <span style="color:var(--gold)">+'+Math.round(fb*100)+'%</span> '+
+          '<span class="label">'+t('{n} slain · tier {t}/4',{n:fk,t:ft})+'</span></div>'+
+          '<div class="label" style="line-height:1.9">'+
+          FAMILIES[fam].map(k=>{
+            const n=(save.bestiary&&save.bestiary[k])||0,mt=monTier(save,k);
+            return '<span style="opacity:'+(n?(.55+mt*.11):.28)+'">'+t(MONS[k].n)+(n?' ×'+n:'')+'</span>';
+          }).join(' · ')+'</div></div>';
+      }).join('')+'</div>';
   }
   /* prestige: NG+ level, cycle reward preview, Legends shop */
   const pr=$('prestigeBox');

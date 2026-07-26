@@ -3,7 +3,7 @@ import {effSkill,speedMul} from '../data/skills.js';
 import {CLASSES} from '../data/classes.js';
 import {comboKey,RARMUL,SHARDS_PER} from '../data/combos.js';
 import {WEP_BASES,ARM_BASES,SH_BASES,itemInfo} from '../data/items.js';
-import {GODS} from '../data/gods.js';
+import {GODS,godField} from '../data/gods.js';
 import {HERO_NAMES} from '../data/names.js';
 import {gHp,gAtk,gSpd,freeRollAvailable,rollCost,PITY_AT,rollCombo,pickComboOfTier,shardMul} from '../core/economy.js';
 import {nextStream} from '../core/streams.js';
@@ -157,11 +157,12 @@ function heroStatsCompute(h,s){
     const castPen=Math.max(0,enc*.08-h.skills.armour*.006)*(h.god==='sif_muna'?.5:1);
     dmg*=Math.max(.35,1-castPen);
   }
-  if(h.god){const gd=GODS[h.god];
-    if(gd.mel&&style==='melee')dmg*=gd.mel;
-    if(gd.dmg)dmg*=gd.dmg;
-    if(gd.mag&&style==='magic')dmg*=gd.mag;
-    if(gd.hp)hpMax*=gd.hp;
+  if(h.god){const gf=f=>godField(s,h.god,f); /* Pantheon favor amplifies the bonus */
+    const mel=gf('mel'),dg=gf('dmg'),mg=gf('mag'),hpb=gf('hp');
+    if(mel&&style==='melee')dmg*=mel;
+    if(dg)dmg*=dg;
+    if(mg&&style==='magic')dmg*=mg;
+    if(hpb)hpMax*=hpb;
   }
   acc+=wskill*.8+h.skills.fighting*.3;
   /* potion statuses */

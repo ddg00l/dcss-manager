@@ -31,9 +31,11 @@ export function makeState() {
     mem: 0, tree: { root: 1 },
     stat: { kills: 0, deaths: 0, uniqKills: 0, forged: 0, dismantled: 0, memEarned: 0, wins: 0, bestXL: {} },
     runesTotal: 0, pendingDeaths: [], unrandsOwned: [],
-    ng: 0, legends: 0, prestiges: 0, pupg: {}, balV: 3,
+    ng: 0, legends: 0, prestiges: 0, pupg: {}, balV: 4,
     prestReq: 1, /* Orbs the current cycle needs to prestige; snapshotted at cycle start, never rises mid-cycle */
     vic: { races: {}, classes: {} }, nemeses: {}, cycRunnerBest: 0, cycContractDone: 0,
+    pantheon: {}, /* eternal: godKey → lifetime Orbs won while pledged (Pantheon favor) */
+    bestiary: {}, /* eternal: monster kind → lifetime kills (Bestiary codex) */
     cycBase: { wins: 0, runes: 0, uniq: 0, mem: 0 }, cycRunes: [],
     ftue: null,
     progress: { D: 0, Lair: 0, Orc: 0, Elf: 0, Vaults: 0, Depths: 0, Zot: 0, Abyss: 0 },
@@ -61,6 +63,7 @@ export function loadState(storage) {
         pupg: { ...(s.pupg || {}) },
         vic: { races: { ...((s.vic || {}).races || {}) }, classes: { ...((s.vic || {}).classes || {}) } },
         nemeses: { ...(s.nemeses || {}) },
+        pantheon: { ...(s.pantheon || {}) }, bestiary: { ...(s.bestiary || {}) },
         cycBase: { ...state.cycBase, ...(s.cycBase || {}) },
       });
       /* FTUE: veterans with progress never see the tutorial */
@@ -128,7 +131,12 @@ export function loadState(storage) {
          at cycle start instead of a live readiness formula, so it can never rise
          under a delver mid-cycle. Migrated saves inherit the default prestReq 1
          (one easy prestige, then the ratchet takes over) — safe, never freezes. */
-      state.balV = 3;
+      /* balV 4: eternal Pantheon (wins-per-god favor) and Bestiary (kills-per-
+         monster) trackers. They start empty for veterans — favor and codex
+         accrue from here on; no backfill is possible since neither per-god wins
+         nor per-type kills were ever recorded. The merge above guarantees the
+         fields exist so nothing reads undefined. */
+      state.balV = 4;
       pruneSave(state); /* shrink pre-existing bloated saves (accumulated dead heroes) */
       if (s.masterSeed === undefined) {
         /* derive a stable seed from immutable account facts so it never shifts */
