@@ -45,10 +45,15 @@ export const FLOOR_KEYS = Object.keys(FLOOR_AFFIXES);
    pass (max 3 affixes, ~40% floor chance). Coefficients tuned by 30-day sim. */
 export function readiness(s) {
   const greatCount = s.vic ? (Object.keys(s.vic.races).length + Object.keys(s.vic.classes).length) : 0;
-  let starTotal = 0; if (s.stars) for (const k in s.stars) starTotal += s.stars[k];
+  /* per-hero power, not build breadth: the single strongest combo's stars plus a
+     damped contribution from the rest, so a wide roster of 1-star combos doesn't
+     read as a god-tier account and get max affixes + max prestige requirement */
+  let starMax = 0, starTotal = 0;
+  if (s.stars) for (const k in s.stars) { const v = s.stars[k]; starTotal += v; if (v > starMax) starMax = v; }
+  const starPower = starMax * 2 + Math.sqrt(Math.max(0, starTotal - starMax));
   const legacy = s.pupg ? ((s.pupg.p_legacy || 0) + (s.pupg.p_dmg || 0) + (s.pupg.p_hp || 0)) : 0;
   let zot = 0; if (s.zupg) for (const k in s.zupg) zot += s.zupg[k];
-  return greatCount * .35 + starTotal * .5 + legacy * .5 + zot * .5;
+  return greatCount * .35 + starPower * 1.5 + legacy * .5 + zot * .5;
 }
 export const affixLevel = (s, ng) => Math.min(ng, Math.round(readiness(s)));
 /* the escalation curves now take the effective affix level, not raw NG */

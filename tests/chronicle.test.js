@@ -111,7 +111,7 @@ describe('qualitative escalation: elite affixes and floor affixes', () => {
     const { makeState } = await import('../src/core/state.js');
     const weak = makeState(); weak.ng = 30;
     expect(affixLevel(weak, 30)).toBeLessThan(10); // out-prestiged a weak build → eased
-    const strong = makeState(); strong.ng = 30; strong.stars = { a: 60 };
+    const strong = makeState(); strong.ng = 30; strong.stars = { a: 12 };
     expect(affixLevel(strong, 30)).toBe(30);       // kept pace → full intensity
   });
   it('deep-NG floors spawn affixed elites deterministically per seed', async () => {

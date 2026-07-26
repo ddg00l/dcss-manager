@@ -36,7 +36,7 @@ describe('prestige', () => {
     s.stars = { 'minotaur/fighter': 2 };
     s.zot = 7; s.zupg = { zatk: 2 };
     s.unrandsOwned = ['singing'];
-    winCycle(s);
+    winCycle(s, 3); // exceed the power-based prestige requirement
     doPrestige(s);
     expect(s.heroes).toEqual([]);
     expect(s.gold).toBe(200); expect(s.scrap).toBe(0); expect(s.runes).toBe(0);
@@ -307,19 +307,26 @@ describe('graceful migration of rune-inflation-era saves (balV 2)', () => {
   });
 });
 
-describe('prestige requirement scales with the ladder', () => {
-  it('deep NG cycles must produce more Orbs before resetting', async () => {
+describe('prestige requirement scales with player power', () => {
+  it('a fresh account prestiges on one win; a strong build must earn more', async () => {
     const { prestigeReq, canPrestige } = await import('../src/core/prestige.js');
     const s = makeState();
+    expect(prestigeReq(s)).toBe(1);            // fresh: one Orb prestiges
+    s.ng = 40;                                 // pure age never raises the bar
     expect(prestigeReq(s)).toBe(1);
-    s.ng = 10;
+    s.stars = { 'human/fighter': 12 };         // a strong per-hero build (readiness ~36)
     expect(prestigeReq(s)).toBe(6);
-    s.ng = 40;
-    expect(prestigeReq(s)).toBe(6); // capped: deep cycles plateau, never freeze
-    s.stat.wins = 5; // 5 wins this cycle - not enough at NG10
+    s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
+    s.stat.wins = 5;
     expect(canPrestige(s)).toBe(false);
     s.stat.wins = 6;
     expect(canPrestige(s)).toBe(true);
+  });
+  it('a wide roster of weak combos does not inflate the requirement', async () => {
+    const { prestigeReq } = await import('../src/core/prestige.js');
+    const s = makeState();
+    s.stars = {}; for (let i = 0; i < 20; i++) s.stars['combo' + i] = 1; // 20 one-star combos
+    expect(prestigeReq(s)).toBeLessThan(4); // breadth is damped, not god-tier
   });
 });
 
