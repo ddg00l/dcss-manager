@@ -48,6 +48,7 @@ src/
   assets/tiles/  # 236 DCSS png tiles, inlined as data URIs at build time
 tests/     # vitest: core/sim/i18n run headless (incl. balance corridors and 24h runs)
 tools/     # i18n_master.json — the source of truth for translations
+  sim/     # headless 24h player-bot simulator (worker.mjs + aggregate.py), see file header
 ```
 
 Layering rules: `core` and `sim` never touch the DOM and take `state` as a parameter —

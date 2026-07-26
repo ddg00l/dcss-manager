@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build && cp dist/index.html game.html",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "sim": "node tools/sim/worker.mjs"
   },
   "devDependencies": {
     "vite": "^7.0.0",
