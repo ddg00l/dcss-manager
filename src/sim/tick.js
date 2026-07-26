@@ -1,7 +1,7 @@
 import {gXp,gGold,gDrop,gSpd,gAtk,gHp,shardMul as shardMulF,maxSlots,rollCost,freeRollAvailable} from '../core/economy.js';
 import {gainMem,memEff,memHas} from '../data/memtree.js';
 import {clamp,fmt} from '../core/fmt.js';
-import {heroStats,rollHero} from './hero.js';
+import {heroStats,rollHero,ringSlotKeys} from './hero.js';
 import {genFloor,reveal,los,MW,MH} from './mapgen.js';
 import {BRANCHES,buildRoute,brDepth,brTag} from '../data/branches.js';
 import {RACES,aptMul} from '../data/races.js';
@@ -788,11 +788,13 @@ export function acquireItem(h,s,it){
   if(!better)storeItem(s,it);
 }
 export function tryAutoEquip(h,it,s){
-  const slot=it.slot==='ring'?(h.gear.ring1?(h.gear.ring2?(memHas(s,'k_ring3')&&!h.gear.ring3?'ring3':null):'ring2'):'ring1'):it.slot;
+  /* rings fill the first free slot the race allows (octopode has up to 8); when
+     all are full the ring defers to the armory and equipBestFromArmory optimizes */
+  const slot=it.slot==='ring'?(ringSlotKeys(h,s).find(k=>!h.gear[k])||null):it.slot;
   if(!slot)return false;
   if(it.slot==='weapon'&&RACES[h.race].nowep)return false;
   if(it.slot==='armour'&&RACES[h.race].noarm)return false;
-  const cur=h.gear[slot==='ring2'?'ring2':slot];
+  const cur=h.gear[slot];
   const score=q=>scoreItem(q,h);
   if(!cur||score(it)>score(cur)){
     if(cur&&!cur.id.startsWith('st'))storeItem(s,cur);
@@ -883,8 +885,7 @@ export function storeItem(s,it){
 /** "Auto-equip" keystone: take the best gear from the armory before setting out */
 export function equipBestFromArmory(h,s){
   const score=q=>scoreItem(q,h);
-  const slots=['weapon','armour','shield','ring1','ring2','amulet'];
-  if(memHas(s,'k_ring3'))slots.push('ring3');
+  const slots=['weapon','armour','shield',...ringSlotKeys(h,s),'amulet'];
   for(const slot of slots){
     if(slot==='weapon'&&RACES[h.race].nowep)continue;
     if(slot==='armour'&&RACES[h.race].noarm)continue;

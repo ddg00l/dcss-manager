@@ -12,7 +12,7 @@ export const RACES={
   demonspawn:{n:'Demonspawn',t:'pc_demonspawn',hp:1.05,dmg:1.05,ev:0,mp:1.1,spd:1,mut:1,d:'Mutates as it levels'},
   ghoul:{n:'Ghoul',t:'pc_ghoul',hp:1.1,dmg:1.1,ev:-1,mp:.7,spd:.95,eat:1,und:1,rPois:1,d:'Undead: devours corpses, immune to poison and mutation'},
   naga:{n:'Naga',t:'pc_naga',hp:1.2,dmg:1.05,ev:-2,mp:1,spd:.85,ac:3,spit:1,rPois:1,d:'Spits poison and is immune to it, slow'},
-  octopode:{n:'Octopode',t:'pc_octopode',hp:.85,dmg:1,ev:4,mp:1.1,spd:1,rings:4,noarm:1,d:'Four rings, no armour'},
+  octopode:{n:'Octopode',t:'pc_octopode',hp:.85,dmg:1,ev:4,mp:1.1,spd:1,rings:8,noarm:1,d:'Eight rings, no armour'},
   felid:{n:'Felid',t:'pc_felid',hp:.65,dmg:.8,ev:5,mp:1.1,spd:1.2,lives:3,nowep:1,noarm:1,d:'Three lives, no weapons or armour'},
   tengu:{n:'Tengu',t:'pc_tengu',hp:.85,dmg:1,ev:4,mp:1.1,spd:1.15,d:'Flies, hard to hit'},
 };

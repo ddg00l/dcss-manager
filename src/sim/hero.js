@@ -8,6 +8,16 @@ import {HERO_NAMES} from '../data/names.js';
 import {gHp,gAtk,gSpd,freeRollAvailable,rollCost,PITY_AT,rollCombo,pickComboOfTier,shardMul} from '../core/economy.js';
 import {nextStream} from '../core/streams.js';
 import {hashSeed} from '../core/rng.js';
+
+/* Ring slots a hero can actually use: a race with a fixed ring count (octopode,
+   who wears rings instead of body armour) gets exactly that many; everyone else
+   gets two, plus a third from the k_ring3 keystone. */
+export function ringSlotKeys(h,s){
+  const rd=RACES[h.race];
+  const n=rd.rings?rd.rings:(2+(memHas(s,'k_ring3')?1:0));
+  const out=[];for(let i=1;i<=n;i++)out.push('ring'+i);
+  return out;
+}
 import {memEff,memHas,treeSig} from '../data/memtree.js';
 
 export function newHero(race,cls,rarity,s){
@@ -20,7 +30,7 @@ export function newHero(race,cls,rarity,s){
     skills:{fighting:0,short_blades:0,long_blades:0,axes:0,maces:0,polearms:0,staves:0,
       bows:0,crossbows:0,unarmed:0,dodging:0,armour:0,stealth:0,
       spellcasting:0,conjurations:0,necromancy:0,fire:0,ice:0,summonings:0},
-    god:null,piety:0,gear:{weapon:null,armour:null,shield:null,ring1:null,ring2:null,ring3:null,ring4:null,amulet:null},
+    god:null,piety:0,gear:{weapon:null,armour:null,shield:null,ring1:null,ring2:null,ring3:null,ring4:null,ring5:null,ring6:null,ring7:null,ring8:null,amulet:null},
     inv:{curing:2+memEff(s,'pots')},known:[],muts:[],status:{},gold:0,keys:0,
     spend:'balanced',lives:rd.lives||1,
     strategy:'classic',caution:'normal',
@@ -72,7 +82,7 @@ function statKey(h,s){
   let sk=0; for(const q in h.skills)sk+=h.skills[q];
   hh=(hh^Math.imul(Math.round(sk*4)+1,3266489917))>>>0;
   for(const q in h.status)if(h.status[q]>0)hh=foldStr(hh,q);
-  const slots=[g.weapon,g.armour,g.shield,g.ring1,g.ring2,g.ring3,g.ring4,g.amulet];
+  const slots=[g.weapon,g.armour,g.shield,g.ring1,g.ring2,g.ring3,g.ring4,g.ring5,g.ring6,g.ring7,g.ring8,g.amulet];
   for(const it of slots)hh=it?foldStr(hh,it.id+'.'+(it.plus||0)+(it.ego||'')):(Math.imul(hh,16777619)>>>0);
   let run=0; for(const x of s.heroes)if(x.state==='run')run++;
   let zp=0;
@@ -118,9 +128,7 @@ function heroStatsCompute(h,s){
   let mag=1*(rd.mag||1)*(cd.mag||1);
   let leech=cd.drain||0,critc=.05+(cd.crit||0),regen=(rd.regen||1);
   let resAll=0,retal=rd.retal?1:0,evB=0;
-  const slots=['armour','shield','ring1','ring2','amulet'];
-  if(memHas(s,'k_ring3'))slots.push('ring3');
-  if(rd.rings)slots.push('ring3','ring4'); /* octopode: rings instead of armour */
+  const slots=['armour','shield',...ringSlotKeys(h,s),'amulet'];
   const seen=new Set();
   const twoHanded=!!(wep&&wep.h2);
   for(const slot of slots.filter(x=>!seen.has(x)&&seen.add(x))){
@@ -198,7 +206,7 @@ function heroStatsCompute(h,s){
   if(g.weapon){const wi=itemInfo(g.weapon);if(wi.chill)chill=1}
   /* holy vs undead and venom blades */
   let vsUndead=1,venom=0,rPois=!!rd.rPois,lantern=false,waders=false; /* stone skin, naga blood, undead flesh */
-  const gearAll=[g.weapon,g.armour,g.shield,g.ring1,g.ring2,g.ring3,g.ring4,g.amulet];
+  const gearAll=[g.weapon,g.armour,g.shield,g.ring1,g.ring2,g.ring3,g.ring4,g.ring5,g.ring6,g.ring7,g.ring8,g.amulet];
   for(const it of gearAll){
     if(!it)continue;
     const ii=itemInfo(it);

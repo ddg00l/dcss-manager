@@ -5,15 +5,16 @@ import { tileURL } from '../data/tiles.js';
 import { RACES } from '../data/races.js';
 import { CLASSES } from '../data/classes.js';
 import { itemName, itemTile, itemInfo, scoreItem } from '../data/items.js';
-import { memHas } from '../data/memtree.js';
-import { heroStats } from '../sim/hero.js';
+import { heroStats, ringSlotKeys } from '../sim/hero.js';
 import { stackHTML } from './portrait.js';
 import { t } from '../i18n/index.js';
 
 const SLOT_N = {
   weapon: 'Weapon', armour: 'Armour', shield: 'Shield',
-  ring1: 'Ring 1', ring2: 'Ring 2', ring3: 'Ring 3', amulet: 'Amulet',
+  ring1: 'Ring 1', ring2: 'Ring 2', ring3: 'Ring 3', ring4: 'Ring 4',
+  ring5: 'Ring 5', ring6: 'Ring 6', ring7: 'Ring 7', ring8: 'Ring 8', amulet: 'Amulet',
 };
+const slotLabel = sl => t(SLOT_N[sl] || sl);
 let heroId = null, selSlot = null;
 
 const score = it => scoreItem(it, hero());
@@ -31,9 +32,7 @@ const bits = it => {
 };
 function hero() { return save.heroes.find(x => x.id === heroId); }
 function slots(h) {
-  const out = ['weapon', 'armour', 'shield', 'ring1', 'ring2'];
-  if (memHas(save, 'k_ring3')) out.push('ring3');
-  out.push('amulet');
+  const out = ['weapon', 'armour', 'shield', ...ringSlotKeys(h, save), 'amulet'];
   return out.filter(sl =>
     !(sl === 'weapon' && RACES[h.race].nowep) &&
     !(sl === 'armour' && RACES[h.race].noarm));
@@ -62,7 +61,7 @@ function render() {
     const it = h.gear[sl];
     const fits = save.armory.filter(a => a.slot === (sl.startsWith('ring') ? 'ring' : sl)).length;
     return `<div class="slotRow eqRow" data-slot="${sl}">` +
-      `<span class="sl">${t(SLOT_N[sl])}</span>` +
+      `<span class="sl">${slotLabel(sl)}</span>` +
       (it ? `<img src="${tileURL(itemTile(it))}" alt="">` +
         `<div class="tInfo"><span class="rar${it.rar}">${itemName(it)}</span>` +
         `<div class="label">${bits(it)}</div></div>` :
@@ -107,7 +106,7 @@ function renderPicker(h, box) {
       `</div>`;
   };
   box.innerHTML =
-    `<h2>${t(SLOT_N[sl])} — ${h.name}</h2>` +
+    `<h2>${slotLabel(sl)} — ${h.name}</h2>` +
     `<h3>${t('Currently equipped')}</h3>` +
     (cur ? rowFor(cur, true) : `<div class="label" style="margin:6px 0">${t('— empty —')}</div>`) +
     `<h3>${t('Armory (')}${cands.length})</h3>` +

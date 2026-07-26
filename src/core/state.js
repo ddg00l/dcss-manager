@@ -81,7 +81,7 @@ export function loadState(storage) {
           state.armory.push(h.gear.armour);
           h.gear.armour = null;
         }
-        if (h.gear && h.gear.ring3 === undefined) h.gear.ring3 = null;
+        if (h.gear) for (let i = 3; i <= 8; i++) if (h.gear['ring' + i] === undefined) h.gear['ring' + i] = null;
         if (h.map) { h.map.traps = h.map.traps || []; h.map.clouds = h.map.clouds || []; }
       }
       /* old saves: derive lifetime wins from the Hall of Fame */

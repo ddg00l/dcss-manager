@@ -43,10 +43,16 @@ function showBar(kind) {
   };
 }
 
+/* touch-primary device (phone/tablet). Desktop Chrome also fires
+   beforeinstallprompt, but it has a mouse (pointer: fine) and its own address-bar
+   install button, so we never show our phone-oriented hint there. */
+const isTouch = () => window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+
 export function initInstallHint() {
-  if (isStandalone()) return; // already installed — nothing to offer
+  if (isStandalone()) return;            // already installed — nothing to offer
+  if (!isTouch()) return;                // desktop: leave the browser's own install affordance
   window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault();       // keep Chrome's mini-infobar from firing; use our button
+    e.preventDefault();                  // suppress Chrome's mini-infobar; use our button
     deferred = e;
     showBar('android');
   });
