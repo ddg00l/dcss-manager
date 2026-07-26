@@ -8,12 +8,11 @@ import { resolvePull, shouldPush, makeMeta, vectorOf } from './sync.js';
 export { cloudAvailable, isSignedIn, CLIENT_ID };
 
 const OPT_KEY = 'dcss.cloudOptIn';
-const optedIn = () => { try { return localStorage.getItem(OPT_KEY) === '1'; } catch { return false; } };
 const setOptIn = v => { try { v ? localStorage.setItem(OPT_KEY, '1') : localStorage.removeItem(OPT_KEY); } catch {} };
 
 /** interactive sign-in; remembers the choice so future reloads restore silently */
 export async function connect() {
-  const tok = await signIn(true);
+  const tok = await signIn();
   setOptIn(true);
   return tok;
 }
@@ -34,7 +33,8 @@ const status = (k, extra) => onStatus && onStatus(k, extra);
 /** adopt a remote state into the running game (UI passes an applier) */
 async function pull(getSave, applyState, force) {
   if (!cloudAvailable() || !isSignedIn()) return;
-  const token = await getToken();
+  const token = getToken();
+  if (!token) return;
   const meta = await readMeta(token);
   const decision = resolvePull(vectorOf(getSave()), meta);
   if (decision.action === 'conflict' && !force) {
@@ -60,7 +60,8 @@ async function push(getSave, pin) {
   const save = getSave();
   const vec = vectorOf(save);
   if (!pin && !shouldPush(vec, lastPushedVec)) return;
-  const token = await getToken();
+  const token = getToken();
+  if (!token) return;
   const meta = makeMeta(save, DEVICE_ID, deviceName(), Date.now());
   save.__syncRev = meta.rev;
   await writeState(token, save, meta, pin);
@@ -82,12 +83,7 @@ export function startAutoSync(getSave, applyState) {
   document.addEventListener('visibilitychange', onVisible);
   clearInterval(pushTimer);
   pushTimer = setInterval(() => cloudPush(getSave, false), 10 * 60 * 1000);
-  /* restore the session silently for returning users, then pull */
-  (async () => {
-    if (!isSignedIn() && optedIn()) {
-      try { await signIn(false); status('synced'); }
-      catch { setOptIn(false); return; } /* session lost / consent revoked → show sign-in again */
-    }
-    cloudPull(getSave, applyState);
-  })();
+  /* a persisted token (reused from a recent load) makes this silent; if it has
+     expired, pull simply no-ops until the next user-gesture sign-in — no popup */
+  cloudPull(getSave, applyState);
 }
