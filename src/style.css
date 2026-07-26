@@ -104,6 +104,7 @@
   .famePane{display:none}
   .famePane.shown{display:block}
   .heroPane{display:none}.heroPane.shown{display:block}
+  .forgePane{display:none}.forgePane.shown{display:block}
   /* armory filter/sort chips */
   .armBar{display:flex;flex-direction:column;gap:5px;margin:4px 0 10px}
   .chipRow{display:flex;flex-wrap:wrap;gap:5px}

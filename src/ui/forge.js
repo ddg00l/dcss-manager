@@ -55,46 +55,62 @@ function forgeSlot(slot){
   ]);
 }
 $('btnForge').onclick=openForgeModal;
+/* ---- Forge tab sub-tabs: Arsenal (unequipped) / Equipped (worn by heroes) ---- */
+let activeForgeSub='forgeArsenal';
+const FORGE_SUBTABS=[
+  {id:'forgeArsenal',tile:'ur_singing',label:'Arsenal'},
+  {id:'forgeEquipped',tile:'a_plate',label:'Equipped'},
+];
+function renderForgeTabs(){
+  const bar=$('forgeTabs'); if(!bar)return;
+  bar.innerHTML='';
+  for(const st of FORGE_SUBTABS){
+    const b=document.createElement('button');
+    b.className='fst'+(st.id===activeForgeSub?' active':'');
+    b.innerHTML='<img src="'+tileURL(st.tile)+'" alt=""><span>'+t(st.label)+'</span>';
+    b.onclick=()=>{sfx.ui();activeForgeSub=st.id;renderForgeTabs();};
+    bar.appendChild(b);
+  }
+  for(const st of FORGE_SUBTABS){const p=$(st.id);if(p)p.classList.toggle('shown',st.id===activeForgeSub);}
+}
+
+const header=(box,txt)=>{
+  const hd=document.createElement('div');
+  hd.className='label';hd.style.cssText='margin:10px 0 6px;letter-spacing:.14em';
+  hd.innerHTML=txt;box.appendChild(hd);
+};
+const itemRow=(box,it,wearer)=>{
+  const el=document.createElement('div');
+  el.className='itemRow bord'+it.rar;el.style.cursor='pointer';
+  el.innerHTML='<img src="'+tileURL(itemTile(it))+'">'+
+    '<div class="tInfo"><span class="rar'+it.rar+'">'+itemName(it)+'</span>'+
+    '<div class="label">'+it.slot+(it.rand?t(' · randart'):'')+
+    (wearer?' · <span style="color:var(--rare)">'+t('⚔ worn by: ')+wearer.name+'</span>':'')+
+    '</div></div>';
+  const dismantle=()=>{
+    save.scrap+=2+it.rar*2;save.stat.dismantled++;
+    save.armory.splice(save.armory.indexOf(it),1);
+    sfx.coin();persist();renderForge();
+  };
+  if(wearer){
+    const b=document.createElement('button');
+    b.className='blue';b.textContent=t('Equipment');
+    b.onclick=e=>{e.stopPropagation();window.__openEquip(wearer.id)};
+    el.appendChild(b);
+  }else{
+    const d=document.createElement('button');
+    d.textContent='⚙+'+(2+it.rar*2);d.title=t('Dismantle');
+    d.onclick=e=>{e.stopPropagation();dismantle()};
+    el.appendChild(d);
+  }
+  el.onclick=()=>openInspect(it,wearer?null:dismantle); /* click the item to inspect */
+  box.appendChild(el);
+};
+
 export function renderForge(){
-  /* the forge controls live in the modal now; the tab shows the armory */
+  renderForgeTabs();
+  /* ---- Arsenal: unequipped, with the filter/sort bar ---- */
   const box=$('armoryList');box.innerHTML='';
-  const header=txt=>{
-    const hd=document.createElement('div');
-    hd.className='label';
-    hd.style.cssText='margin:10px 0 6px;letter-spacing:.14em';
-    hd.innerHTML=txt;
-    box.appendChild(hd);
-  };
-  const itemRow=(it,wearer)=>{
-    const el=document.createElement('div');
-    el.className='itemRow bord'+it.rar;el.style.cursor='pointer';
-    el.innerHTML='<img src="'+tileURL(itemTile(it))+'">'+
-      '<div class="tInfo"><span class="rar'+it.rar+'">'+itemName(it)+'</span>'+
-      '<div class="label">'+it.slot+(it.rand?t(' · randart'):'')+
-      (wearer?' · <span style="color:var(--rare)">'+t('⚔ worn by: ')+wearer.name+'</span>':'')+
-      '</div></div>';
-    const dismantle=()=>{
-      save.scrap+=2+it.rar*2;save.stat.dismantled++;
-      save.armory.splice(save.armory.indexOf(it),1);
-      sfx.coin();persist();renderForge();
-    };
-    if(wearer){
-      const b=document.createElement('button');
-      b.className='blue';
-      b.textContent=t('Equipment');
-      b.onclick=e=>{e.stopPropagation();window.__openEquip(wearer.id)};
-      el.appendChild(b);
-    }else{
-      const d=document.createElement('button');
-      d.textContent='⚙+'+(2+it.rar*2);
-      d.title=t('Dismantle');
-      d.onclick=e=>{e.stopPropagation();dismantle()};
-      el.appendChild(d);
-    }
-    el.onclick=()=>openInspect(it,wearer?null:dismantle); /* click the item to inspect */
-    box.appendChild(el);
-  };
-  /* --- filter + sort bar so a large armory stays manageable on small screens --- */
   const chip=(html,active,onclick,extra)=>{
     const c=document.createElement('button');
     c.className='fchip'+(active?' on':'')+(extra||'');
@@ -120,19 +136,22 @@ export function renderForge(){
   },' danger'));
   bar.appendChild(rowT);bar.appendChild(rowR);bar.appendChild(rowA);
   box.appendChild(bar);
-  /* unequipped, filtered + sorted */
-  header(t('Unequipped (')+shown.length+(shown.length!==save.armory.length?' / '+save.armory.length:'')+')');
-  for(const it of shown.slice(0,80))itemRow(it,null);
-  if(shown.length>80)header('⋯ +'+(shown.length-80));
+  header(box,t('Unequipped (')+shown.length+(shown.length!==save.armory.length?' / '+save.armory.length:'')+')');
+  for(const it of shown.slice(0,80))itemRow(box,it,null);
+  if(shown.length>80)header(box,'⋯ +'+(shown.length-80));
   if(!save.armory.length)box.innerHTML+='<div class="hint">'+t('No unequipped items — forge some or wait for dungeon finds.')+'</div>';
-  /* then worn items, grouped by hero */
+  /* ---- Equipped: worn items grouped by hero ---- */
+  const eq=$('equippedList');eq.innerHTML='';
+  let any=false;
   for(const hh of save.heroes){
     if(hh.state==='dead'||hh.state==='victor')continue;
     const worn=Object.values(hh.gear).filter(Boolean);
     if(!worn.length)continue;
-    header('<span class="rar'+hh.rarity+'">'+hh.name+'</span> — '+
+    any=true;
+    header(eq,'<span class="rar'+hh.rarity+'">'+hh.name+'</span> — '+
       t(RACES[hh.race].n)+' '+t(CLASSES[hh.cls].n));
-    for(const it of worn.sort((a,b)=>b.rar-a.rar))itemRow(it,hh);
+    for(const it of worn.sort((a,b)=>b.rar-a.rar))itemRow(eq,it,hh);
   }
+  if(!any)eq.innerHTML='<div class="hint">'+t('No heroes have gear yet — summon and equip some.')+'</div>';
 }
 
