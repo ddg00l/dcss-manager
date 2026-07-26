@@ -47,3 +47,18 @@ export const tabUnlocked = (s, p) => (s.ftue && s.ftue.railDone && p !== 'pDun' 
   ? (TAB_UNLOCK[p] ? TAB_UNLOCK[p](s) : true)
   : (TAB_UNLOCK[p] ? TAB_UNLOCK[p](s) : true);
 export const darkSummonUnlocked = s => s.runesTotal > 0;
+
+/* The Fame pane is split into sub-tabs, ordered by progression; the Hall of Fame
+   sits last because it is a record, not a goal. Each carries an unlock predicate
+   and a locked-click hint, exactly like the main nav. */
+export const FAME_SUBTABS = [
+  { id: 'fsChronicle', box: 'fameChronicle', ico: '📜', label: 'Chronicle',   unlock: () => true },
+  { id: 'fsPrestige',  box: 'famePrestige',  ico: '⚜',  label: 'Prestige',    unlock: s => (s.stat.wins || 0) > 0, hint: 'Carry the Orb out of Zot to begin prestiging' },
+  { id: 'fsPantheon',  box: 'famePantheon',  ico: '✧',  label: 'Pantheon',    unlock: s => (s.prestiges || 0) > 0, hint: 'Reach your first prestige to open the Pantheon' },
+  { id: 'fsBestiary',  box: 'fameBestiary',  ico: '🐺', label: 'Bestiary',    unlock: s => (s.prestiges || 0) > 0, hint: 'Reach your first prestige to open the Bestiary' },
+  { id: 'fsHall',      box: 'fameHall',       ico: '🏆', label: 'Hall of Fame', unlock: () => true },
+];
+export const fameSubUnlocked = (s, id) => {
+  const st = FAME_SUBTABS.find(x => x.id === id);
+  return st ? st.unlock(s) : true;
+};

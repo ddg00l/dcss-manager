@@ -26,6 +26,7 @@ import './ui/update.js';
 import { initCloud, startAutoSync, cloudPush, cloudAvailable } from './cloud/index.js';
 import { openConflict } from './ui/conflict.js';
 import { setCloudMsg } from './ui/settings.js';
+import { toast } from './ui/toast.js';
 
 /* cross-module UI callbacks (avoids circular imports) */
 window.__renderAll = renderAll;
@@ -57,15 +58,6 @@ document.querySelectorAll('#nav .tb').forEach(b => {
   };
 });
 
-let toastTimer = 0;
-function toast(msg) {
-  let el = $('toast');
-  if (!el) { el = document.createElement('div'); el.id = 'toast'; document.body.appendChild(el); }
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
-}
 $('btnSettings').onclick = () => { sfx.ui(); openSettings(); };
 $('btnRoll1').onclick = () => doRoll(false);
 $('btnRollRune').onclick = () => doRoll(true);

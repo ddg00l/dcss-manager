@@ -17,6 +17,8 @@ import {comboKey,RARN} from '../data/combos.js';
 import { t } from '../i18n/index.js';
 import {PUPGRADES,pupg,pupgCost,ngLevel,legendsReward,canPrestige,doPrestige,cycleProgress,prestigeReq} from '../core/prestige.js';
 import {chronicleGoals,greatRaces,greatClasses,greatMul,cycleContract} from '../core/chronicle.js';
+import {FAME_SUBTABS,fameSubUnlocked} from '../core/ftue.js';
+import {toast} from './toast.js';
 import {RKEYS} from '../data/races.js';
 import {CKEYS} from '../data/classes.js';
 /* ===================== upgrades & fame ===================== */
@@ -37,17 +39,17 @@ export function renderFame(){
         (g.p?'<span class="label">'+g.p+'</span>':'');
       chB.appendChild(el);
     }
-    /* Hall of the Great: badge grid of victorious races and classes */
+  }
+  /* Hall of the Great: badge grid of victorious races and classes (Hall sub-tab) */
+  const great=$('fameGreat');
+  if(great){
     const gr=greatRaces(save),gc=greatClasses(save);
-    const hall=document.createElement('div');
-    hall.className='card';
-    hall.innerHTML='<div class="nm" style="color:var(--gold)">'+t('Hall of the Great')+
+    great.innerHTML='<div class="card"><div class="nm" style="color:var(--gold)">'+t('Hall of the Great')+
       ' · +'+Math.round((greatMul(save)-1)*100)+'%</div>'+
       '<div class="meta">'+t('A permanent +1% damage and health for every race and class that has carried the Orb')+'</div>'+
       '<div class="label" style="line-height:1.9">'+
       RKEYS.map(r=>'<span style="opacity:'+(gr.includes(r)?1:.35)+'">'+t(RACES[r].n)+'</span>').join(' · ')+'<br>'+
-      CKEYS.map(c=>'<span style="opacity:'+(gc.includes(c)?1:.35)+'">'+t(CLASSES[c].n)+'</span>').join(' · ')+'</div>';
-    chB.appendChild(hall);
+      CKEYS.map(c=>'<span style="opacity:'+(gc.includes(c)?1:.35)+'">'+t(CLASSES[c].n)+'</span>').join(' · ')+'</div></div>';
   }
   /* the endgame powers accrue always but stay dormant until the prestige gate */
   const egOn=endgameUnlocked(save);
@@ -153,5 +155,39 @@ export function renderFame(){
     box.appendChild(el);
   }
   if(!save.fame.length)box.innerHTML='<div class="hint">'+t("No one has died or triumphed yet. It's all ahead.")+'</div>';
+  renderFameTabs();
+}
+
+let activeFameSub=null;
+/* the Fame sub-tab bar: progression-ordered, Hall last; locked tabs are greyed
+   with a lock and, on click, toast what unlocks them — same feel as the main nav */
+function renderFameTabs(){
+  const bar=$('fameTabs');
+  if(!bar)return;
+  /* the first-time prestige coachmark anchors to #prestigeBox, so focus the
+     Prestige sub-tab while that tour is pending */
+  if(save.ftue&&save.ftue.railDone&&!save.ftue.tours.prestige&&canPrestige(save)&&fameSubUnlocked(save,'fsPrestige'))
+    activeFameSub='fsPrestige';
+  /* otherwise keep the current tab if still unlocked, else fall back to the first
+     unlocked one (Chronicle for a fresh account) */
+  else if(!activeFameSub||!fameSubUnlocked(save,activeFameSub))
+    activeFameSub=(FAME_SUBTABS.find(x=>fameSubUnlocked(save,x.id))||FAME_SUBTABS[0]).id;
+  bar.innerHTML='';
+  for(const st of FAME_SUBTABS){
+    const on=fameSubUnlocked(save,st.id);
+    const b=document.createElement('button');
+    b.className='fst'+(st.id===activeFameSub?' active':'')+(on?'':' locked');
+    b.innerHTML='<i>'+st.ico+'</i><span>'+t(st.label)+'</span>';
+    b.onclick=()=>{
+      sfx.ui();
+      if(!fameSubUnlocked(save,st.id)){toast(t(st.hint||'Locked'));return}
+      activeFameSub=st.id; renderFameTabs();
+    };
+    bar.appendChild(b);
+  }
+  for(const st of FAME_SUBTABS){
+    const pane=$(st.box);
+    if(pane)pane.classList.toggle('shown',st.id===activeFameSub);
+  }
 }
 

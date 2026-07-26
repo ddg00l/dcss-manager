@@ -89,6 +89,19 @@
   .godGrid{display:flex;flex-wrap:wrap;gap:8px 14px}
   .godCell{display:flex;align-items:center;gap:6px;min-width:150px}
   .godCell img{width:28px;height:28px;image-rendering:pixelated;flex-shrink:0}
+  /* Fame sub-tabs */
+  .subtabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
+  .fst{flex:1;min-width:60px;display:flex;flex-direction:column;align-items:center;gap:2px;
+    padding:6px 3px;background:var(--panel);border:1px solid var(--line);border-radius:6px;
+    color:var(--dim);font-size:9px;position:relative;cursor:pointer}
+  .fst i{font-style:normal;font-size:16px;line-height:1;filter:grayscale(1) brightness(.85)}
+  .fst.active{color:var(--gold);border-color:var(--gold);background:var(--panel2)}
+  .fst.active i{filter:none}
+  .fst.locked{opacity:.5}
+  .fst.locked i{filter:grayscale(1)}
+  .fst.locked::before{content:'🔒';position:absolute;top:2px;right:3px;font-size:9px}
+  .famePane{display:none}
+  .famePane.shown{display:block}
   .rowBtns{display:flex;gap:6px;flex-wrap:wrap}
   .rowBtns button{flex:1;padding:9px 8px;font-size:11px}
   .rar0{color:var(--stone)} .rar1{color:var(--rare)} .rar2{color:var(--epic)} .rar3{color:var(--leg)}
