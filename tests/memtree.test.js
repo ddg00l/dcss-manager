@@ -190,3 +190,31 @@ describe('balance: second expedition slot pacing', () => {
     } finally { spy.mockRestore(); }
   });
 });
+
+describe('tree geometry', () => {
+  it('no two edges of the Memory tree properly intersect', async () => {
+    const { NODES, nodeById } = await import('../src/data/memtree.js');
+    const edges = [];
+    for (const n of NODES)
+      for (const r of n.req) {
+        const p = nodeById(r);
+        if (p) edges.push([p.x, p.y, n.x, n.y, p.id + '->' + n.id]);
+      }
+    const cross = (a, b, c, d) => {
+      const o = (p, q, r) => Math.sign((q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]));
+      const o1 = o(a, b, c), o2 = o(a, b, d), o3 = o(c, d, a), o4 = o(c, d, b);
+      return o1 !== o2 && o3 !== o4 && o1 !== 0 && o2 !== 0 && o3 !== 0 && o4 !== 0;
+    };
+    const shared = (e, f) =>
+      (e[0] === f[0] && e[1] === f[1]) || (e[0] === f[2] && e[1] === f[3]) ||
+      (e[2] === f[0] && e[3] === f[1]) || (e[2] === f[2] && e[3] === f[3]);
+    const bad = [];
+    for (let i = 0; i < edges.length; i++)
+      for (let j = i + 1; j < edges.length; j++) {
+        const e = edges[i], f = edges[j];
+        if (shared(e, f)) continue;
+        if (cross([e[0], e[1]], [e[2], e[3]], [f[0], f[1]], [f[2], f[3]])) bad.push(e[4] + ' x ' + f[4]);
+      }
+    expect(bad).toEqual([]);
+  });
+});

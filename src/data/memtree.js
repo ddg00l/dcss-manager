@@ -126,7 +126,7 @@ for (const [reg, spine] of Object.entries(SPINES)) {
 /* the 2nd seeker is early and cheap (target: ~20-30 minutes of gameplay);
    from there the chain goes deeper and gets steeply more expensive */
 ['slot1', 'slot2', 'slot3', 'slot4'].forEach((id, i) => {
-  node('hslot' + i, 'heroes', REGIONS.heroes.a + (i % 2 ? 8 : -8), [3, 5, 6, 7][i] * RING_R + 30, {
+  node('hslot' + i, 'heroes', REGIONS.heroes.a - 8, [3, 5, 6, 7][i] * RING_R + 30, {
     n: ['2nd', '3rd', '4th', '5th'][i] + ' seeker', d: '+1 concurrent expedition',
     icon: 'pc_human', eff: { slot: 1 }, max: 1,
     base: [230, 900, 4000, 18000][i], g: 1,
@@ -142,7 +142,7 @@ REGK.forEach((reg, i) => {
     n: 'Memory Bridge', d: '+1% damage and +1% gold per level',
     icon: 'sk_air_magic', eff: { atk: .01, gold: .01 }, max: 8,
     base: 220, g: 1.3,
-    req: [reg + '_s4', next + '_s4'],
+    req: [reg + '_b1_0', next + '_b0_1'], /* flanking side lanes: no edge crosses them */
   });
 });
 
@@ -164,7 +164,7 @@ keystone('k_abyss', 'dungeon', 0, 9, {
   icon:'d_abyss',base: 1500, req: ['dungeon_s8'], ach: { runes: 3, t: '3 runes' },
 });
 keystone('k_elite', 'dungeon', -26, 7, {
-  n: '⟐ Elite Floors', d: '15% of floors are elite: monsters +50% HP, but loot and Memory ×2.',
+  n: '⟐ Hunter of the Marked', d: 'Elite monsters are half again as common; their spoils ×2.',
   icon:'m_two_headed_ogre',base: 600, req: ['dungeon_b0_3'], ach: { uniq: 3, t: 'kill 3 uniques' },
 });
 keystone('k_autosummon', 'gacha', 0, 9, {
@@ -209,7 +209,7 @@ keystone('k_ghosts', 'heroes', -26, 8, {
 });
 keystone('k_ngplus', 'heroes', 26, 9, {
   n: '⟐ New Depth', d: 'NG+: monsters ×2 stronger, all rewards ×2.5. Forever.',
-  icon:'m_orb_of_fire',base: 2000, req: ['hslot2'], ach: { wins: 1, t: 'victory' },
+  icon:'m_orb_of_fire',base: 2000, req: ['heroes_b1_3'], ach: { wins: 1, t: 'victory' },
 });
 
 /* ---- API ---- */
