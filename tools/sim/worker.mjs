@@ -25,6 +25,7 @@ import { starNeed } from '../../src/data/combos.js';
 import { greatRaces, greatClasses } from '../../src/core/chronicle.js';
 import { setAffixDateProvider, todayAffixKey } from '../../src/data/affixes.js';
 import { mulberry32 } from '../../src/core/rng.js';
+import { pathToFileURL } from 'node:url';
 
 
 
@@ -296,20 +297,27 @@ const TACTICS = {
   berserker:     { checkin: 300, tree: 'combat', route: 'classic', caution: 'bold', rollFactor: 1, goldReserve: 0, forge: false, prestige: true, prestigeAfter: 2, spend: 'lavish' },
 };
 
-const [, , name, countStr, daysStr] = process.argv;
-const n = parseInt(countStr || '2', 10);
-const days = parseInt(daysStr || '1', 10);
-const t0 = Date.now();
-/* streaming NDJSON: one line per finished session, flushed immediately —
-   progress is monitorable in realtime with `wc -l *.ndjson` */
-for (let i = 0; i < n; i++) {
-  const r = session(TACTICS[name], days, parseInt(process.env.SEED_BASE || '0', 10) + i);
-  r.tactic = name;
-  r.i = i;
-  console.log(JSON.stringify(r));
-  /* progress to stderr (stdout is the NDJSON artifact) — visible live in CI logs */
-  const secs = ((Date.now() - t0) / 1000);
-  const eta = (secs / (i + 1)) * (n - i - 1);
-  console.error(`[${name}] ${i + 1}/${n} done · ${secs.toFixed(0)}s elapsed · ~${eta.toFixed(0)}s left`);
+/* The session runner is importable so other harnesses (tools/sim/ablate.mjs)
+   reuse the exact same player bot instead of copying it. Only run the CLI when
+   this file is the process entry point. */
+export { session, TACTICS };
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const [, , name, countStr, daysStr] = process.argv;
+  const n = parseInt(countStr || '2', 10);
+  const days = parseInt(daysStr || '1', 10);
+  const t0 = Date.now();
+  /* streaming NDJSON: one line per finished session, flushed immediately —
+     progress is monitorable in realtime with `wc -l *.ndjson` */
+  for (let i = 0; i < n; i++) {
+    const r = session(TACTICS[name], days, parseInt(process.env.SEED_BASE || '0', 10) + i);
+    r.tactic = name;
+    r.i = i;
+    console.log(JSON.stringify(r));
+    /* progress to stderr (stdout is the NDJSON artifact) — visible live in CI logs */
+    const secs = ((Date.now() - t0) / 1000);
+    const eta = (secs / (i + 1)) * (n - i - 1);
+    console.error(`[${name}] ${i + 1}/${n} done · ${secs.toFixed(0)}s elapsed · ~${eta.toFixed(0)}s left`);
+  }
+  console.error(`[${name}] all ${n} done in ${((Date.now() - t0) / 1000).toFixed(0)}s`);
 }
-console.error(`[${name}] all ${n} done in ${((Date.now() - t0) / 1000).toFixed(0)}s`);
