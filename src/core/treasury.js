@@ -8,12 +8,18 @@ import { ngLevel } from './prestige.js';
 import { gainMem } from '../data/memtree.js';
 
 /* ---- Gozag Coffers: gold → Memory, diminishing within a cycle ---- */
-export const COFFER_BASE = 250000;                              /* TUNABLE */
+export const COFFER_BASE = 100000;                              /* TUNABLE */
+export const COFFER_GROWTH = 1.4;                               /* TUNABLE */
 export const cofferCount = s => s.cofferBuys || 0;
-/* each purchase this cycle doubles the price for the same Memory pack, so the
-   effective gold→Memory rate decays — a valve for the hoard, not a main engine */
-export const cofferCost = s => Math.floor(COFFER_BASE * Math.pow(2, cofferCount(s)));
-export const cofferMem  = s => Math.floor(2000 * (1 + 0.5 * (s.prestiges || 0)) * (1 + 0.3 * ngLevel(s))); /* TUNABLE */
+/* each purchase this cycle costs more for the same Memory pack, so the effective
+   gold→Memory rate decays — a valve for the hoard, not a main engine. Growth is
+   gentle (not doubling) so a high-income cycle keeps draining all cycle instead
+   of pricing itself out after a dozen buys. */
+export const cofferCost = s => Math.floor(COFFER_BASE * Math.pow(COFFER_GROWTH, cofferCount(s)));
+/* the Memory pack is deliberately small: draining otherwise-wasted gold is the
+   feature, not the exchange rate — a rich pack would accelerate the tree into a
+   prestige runaway (measured at ~20-30% of Memory income in the first draft) */
+export const cofferMem  = s => Math.floor(130 * (1 + 0.1 * (s.prestiges || 0))); /* TUNABLE */
 export function buyCoffer(s) {
   const c = cofferCost(s);
   if (s.gold < c) return 0;
@@ -25,10 +31,13 @@ export function buyCoffer(s) {
 }
 
 /* ---- Guild Provisions: per-cycle buffs, burned at prestige ---- */
+/* modest, bounded within-cycle power. A gold-boosting provision was dropped: in a
+   gold sink it is self-defeating (buying it makes more gold) and it was inflating
+   the very hoard this feature exists to drain. Small per-stack values keep the
+   cyclic power boost from compounding into a prestige runaway. TUNABLE. */
 export const PROVISIONS = [
-  { k: 'banner', n: 'War Banner',        d: '+3% damage for the whole guild, per banner',   ico: 'ur_singing', mul: 'dmg',  per: 0.03, base: 100000, g: 1.6, max: 15 },
-  { k: 'charts', n: 'Prospector\'s Charts', d: '+8% dungeon gold, per set of charts',        ico: 'i_scroll',   mul: 'gold', per: 0.08, base: 80000,  g: 1.6, max: 15 },
-  { k: 'camp',   n: 'Reinforced Camp',    d: '+3% health for the whole guild, per upgrade',  ico: 'a_leather',  mul: 'hp',   per: 0.03, base: 100000, g: 1.6, max: 15 },
+  { k: 'banner', n: 'War Banner',     d: '+0.5% damage for the whole guild, per banner',  ico: 'ur_singing', mul: 'dmg', per: 0.005, base: 500000, g: 1.6, max: 8 },
+  { k: 'camp',   n: 'Reinforced Camp', d: '+0.5% health for the whole guild, per upgrade', ico: 'a_leather',  mul: 'hp',  per: 0.005, base: 500000, g: 1.6, max: 8 },
 ];
 export const provStacks = (s, k) => (s.provisions && s.provisions[k]) || 0;
 export const provCostOf = (s, p) => Math.floor(p.base * Math.pow(p.g, provStacks(s, p.k)));

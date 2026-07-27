@@ -30,7 +30,7 @@ export function makeState() {
     upg: {}, zupg: {}, fame: [],
     mem: 0, tree: { root: 1 },
     stat: { kills: 0, deaths: 0, uniqKills: 0, forged: 0, dismantled: 0, memEarned: 0, wins: 0, bestXL: {} },
-    runesTotal: 0, pendingDeaths: [], unrandsOwned: [],
+    runesTotal: 0, pendingDeaths: [], pendingWins: [], unrandsOwned: [],
     ng: 0, legends: 0, prestiges: 0, pupg: {}, balV: 4,
     prestReq: 1, /* Orbs the current cycle needs to prestige; snapshotted at cycle start, never rises mid-cycle */
     vic: { races: {}, classes: {} }, nemeses: {}, cycRunnerBest: 0, cycContractDone: 0,

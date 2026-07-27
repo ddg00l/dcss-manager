@@ -18,6 +18,7 @@ import { renderChips, renderWatch, setWatch } from './ui/watch.js';
 import { openSheet } from './ui/sheet.js';
 import { showOfflineReport } from './ui/offline.js';
 import { maybeShowDeath } from './ui/death.js';
+import { maybeShowWin } from './ui/win.js';
 import { ftueTick, updateGates, maybeTour } from './ui/ftue.js';
 import { tabUnlocked, TAB_HINT } from './core/ftue.js';
 import { setLang, applyStatic, DEFAULT_LANG, t } from './i18n/index.js';
@@ -92,6 +93,7 @@ function frame(ts) {
   const dt = Math.min(t - last, .25); last = t;
   simCatchUp();
   if (document.querySelector('#pDun.active')) renderWatch();
+  maybeShowWin();
   maybeShowDeath();
   ftueTick(switchPane);
   updTop();

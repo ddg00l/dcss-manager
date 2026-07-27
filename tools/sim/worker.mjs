@@ -82,8 +82,10 @@ function spendSurplus(s, tactic, m) {
   /* ziggurat: dedicate a free slot to a paid deep farm when flush */
   if (tactic.zig) {
     let g = 0;
+    /* leave at least one slot free for a normal Orb-hunting delve, else the zig
+       (which never wins the Orb) cannibalises prestige progress */
     while (g++ < 4 && s.gold > zigFee(s) + reserve &&
-           s.heroes.filter(x => x.state === 'run').length < maxSlots(s)) {
+           s.heroes.filter(x => x.state === 'run').length < maxSlots(s) - 1) {
       const cand = s.heroes.find(h => h.state === 'camp');
       if (!cand) break;
       const fee = zigFee(s);
@@ -257,7 +259,7 @@ function session(tactic, days = 1, seed = 0) {
 }
 
 const TACTICS = {
-  afk:        { checkin: 6 * 3600, tree: 'balanced', route: 'classic', caution: 'normal', rollFactor: 1, goldReserve: 0, forge: false , prestige: true, prestigeAfter: 1, zig: true },
+  afk:        { checkin: 6 * 3600, tree: 'balanced', route: 'classic', caution: 'normal', rollFactor: 1, goldReserve: 0, forge: false , prestige: true, prestigeAfter: 1 },
   lazy:       { checkin: 1800, tree: 'balanced', route: 'classic', caution: 'normal', rollFactor: 1, goldReserve: 0, forge: false , prestige: true, prestigeAfter: 2 },
   active:     { checkin: 300, tree: 'balanced', route: 'classic', caution: 'normal', rollFactor: 1, goldReserve: 0, forge: false , prestige: true, prestigeAfter: 2 },
   rush_slots: { checkin: 300, tree: 'slots', route: 'classic', caution: 'cautious', rollFactor: 1, goldReserve: 0, forge: false , prestige: true, prestigeAfter: 2 },
