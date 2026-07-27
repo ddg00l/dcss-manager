@@ -99,7 +99,7 @@ describe('qualitative escalation: elite affixes and floor affixes', () => {
   it('elite frequency and affix count grow slowly and endlessly with NG', async () => {
     const { eliteChance, eliteAffixCount, rollEliteAffixes, ELITE_KEYS, affixLevel, readiness } = await import('../src/data/eliteAffixes.js');
     expect(eliteChance(0)).toBeCloseTo(.05);
-    expect(eliteChance(100)).toBeCloseTo(.52); // capped frequency (raised: harder base)
+    expect(eliteChance(100)).toBeCloseTo(.48); // capped frequency (raised: harder base)
     expect(eliteAffixCount(0)).toBe(1);
     expect(eliteAffixCount(20)).toBe(3);       // softened peak: max 3 affixes
     const { mulberry32 } = await import('../src/core/rng.js');

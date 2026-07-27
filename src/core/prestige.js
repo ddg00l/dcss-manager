@@ -69,7 +69,7 @@ export function legendsReward(s) {
    asymptote over dozens of prestiges instead of the runaway a capped bar allowed. */
 export const prestigeReq = s => s.prestReq || 1;
 /** requirement for the next cycle, from lifetime Orbs — snapshotted at prestige time */
-export const nextPrestigeReq = s => 1 + Math.floor(1.25 * Math.sqrt(s.stat.wins || 0));
+export const nextPrestigeReq = s => 1 + Math.floor(1.1 * Math.sqrt(s.stat.wins || 0));
 export const canPrestige = s => cycleProgress(s).wins >= prestigeReq(s);
 
 /** the reset itself; returns the Legends earned or 0 when not allowed */

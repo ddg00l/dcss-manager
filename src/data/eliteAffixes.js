@@ -63,9 +63,9 @@ export function readiness(s) {
    deep-and-wide runaway regime where readiness lagged far behind NG. */
 export const affixLevel = (s, ng) => Math.round(Math.min(ng, readiness(s) + ng * .12));
 /* the escalation curves now take the effective affix level, not raw NG */
-export const eliteChance = lvl => Math.min(.52, .05 + .022 * lvl);
+export const eliteChance = lvl => Math.min(.48, .05 + .02 * lvl);
 export const eliteAffixCount = lvl => 1 + Math.min(3, Math.floor(lvl / 10));
-export const floorAffixChance = lvl => Math.min(.52, .07 + .024 * lvl);
+export const floorAffixChance = lvl => Math.min(.48, .07 + .022 * lvl);
 
 /** roll elite affixes for a monster (floor rng keeps it deterministic per seed) */
 export function rollEliteAffixes(ng, rng) {
