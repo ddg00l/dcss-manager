@@ -324,12 +324,12 @@ describe('prestige requirement is a fixed snapshot with a forward-only ratchet',
     const { nextPrestigeReq } = await import('../src/core/prestige.js');
     const s = makeState();
     expect(nextPrestigeReq(s)).toBe(1);        // 0 lifetime Orbs
-    s.stat.wins = 3;                           // 1 + floor(sqrt(3)) = 2
-    expect(nextPrestigeReq(s)).toBe(2);
-    s.stat.wins = 100;                         // 1 + floor(sqrt(100)) = 11
-    expect(nextPrestigeReq(s)).toBe(11);
+    s.stat.wins = 3;                           // 1 + floor(1.25*sqrt(3)) = 3
+    expect(nextPrestigeReq(s)).toBe(3);
+    s.stat.wins = 100;                         // 1 + floor(1.25*sqrt(100)) = 13
+    expect(nextPrestigeReq(s)).toBe(13);
     s.stat.wins = 2000;                        // a runaway's total → an unreachable bar
-    expect(nextPrestigeReq(s)).toBe(45);       // 1 + floor(sqrt(2000)); 1.25^44 walls the cycle
+    expect(nextPrestigeReq(s)).toBe(56);       // 1 + floor(1.25*sqrt(2000)); the in-cycle 1.25^bar walls it
   });
   it('doPrestige locks the next bar in from lifetime Orbs', async () => {
     const { doPrestige } = await import('../src/core/prestige.js');
