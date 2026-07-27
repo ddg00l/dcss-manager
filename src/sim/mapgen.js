@@ -102,8 +102,14 @@ export function genFloor(h,s){
   const consN=P?P.lootN:(rng()<.6?1:2);
   for(let i=0;i<consN&&free.length>2;i++){const c=take();
     items.push({x:c[0],y:c[1],kind:'cons',c:randConsumable(rng)})}
-  if(rng()<((P?.5:.10)*gDrop(s))&&free.length>2){const c=take();
-    items.push({x:c[0],y:c[1],kind:'item',it:randomItem(null,Math.min(2,Math.floor(depth/8)),rng)})}
+  /* gear drop — ziggurats are gear vaults: near-guaranteed, luck-biased toward
+     rarer/randart gear, and the deeper the zig the better the luck */
+  const isZig=P&&h.inPortal.type==='zig';
+  const gearLuck=isZig?Math.min(.85,.35+.03*(h.inPortal.floor||1)):0;
+  if(rng()<(isZig?.9:(P?.5:.10)*gDrop(s))&&free.length>2){const c=take();
+    items.push({x:c[0],y:c[1],kind:'item',it:randomItem(null,Math.min(2,Math.floor(depth/8)),rng,gearLuck)})}
+  if(isZig&&rng()<.5&&free.length>2){const c=take(); /* a second, luck-boosted drop */
+    items.push({x:c[0],y:c[1],kind:'item',it:randomItem(null,Math.min(2,Math.floor(depth/8)),rng,gearLuck)})}
   if(!P&&rng()<.16&&!h.god&&free.length>2){const c=take();
     items.push({x:c[0],y:c[1],kind:'altar',god:GODKEYS[Math.floor(rng()*GODKEYS.length)]})}
   if(!P&&rng()<.02&&depth>=8&&free.length>2){const c=take();items.push({x:c[0],y:c[1],kind:'key'})}
