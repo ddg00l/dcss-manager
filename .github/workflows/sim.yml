@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tactic: [afk, lazy, active, rush_slots, keystoner, whale, smith, speedrun, shardwhale]
+        tactic: [afk, lazy, active, rush_slots, keystoner, whale, smith, speedrun, shardwhale, treasurer, abyssal, miser, completionist, berserker]
         shard: [a, b]
     runs-on: ubuntu-latest
     steps:

@@ -41,6 +41,11 @@ function buyTree(s, tactic, budgetShare) {
     const reachableKey = NODES.find(n => n.keystone && !treeLvl(s, n.id) &&
       n.req.some(r => treeLvl(s, r) > 0) && achMetSafe(s, n));
     if (reachableKey && nodeCost(s, reachableKey) > s.mem) return; /* hold the treasury for it */
+    /* the abyssal tactic beelines for the Abyssal Rift keystone the moment it is buyable */
+    if (tactic.route === 'abyss') {
+      const ka = affordable.find(n => n.id === 'k_abyss');
+      if (ka) { if (!buyNode(s, ka)) return; continue; }
+    }
     let pick = null;
     if (tactic.tree === 'keystones') {
       pick = affordable.find(n => n.keystone) ||
@@ -68,6 +73,7 @@ function buyTree(s, tactic, budgetShare) {
    surplus that would otherwise burn at prestige — provisions (within-cycle power),
    an optional ziggurat farm, and Gozag's Coffers (surplus → eternal Memory). */
 function spendSurplus(s, tactic, m) {
+  if (tactic.hoard) return; /* the miser never touches the sinks — gold piles up */
   const reserve = 2_000_000 + (tactic.goldReserve || 0) * 1000; /* keep roll/forge money */
   /* provisions: buy cheapest affordable while surplus remains */
   for (let g = 0; g < 80; g++) {
@@ -79,13 +85,15 @@ function spendSurplus(s, tactic, m) {
     if (!buyProvision(s, p.k)) break;
     m.provGold += c;
   }
-  /* ziggurat: dedicate a free slot to a paid deep farm when flush */
+  /* ziggurat: dedicate a free slot to a paid deep farm when flush. Aggressive
+     zig users (treasurer) fill every slot; the rest leave one free for a normal
+     Orb-hunting delve, else the zig (which never wins the Orb) starves prestige. */
   if (tactic.zig) {
     let g = 0;
-    /* leave at least one slot free for a normal Orb-hunting delve, else the zig
-       (which never wins the Orb) cannibalises prestige progress */
-    while (g++ < 4 && s.gold > zigFee(s) + reserve &&
-           s.heroes.filter(x => x.state === 'run').length < maxSlots(s) - 1) {
+    const cap = tactic.zigAggressive ? 12 : 4;
+    const slotLimit = () => maxSlots(s) - (tactic.zigAggressive ? 0 : 1);
+    while (g++ < cap && s.gold > zigFee(s) + reserve &&
+           s.heroes.filter(x => x.state === 'run').length < slotLimit()) {
       const cand = s.heroes.find(h => h.state === 'camp');
       if (!cand) break;
       const fee = zigFee(s);
@@ -167,6 +175,15 @@ function playerActions(s, tactic, m) {
       m.summons++;
     }
   }
+  /* completionist: spam normal rolls for breadth — many combos, shards spread
+     thin into a wide-but-shallow roster (stress-tests the readiness guard) */
+  if (tactic.collect) {
+    let f = 0;
+    while (f++ < 20 && s.gold >= rollCost(s) * 1.1) {
+      if (!rollHero(s, false)) break;
+      m.summons++;
+    }
+  }
   /* summons */
   let guard = 0;
   while (guard++ < 12) {
@@ -184,7 +201,10 @@ function playerActions(s, tactic, m) {
   /* equip and dispatch */
   for (const h of s.heroes) {
     if (h.state !== 'camp') continue;
-    h.strategy = tactic.route; h.caution = tactic.caution;
+    /* the Abyss route needs its keystone; until then, run classic to earn the
+       runes that unlock it, then switch every seeker to endless Abyss farming */
+    const route = (tactic.route === 'abyss' && !memHas(s, 'k_abyss')) ? 'classic' : tactic.route;
+    h.strategy = route; h.caution = tactic.caution; h.spend = tactic.spend || 'balanced';
     equipBestFromArmory(h, s);
     if (s.heroes.filter(x => x.state === 'run').length < maxSlots(s)) startRun(h, s);
   }
@@ -268,6 +288,12 @@ const TACTICS = {
   smith:      { checkin: 300, tree: 'combat', route: 'classic', caution: 'normal', rollFactor: 2, goldReserve: 300, forge: true , prestige: true, prestigeAfter: 2 },
   speedrun:   { checkin: 300, tree: 'combat', route: 'speed', caution: 'bold', rollFactor: 1, goldReserve: 0, forge: false, prestige: true },
   shardwhale: { checkin: 300, tree: 'balanced', route: 'classic', caution: 'normal', rollFactor: 1, dark: true, shardFarm: true, goldReserve: 0, forge: false, prestige: true, prestigeAfter: 2 },
+  /* --- gold-sink & mechanic coverage --- */
+  treasurer:     { checkin: 300, tree: 'balanced', route: 'classic', caution: 'normal', rollFactor: 1, goldReserve: 0, forge: false, prestige: true, prestigeAfter: 2, zig: true, zigAggressive: true },
+  abyssal:       { checkin: 300, tree: 'keystones', route: 'abyss', caution: 'normal', rollFactor: 1, goldReserve: 0, forge: false, prestige: false },
+  miser:         { checkin: 300, tree: 'balanced', route: 'classic', caution: 'normal', rollFactor: 4, goldReserve: 0, forge: false, prestige: true, prestigeAfter: 2, hoard: true },
+  completionist: { checkin: 300, tree: 'balanced', route: 'classic', caution: 'normal', rollFactor: 1, goldReserve: 0, forge: false, prestige: true, prestigeAfter: 2, collect: true },
+  berserker:     { checkin: 300, tree: 'combat', route: 'classic', caution: 'bold', rollFactor: 1, goldReserve: 0, forge: false, prestige: true, prestigeAfter: 2, spend: 'lavish' },
 };
 
 const [, , name, countStr, daysStr] = process.argv;
