@@ -1,6 +1,7 @@
 /* "Dungeon Memory" — a single radial upgrade tree (CIFI-modules style).
    Small nodes are multi-level increments; keystones are radical mechanics,
    gated by account achievements. No respec. */
+import { ascGoldMul, ascDeathMemMul } from '../core/ascension.js';
 
 export const REGIONS = {
   combat:  { a: 0,   col: '#d96055', n: 'Fighting' },
@@ -268,8 +269,9 @@ export function buyNode(s, n) {
 }
 /** Memory gain with tree multipliers applied */
 export function gainMem(s, amount, isDeath) {
-  let v = amount * (1 + memEff(s, 'mem')) * (1 + .15 * ((s.pupg && s.pupg.p_memmul) || 0));
+  let v = amount * (1 + memEff(s, 'mem')) * (1 + .15 * ((s.pupg && s.pupg.p_memmul) || 0)) * ascGoldMul(s);
   if (isDeath && memHas(s, 'k_deathmem')) v *= 2;
+  if (isDeath) v *= ascDeathMemMul(s); /* Ascension: Martyrdom */
   v = Math.ceil(v);
   s.mem += v; s.stat.memEarned += v;
   return v;

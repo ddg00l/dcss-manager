@@ -28,15 +28,16 @@ export const runeAura = s => memHas(s, 'k_runeaura') ? 1 + 0.02 * s.runesTotal :
 import { ngLevel, pupg } from './prestige.js';
 import { greatMul } from './chronicle.js';
 import { provMul } from './treasury.js';
+import { ascDmgMul, ascHpMul, ascGoldMul, ascSlots } from './ascension.js';
 export const ngMul = s => 1 + 1.5 * Math.min(10, ngLevel(s)); /* gold reward caps with the rest of the scalars */
 
-export const gAtk  = s => (1 + memEff(s, 'atk')) * (1 + 0.1 * zupg(s, 'zatk')) * fameMul(s) * ghostMul(s) * runeAura(s) * (1 + .08 * pupg(s, 'p_dmg')) * (1 + .01 * pupg(s, 'p_legacy')) * greatMul(s) * provMul(s, 'dmg');
-export const gHp   = s => (1 + memEff(s, 'hp'))  * (1 + 0.1 * zupg(s, 'zhp'))  * fameMul(s) * (1 + .08 * pupg(s, 'p_hp')) * (1 + .01 * pupg(s, 'p_legacy')) * greatMul(s) * provMul(s, 'hp');
+export const gAtk  = s => (1 + memEff(s, 'atk')) * (1 + 0.1 * zupg(s, 'zatk')) * fameMul(s) * ghostMul(s) * runeAura(s) * (1 + .08 * pupg(s, 'p_dmg')) * (1 + .01 * pupg(s, 'p_legacy')) * greatMul(s) * provMul(s, 'dmg') * ascDmgMul(s);
+export const gHp   = s => (1 + memEff(s, 'hp'))  * (1 + 0.1 * zupg(s, 'zhp'))  * fameMul(s) * (1 + .08 * pupg(s, 'p_hp')) * (1 + .01 * pupg(s, 'p_legacy')) * greatMul(s) * provMul(s, 'hp') * ascHpMul(s);
 export const gSpd  = s => 1 + memEff(s, 'spd');
-export const gGold = s => (1 + memEff(s, 'gold')) * (1 + 0.15 * zupg(s, 'zloot')) * runeAura(s) * ngMul(s) * provMul(s, 'gold');
+export const gGold = s => (1 + memEff(s, 'gold')) * (1 + 0.15 * zupg(s, 'zloot')) * runeAura(s) * ngMul(s) * provMul(s, 'gold') * ascGoldMul(s);
 export const gDrop = s => 1 + memEff(s, 'drop');
 export const gXp   = s => 1 + memEff(s, 'xp');
-export const maxSlots = s => 1 + memEff(s, 'slot');
+export const maxSlots = s => 1 + memEff(s, 'slot') + ascSlots(s);
 export const shardMul = s => 1 + memEff(s, 'shard');
 export const forgeDisc = s => 1 - Math.min(0.5, memEff(s, 'fdisc'));
 

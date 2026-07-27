@@ -4,6 +4,7 @@
    (both the account flags and the items themselves), zot upgrades, keystones
    of the Memory tree, lifetime stats and the prestige layer itself. */
 import { NODES, treeLvl } from '../data/memtree.js';
+import { ascKeepGear, ascKeepTree } from './ascension.js';
 
 /** effective NG+ level: prestiges + the legacy "New Depth" keystone */
 export const ngLevel = s => (s.ng || 0) + (treeLvl(s, 'k_ngplus') > 0 ? 1 : 0);
@@ -82,11 +83,13 @@ export function doPrestige(s) {
   s.ng = (s.ng || 0) + 1;
   s.prestiges = (s.prestiges || 0) + 1;
 
-  /* unrand items survive — collect them from the armory and from worn gear */
-  const keep = s.armory.filter(it => it.unrandId);
+  /* unrand items survive — collect them from the armory and from worn gear.
+     Ascension "Engraved Armoury" lets ALL gear survive, not just artefacts. */
+  const keepAll = ascKeepGear(s);
+  const keep = s.armory.filter(it => keepAll || it.unrandId);
   for (const h of s.heroes)
     for (const slot of Object.keys(h.gear || {}))
-      if (h.gear[slot] && h.gear[slot].unrandId) keep.push(h.gear[slot]);
+      if (h.gear[slot] && (keepAll || h.gear[slot].unrandId)) keep.push(h.gear[slot]);
 
   s.heroes = [];
   s.armory = keep;
@@ -96,11 +99,14 @@ export function doPrestige(s) {
   s.pendingDeaths = []; s.pendingWins = [];
   s.progress = { D: 0, Lair: 0, Orc: 0, Elf: 0, Vaults: 0, Depths: 0, Zot: 0, Abyss: 0 };
 
-  /* the tree burns down to its engraved keystones */
-  const tree = { root: 1 };
-  for (const n of NODES)
-    if (n.keystone && treeLvl(s, n.id) > 0) tree[n.id] = s.tree[n.id];
-  s.tree = tree;
+  /* the tree burns down to its engraved keystones — unless Ascension "Living
+     Memory" preserves the whole tree */
+  if (!ascKeepTree(s)) {
+    const tree = { root: 1 };
+    for (const n of NODES)
+      if (n.keystone && treeLvl(s, n.id) > 0) tree[n.id] = s.tree[n.id];
+    s.tree = tree;
+  }
   s.rev = (s.rev || 0) + 1; /* tree changed: invalidate stat caches */
 
   s.cofferBuys = 0; s.zigFunded = 0; s.provisions = {}; /* gold sinks reset each cycle */

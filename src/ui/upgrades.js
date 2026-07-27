@@ -18,6 +18,7 @@ import { t } from '../i18n/index.js';
 import {PUPGRADES,pupg,pupgCost,ngLevel,legendsReward,canPrestige,doPrestige,cycleProgress,prestigeReq} from '../core/prestige.js';
 import {chronicleGoals,greatRaces,greatClasses,greatMul,cycleContract} from '../core/chronicle.js';
 import {FAME_SUBTABS,fameSubUnlocked} from '../core/ftue.js';
+import {renderAscension} from './ascension.js';
 import {toast} from './toast.js';
 import {RKEYS} from '../data/races.js';
 import {CKEYS} from '../data/classes.js';
@@ -155,6 +156,7 @@ export function renderFame(){
     box.appendChild(el);
   }
   if(!save.fame.length)box.innerHTML='<div class="hint">'+t("No one has died or triumphed yet. It's all ahead.")+'</div>';
+  renderAscension();
   renderFameTabs();
 }
 

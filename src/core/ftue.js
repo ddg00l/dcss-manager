@@ -58,6 +58,7 @@ export const FAME_SUBTABS = [
   { id: 'fsPrestige',  box: 'famePrestige',  ico: '⚜',  label: 'Prestige',    unlock: s => (s.stat.wins || 0) > 0, hint: 'Carry the Orb out of Zot to begin prestiging' },
   { id: 'fsPantheon',  box: 'famePantheon',  ico: '✧',  label: 'Pantheon',    unlock: s => (s.prestiges || 0) > 0, hint: 'Reach your first prestige to open the Pantheon' },
   { id: 'fsBestiary',  box: 'fameBestiary',  ico: '🐺', label: 'Bestiary',    unlock: s => (s.prestiges || 0) > 0, hint: 'Reach your first prestige to open the Bestiary' },
+  { id: 'fsAscension', box: 'fameAscension', ico: '✦',  label: 'Ascension',    unlock: s => (s.prestiges || 0) >= 10 || (s.ascensions || 0) > 0, hint: 'Reach 10 prestiges to unlock Ascension' },
   { id: 'fsHall',      box: 'fameHall',       ico: '🏆', label: 'Hall of Fame', unlock: () => true },
 ];
 export const fameSubUnlocked = (s, id) => {

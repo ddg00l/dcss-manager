@@ -7,6 +7,7 @@ import { gainMem } from '../data/memtree.js';
 import { rollHero } from '../sim/hero.js';
 import { heroWin } from '../sim/tick.js';
 import { completedFtue } from '../core/ftue.js';
+import { doAscension } from '../core/ascension.js';
 
 const refresh = () => { persist(); if (window.__renderAll) window.__renderAll(); };
 
@@ -25,10 +26,19 @@ const cheats = {
     else { save.stat.wins = (save.stat.wins || 0) + 1; save.zot += 10; }
     refresh();
   },
+  ascendancy: n => { save.ascendancy = (save.ascendancy || 0) + n; refresh(); },
   /** satisfy this cycle's Orb requirement, then prestige */
   prestige: () => {
     save.stat.wins = (save.cycBase?.wins ?? 0) + (save.prestReq ?? 1);
     const r = doPrestige(save); refresh(); return r;
+  },
+  prestige10: () => { for (let i = 0; i < 10; i++) { save.stat.wins = (save.cycBase?.wins ?? 0) + (save.prestReq ?? 1); doPrestige(save); } refresh(); },
+  /** force an Ascension for testing: meet the gate + guarantee a positive gain */
+  ascend: () => {
+    save.prestiges = Math.max(save.prestiges || 0, 10);
+    const need = Math.ceil(Math.pow(((save.ascClaimed || 0) + 10) / 2, 2));
+    if ((save.stat.wins || 0) < need) save.stat.wins = need;
+    const g = doAscension(save); refresh(); return g;
   },
   unlockAll: () => { save.ftue = completedFtue(); refresh(); },
   reset: () => { if (confirm('Wipe the save and start fresh?')) { resetSave(); refresh(); } },
@@ -70,6 +80,7 @@ function build() {
   row('Scrap ⚙',   mkBtn('+100', () => cheats.scrap(100)), mkBtn('+1k', () => cheats.scrap(1000)));
   row('Runes ᚱ',   mkBtn('+3', () => cheats.runes(3)), mkBtn('+15', () => cheats.runes(15)));
   row('Legends ⚜', mkBtn('+50', () => cheats.legends(50)), mkBtn('+500', () => cheats.legends(500)));
+  row('Ascend ✦',  mkBtn('+10', () => cheats.ascendancy(10)), mkBtn('+50', () => cheats.ascendancy(50)));
 
   const sep = document.createElement('div');
   sep.style.cssText = 'height:1px;background:var(--line,#2a3442);margin:4px 0';
@@ -81,6 +92,8 @@ function build() {
     mkBtn('Summon', () => cheats.summon()),
     mkBtn('Win Orb', () => cheats.win()),
     mkBtn('Prestige', () => cheats.prestige()),
+    mkBtn('Prestige ×10', () => cheats.prestige10()),
+    mkBtn('Ascend', () => cheats.ascend()),
     mkBtn('Unlock tabs', () => cheats.unlockAll()),
   );
   panel.appendChild(acts);
