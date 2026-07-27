@@ -62,3 +62,15 @@ The game is hosted on GitHub Pages: every push to `master` runs tests, builds th
 single-file bundle and deploys `dist/` via `.github/workflows/deploy.yml`.
 `npm run build` also drops a local `game.html` (gitignored) that opens straight
 from disk without a server.
+
+## License
+
+The game's own source code is released under the
+[GNU General Public License v3.0 or later](LICENSE) — the same copyleft family
+as Dungeon Crawl Stone Soup, whose spirit this project follows.
+
+The tile art bundled under `src/assets/tiles/` is **not** covered by that GPL: it
+comes from DCSS, which redistributes it from the public-domain "RLTiles" tileset
+(some tiles modified). It is documented separately in
+[`src/assets/tiles/LICENSE.txt`](src/assets/tiles/LICENSE.txt), mirroring the
+notice DCSS ships in `crawl-ref/source/rltiles/license.txt`.

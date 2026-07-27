@@ -1,0 +1,30 @@
+Tile art in this directory
+===========================
+
+The graphic tiles bundled here were taken from Dungeon Crawl Stone Soup
+(the "crawl" project, crawl-ref/source/rltiles). Some tiles have been
+resized or otherwise modified for use in this game. They are redistributed
+under the same notice DCSS ships for its tileset:
+
+    Part of the graphic tiles used in this program are from the public
+    domain roguelike tileset "RLTiles". Some of the tiles have been modified.
+
+    You can find the original tileset at:
+    http://rltiles.sf.net
+
+    Part of the source code used in this program is from the public
+    domain program "RLTiles". Some of the source code has been modified.
+
+    You can find the original source code at:
+    http://sourceforge.net/projects/rltiles/
+
+Upstream source of the copies bundled here:
+    https://github.com/crawl/crawl  (crawl-ref/source/rltiles)
+
+The full per-tile authorship and licensing for DCSS art is tracked upstream in
+crawl-ref/source/rltiles/*/UNUSED and the project's CREDITS.txt. Tiles drawn by
+DCSS contributors beyond the original RLTiles set are, per that documentation,
+likewise released into the public domain.
+
+This notice covers ONLY the tile art. The game's own source code is licensed
+separately under the GNU General Public License v3.0-or-later (see ../../../LICENSE).
