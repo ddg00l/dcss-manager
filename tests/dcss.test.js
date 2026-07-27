@@ -303,17 +303,24 @@ describe('floor gear drops are pre-rolled', () => {
 describe('log freshness', () => {
   it('logSeq keeps growing after the LOG_MAX cap (realtime log diff)', async () => {
     const { advanceHeroes, LOG_MAX } = await import('../src/sim/tick.js');
-    /* pinned seed: a troll berserker that reliably reaches the log cap alive */
-    const s = makeState();
-    const h = runHero(s, 'troll', 'berserker', 2);
-    let guard = 0;
-    while (h.state === 'run' && h.log.length < LOG_MAX && guard++ < 500) advanceHeroes(s, 60, true);
-    expect(h.log.length).toBe(LOG_MAX);        // buffer stays capped
-    expect(h.state).toBe('run');               // still alive at the cap
-    const seq = h.logSeq;
-    advanceHeroes(s, 120, true);
-    expect(h.log.length).toBe(LOG_MAX);        // buffer stays capped
-    expect(h.logSeq).toBeGreaterThan(seq);     // monotonic counter keeps growing
+    const { setAffixDateProvider } = await import('../src/data/affixes.js');
+    /* a log-mechanics test must not ride the daily affix: pin a calm day so the
+       pinned-seed troll berserker reliably reaches the log cap alive */
+    setAffixDateProvider(() => '2026-03-04'); // hashes to the calm affix
+    try {
+      const s = makeState();
+      const h = runHero(s, 'troll', 'berserker', 2);
+      let guard = 0;
+      while (h.state === 'run' && h.log.length < LOG_MAX && guard++ < 500) advanceHeroes(s, 60, true);
+      expect(h.log.length).toBe(LOG_MAX);        // buffer stays capped
+      expect(h.state).toBe('run');               // still alive at the cap
+      const seq = h.logSeq;
+      advanceHeroes(s, 120, true);
+      expect(h.log.length).toBe(LOG_MAX);        // buffer stays capped
+      expect(h.logSeq).toBeGreaterThan(seq);     // monotonic counter keeps growing
+    } finally {
+      setAffixDateProvider(() => new Date().toISOString().slice(0, 10));
+    }
   });
 });
 
