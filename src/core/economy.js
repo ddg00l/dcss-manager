@@ -2,6 +2,12 @@ import { RKEYS } from '../data/races.js';
 import { CKEYS } from '../data/classes.js';
 import { comboRarity } from '../data/combos.js';
 
+/* Per-depth gold compounding. Was 1.22 on kills and 1.24 on floor piles, which
+   at Zot depth is a ~200x multiplier stacked on top of a permanent-multiplier
+   stack reaching ~1000x — measured result: 77M banked against sinks priced at
+   100k. Deep floors should still pay noticeably better, not exponentially. */
+export const GOLD_DEPTH_BASE = 1.13;
+
 export const ZUPGRADES = [
   { k: 'zatk',  n: 'Essence of Might',      d: '+10% damage for all heroes per lvl',   base: 2, g: 1.45, max: 20 },
   { k: 'zhp',   n: 'Essence of Fortitude', d: '+10% health for all heroes per lvl', base: 2, g: 1.45, max: 20 },

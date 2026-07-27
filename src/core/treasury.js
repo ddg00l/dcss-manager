@@ -6,6 +6,16 @@
    All per-cycle counters reset in doPrestige. Constants marked TUNABLE are set by sim. */
 import { ngLevel } from './prestige.js';
 import { gainMem } from '../data/memtree.js';
+import { ascGoldMul } from './ascension.js';
+
+/* Sinks priced in absolute gold go stale the moment income multiplies: a 100k
+   coffer is a real decision on day 1 and rounding error once the treasury earns
+   millions per hour (measured: 77M banked, sinks untouched at 100k-500k). Every
+   sink is therefore quoted against the account's own gold multipliers, so its
+   price tracks earning power forever. Deliberately NOT importing gGold — economy
+   imports this module, and the cycle would leave the arrows in TDZ — so this
+   mirrors the two dominant terms of gGold: the NG scalar and Ascension's gold. */
+export const goldScale = s => (1 + 1.5 * Math.min(10, ngLevel(s))) * ascGoldMul(s);
 
 /* ---- Gozag Coffers: gold → Memory, diminishing within a cycle ---- */
 export const COFFER_BASE = 100000;                              /* TUNABLE */
@@ -15,7 +25,7 @@ export const cofferCount = s => s.cofferBuys || 0;
    gold→Memory rate decays — a valve for the hoard, not a main engine. Growth is
    gentle (not doubling) so a high-income cycle keeps draining all cycle instead
    of pricing itself out after a dozen buys. */
-export const cofferCost = s => Math.floor(COFFER_BASE * Math.pow(COFFER_GROWTH, cofferCount(s)));
+export const cofferCost = s => Math.floor(COFFER_BASE * goldScale(s) * Math.pow(COFFER_GROWTH, cofferCount(s)));
 /* the Memory pack is deliberately small: draining otherwise-wasted gold is the
    feature, not the exchange rate — a rich pack would accelerate the tree into a
    prestige runaway (measured at ~20-30% of Memory income in the first draft) */
@@ -40,7 +50,7 @@ export const PROVISIONS = [
   { k: 'camp',   n: 'Reinforced Camp', d: '+1% health for the whole guild, per upgrade', ico: 'a_leather',  mul: 'hp',  per: 0.01, base: 500000, g: 1.6, max: 6 },
 ];
 export const provStacks = (s, k) => (s.provisions && s.provisions[k]) || 0;
-export const provCostOf = (s, p) => Math.floor(p.base * Math.pow(p.g, provStacks(s, p.k)));
+export const provCostOf = (s, p) => Math.floor(p.base * goldScale(s) * Math.pow(p.g, provStacks(s, p.k)));
 export function buyProvision(s, k) {
   const p = PROVISIONS.find(x => x.k === k);
   if (!p || provStacks(s, p.k) >= p.max) return false;
@@ -61,6 +71,6 @@ export const provMul = (s, mul) => {
 /* ---- Ziggurat funding: escalating fee; the action itself lives in tick.js ---- */
 export const ZIG_BASE = 50000;                                 /* TUNABLE */
 export const zigCount = s => s.zigFunded || 0;
-export const zigFee = s => Math.floor(ZIG_BASE * Math.pow(4, zigCount(s)));
+export const zigFee = s => Math.floor(ZIG_BASE * goldScale(s) * Math.pow(4, zigCount(s)));
 /* a funded zig starts deep so it stays lethal and cannot become a gold faucet */
 export const zigStartDepth = s => 22 + 2 * ngLevel(s);         /* TUNABLE */

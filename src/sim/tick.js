@@ -1,9 +1,9 @@
-import {gXp,gGold,gDrop,gSpd,gAtk,gHp,shardMul as shardMulF,maxSlots,rollCost,freeRollAvailable} from '../core/economy.js';
+import {gXp,gGold,gDrop,gSpd,gAtk,gHp,shardMul as shardMulF,maxSlots,rollCost,freeRollAvailable,GOLD_DEPTH_BASE} from '../core/economy.js';
 import {gainMem,memEff,memHas} from '../data/memtree.js';
 import {clamp,fmt} from '../core/fmt.js';
 import {heroStats,rollHero,ringSlotKeys} from './hero.js';
 import {genFloor,reveal,los,MW,MH} from './mapgen.js';
-import {BRANCHES,buildRoute,brDepth,brTag} from '../data/branches.js';
+import {BRANCHES,buildRoute,brDepth,brTag,BR_ORDER,BR_OFFSET} from '../data/branches.js';
 import {RACES,aptMul} from '../data/races.js';
 import {crossBoost} from '../data/skills.js';
 import {CLASSES} from '../data/classes.js';
@@ -53,12 +53,28 @@ function hlog(h,txt,cls){
   if(h.log.length>LOG_MAX)h.log.shift();
 }
 
+/* Runes the Gates of Zot demand of every delver (DCSS asks for 3). TUNABLE: this
+   is the main dial for how long a full run takes, because each rune costs a
+   branch descent and a branch boss. */
+export const ZOT_RUNES=3;
+/** the nearest branch whose rune this hero still lacks, or null if none is left */
+export function runeBranchFor(h){
+  let best=null,bestD=1e9;
+  for(const k of BR_ORDER){
+    const br=BRANCHES[k];
+    if(!br.rune||h.runes.includes(br.rune))continue;
+    const d=Math.abs((BR_OFFSET[k]||0)-brDepth(h));
+    if(d<bestD){bestD=d;best=k}
+  }
+  return best;
+}
 export function startRun(h,s){
   h.state='run';h.rest=false;h.segIdx=0;h.turn=0;
   h.curHp=null;h.uniqSeen=[];h.runes=[];
   h.inv={curing:2+memEff(s,'pots')};
   h.known=[];h.status={};h.gold=0;h.keys=0;
-  h.inPortal=null;h.banished=null;h.fundedZig=false;
+  h.inPortal=null;h.banished=null;h.fundedZig=false;h.detour=null;
+  h.maxDepth=null;h.maxBrDepth=0; /* per-run reach: the death payout reads it */
   h.mp=mpMaxOf(h); /* casters start with a full mana pool */
   if(memHas(s,'k_autoequip')||ascAutoGuild(s))equipBestFromArmory(h,s);
   const route=buildRoute(h.strategy);
@@ -113,14 +129,52 @@ function nextFloor(h,s){
   const short=br.short;
   const pk=short==='D'?'D':short;
   s.progress[pk]=Math.max(s.progress[pk]||0,h.floor);
+  /* Rune detour: the hero was sent off-route to fetch a rune the Gates demand.
+     A detour must run to the branch's OWN floor (the boss holds the rune) — the
+     route segment's limit is meaningless here and would turn the hero around one
+     floor short of the boss, forever. */
+  if(h.detour){
+    if(h.branch===h.detour&&h.floor<br.floors){
+      h.floor++;
+      genFloor(h,s);
+      hlog(h,h.name+t(' enters ')+brTag(h),'sys');
+      h.maxDepth=brTag(h);h.maxBrDepth=Math.max(h.maxBrDepth||0,brDepth(h));
+      return;
+    }
+    /* bottom reached: the boss either yielded its rune or there is none to take */
+    h.detour=null;
+    const nxt=h.runes.length<ZOT_RUNES?runeBranchFor(h):null;
+    if(nxt){
+      h.detour=nxt;h.branch=nxt;h.floor=1;
+      hlog(h,h.name+t(' presses on toward ')+t(BRANCHES[nxt].n),'sys');
+      genFloor(h,s);return;
+    }
+    h.branch='zot';h.floor=1;
+    hlog(h,'ᚱ '+h.name+t(' bears the runes to the Gates of Zot!'),'rune');
+    genFloor(h,s);
+    h.maxDepth=brTag(h);h.maxBrDepth=Math.max(h.maxBrDepth||0,brDepth(h));
+    return;
+  }
   if(h.floor>=seg[1]||h.floor>=br.floors){
     /* segment done → next segment */
     h.segIdx++;
     if(h.segIdx>=route.length){h.segIdx=route.length-1}
     const ns=route[h.segIdx];
-    /* zot gate check */
-    if(ns[0]==='zot'&&s.runesTotal<3&&h.runes.length<3){
-      hlog(h,t('The Gates of Zot are sealed — 3 runes required. ')+h.name+t(' farms the Depths.'),'sys');
+    /* Gates of Zot: THIS delver must carry 3 runes, as in DCSS. The old check
+       read s.runesTotal, so the gate opened forever after any account banked 3
+       and every later hero walked in empty-handed — the single biggest reason a
+       full run took under an hour and the Orb showed up 14 times a day. */
+    if(ns[0]==='zot'&&h.runes.length<ZOT_RUNES){
+      const want=runeBranchFor(h);
+      if(want){
+        hlog(h,t('The Gates of Zot are sealed — ')+ZOT_RUNES+t(' runes required (')+h.runes.length+
+          t(' carried). ')+h.name+t(' turns toward ')+t(BRANCHES[want].n),'sys');
+        h.detour=want;h.branch=want;h.floor=1;
+        genFloor(h,s);return;
+      }
+      /* every rune branch already stripped: nothing left but to grind the Depths */
+      hlog(h,t('The Gates of Zot are sealed and no rune remains within reach. ')+
+        h.name+t(' farms the Depths.'),'sys');
       h.branch='depths';h.floor=Math.max(1,Math.min(5,h.floor));
       genFloor(h,s);return;
     }
@@ -137,7 +191,7 @@ function nextFloor(h,s){
   }
   genFloor(h,s);
   hlog(h,h.name+t(' enters ')+brTag(h),'sys');
-  h.maxDepth=brTag(h);
+  h.maxDepth=brTag(h);h.maxBrDepth=Math.max(h.maxBrDepth||0,brDepth(h));
 }
 /* DCSS-style training: kill XP goes into a pool, which is distributed among
    the skills in use (auto-training), factoring in aptitudes, crosstraining and
@@ -194,7 +248,14 @@ export function heroDie(h,killer,s){
   if(h.gold>0){s.gold+=h.gold;hlog(h,t('Hero\'s wallet (')+fmt(h.gold)+t(' 🜚) returns to the treasury'),'sys')}
   const ck0=comboKey(h.race,h.cls);
   s.stat.bestXL[ck0]=Math.max(s.stat.bestXL[ck0]||0,h.xl);
-  const gained=gainMem(s,30+h.xl*4,true);
+  /* Death pays for how FAR the seeker got, not merely that they died. A flat
+     payout made dying strictly profitable (Memory, shards and ghost stacks with
+     the gear and wallet handed back), so throwing bodies at D:3 beat delving.
+     Now a deep loss is still worth mourning while a shallow flameout is not,
+     which is what makes caution and recall real decisions. */
+  const reach=h.maxBrDepth||brDepth(h);
+  const depthMul=0.35+reach/14; /* D:3 ~0.6x, Lair ~1.0x, Depths ~1.9x, Zot:5 ~2.2x */
+  const gained=gainMem(s,Math.round((18+h.xl*3)*depthMul),true);
   hlog(h,t('🕯 Dungeon Memory: +')+gained,'sys');
   const sh=Math.max(1,Math.floor((SHARDS_PER[h.rarity]+h.xl*.4)*shardMulF(s)));
   const ck=comboKey(h.race,h.cls);
@@ -602,7 +663,11 @@ function killMon(h,mo,s){
   const depth=brDepth(h);
   const eliteLoot=mo.eliteAf?(1+.5*mo.eliteAf.length)*(memHas(s,'k_elite')?2:1):1;
   const goldMul=(RACES[h.race].gold||1)*gGold(s)*todayAffix().gold*eliteLoot;
-  const g=Math.floor((2+rnd(h)*4)*Math.pow(1.22,depth)*goldMul);
+  /* Gold income used to compound at 1.22^depth ON TOP of a multiplier stack that
+     itself reaches ~1000x, while every sink was a fixed constant — so treasuries
+     hit tens of millions against 100k prices and gold stopped being a decision.
+     The depth curve is now gentle; the sinks scale with income (see treasury.js). */
+  const g=Math.floor((2+rnd(h)*4)*Math.pow(GOLD_DEPTH_BASE,depth)*goldMul);
   if(h.fundedZig){h.rep.gold+=g;}else{s.gold+=Math.ceil(g*.5);h.gold+=Math.floor(g*.5);h.rep.gold+=g;}
   gainXp(h,mo.xp,s);
   if(rnd(h)<.06*gDrop(s))s.scrap++;
@@ -651,18 +716,28 @@ function killMon(h,mo,s){
     hlog(h,h.name+t(' kills: ')+t(mo.n)+' (+'+g+' 🜚)','kill');
   }
 }
+/* Two different things used to share one counter, which is why the Gates of Zot
+   stopped meaning anything: a rune IN A HERO'S HANDS is a key (it opens Zot for
+   that delver, exactly as in DCSS), while a rune IN THE TREASURY is currency and
+   permanent aura. Named runes bank once per cycle so the aura cannot inflate —
+   but that dedup also blocked the SECOND hero of a cycle from ever holding three,
+   so the gate had to read the account's lifetime total, and once any account
+   banked 3 runes every future hero strolled into Zot carrying none.
+   Now: the hero always picks the rune up (key), the treasury credits it only the
+   first time per cycle (currency). Pacing and economy stop fighting each other. */
 function giveRune(h,name,s){
-  /* DCSS: each named rune exists once — repeats within a cycle pay out gold */
   s.cycRunes=s.cycRunes||[];
   const generic=name===t("a unique's rune");
-  if(!generic&&s.cycRunes.includes(name)){
+  const dupe=!generic&&s.cycRunes.includes(name);
+  if(!generic&&!h.runes.includes(name))h.runes.push(name); /* the key is always earned */
+  if(dupe){
     const g=400+40*brDepth(h);
     s.gold+=g;
-    hlog(h,'ᚱ '+h.name+t(' finds a duplicate rune — the guild sells it (+')+g+' 🜚)','loot');
+    hlog(h,'ᚱ '+h.name+t(' claims a rune the guild already holds — it is sold (+')+g+' 🜚)','loot');
     return;
   }
   if(!generic)s.cycRunes.push(name);
-  h.runes.push(name);
+  if(generic)h.runes.push(name);
   s.runes++;s.runesTotal++;
   hlog(h,'ᚱ '+h.name+t(' collects a rune: ')+t(name)+'!','rune');
   h.rep.notable.push(t('ᚱ obtained: ')+t(name));

@@ -1,4 +1,5 @@
 import {mulberry32} from '../core/rng.js';
+import {GOLD_DEPTH_BASE} from '../core/economy.js';
 import {ngMonMul,inCycleMul,ngLevel} from '../core/prestige.js';
 import {nemesisLevel} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
@@ -100,7 +101,7 @@ export function genFloor(h,s){
   const goldMul=P?P.goldMul:1;
   const ng=(P?3:2)+Math.floor(rng()*3);
   for(let i=0;i<ng&&free.length>2;i++){const c=take();
-    items.push({x:c[0],y:c[1],kind:'gold',amt:Math.floor((8+rng()*20)*Math.pow(1.24,depth)*goldMul)})}
+    items.push({x:c[0],y:c[1],kind:'gold',amt:Math.floor((8+rng()*20)*Math.pow(GOLD_DEPTH_BASE,depth)*goldMul)})}
   const consN=P?P.lootN:(rng()<.6?1:2);
   for(let i=0;i<consN&&free.length>2;i++){const c=take();
     items.push({x:c[0],y:c[1],kind:'cons',c:randConsumable(rng)})}
