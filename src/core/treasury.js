@@ -19,7 +19,7 @@ export const cofferCost = s => Math.floor(COFFER_BASE * Math.pow(COFFER_GROWTH, 
 /* the Memory pack is deliberately small: draining otherwise-wasted gold is the
    feature, not the exchange rate — a rich pack would accelerate the tree into a
    prestige runaway (measured at ~20-30% of Memory income in the first draft) */
-export const cofferMem  = s => Math.floor(260 * (1 + 0.12 * (s.prestiges || 0))); /* TUNABLE */
+export const cofferMem  = s => Math.floor(195 * (1 + 0.12 * (s.prestiges || 0))); /* TUNABLE */
 export function buyCoffer(s) {
   const c = cofferCost(s);
   if (s.gold < c) return 0;
@@ -36,8 +36,8 @@ export function buyCoffer(s) {
    the very hoard this feature exists to drain. Small per-stack values keep the
    cyclic power boost from compounding into a prestige runaway. TUNABLE. */
 export const PROVISIONS = [
-  { k: 'banner', n: 'War Banner',     d: '+1% damage for the whole guild, per banner',  ico: 'ur_singing', mul: 'dmg', per: 0.01, base: 500000, g: 1.6, max: 8 },
-  { k: 'camp',   n: 'Reinforced Camp', d: '+1% health for the whole guild, per upgrade', ico: 'a_leather',  mul: 'hp',  per: 0.01, base: 500000, g: 1.6, max: 8 },
+  { k: 'banner', n: 'War Banner',     d: '+1% damage for the whole guild, per banner',  ico: 'ur_singing', mul: 'dmg', per: 0.01, base: 500000, g: 1.6, max: 6 },
+  { k: 'camp',   n: 'Reinforced Camp', d: '+1% health for the whole guild, per upgrade', ico: 'a_leather',  mul: 'hp',  per: 0.01, base: 500000, g: 1.6, max: 6 },
 ];
 export const provStacks = (s, k) => (s.provisions && s.provisions[k]) || 0;
 export const provCostOf = (s, p) => Math.floor(p.base * Math.pow(p.g, provStacks(s, p.k)));
