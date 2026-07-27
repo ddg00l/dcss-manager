@@ -1,0 +1,65 @@
+name: Decision ablation
+
+# Prices a SINGLE player decision by varying one axis on identical seeds (CRN)
+# while holding everything else fixed. The named tactics in the balance sim differ
+# along several axes at once, so they can show which archetype wins but never
+# whether a given choice matters. Each axis runs as its own matrix job, so the
+# whole sweep costs about as much wall-clock as its slowest axis.
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Game days per session'
+        default: '30'
+      sessions:
+        description: 'Paired seeds per variant (per shard)'
+        default: '8'
+      axes:
+        description: 'Axes to run (JSON array)'
+        default: '["attention","caution","spend","route","tree","ascend"]'
+
+permissions:
+  contents: read
+
+jobs:
+  ablate:
+    strategy:
+      fail-fast: false
+      matrix:
+        axis: ${{ fromJSON(github.event.inputs.axes) }}
+        shard: [a, b]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Ablate ${{ matrix.axis }} shard ${{ matrix.shard }}
+        env:
+          SEED_BASE: ${{ matrix.shard == 'a' && '0' || '500' }}
+        run: |
+          bun tools/sim/ablate.mjs "${{ matrix.axis }}" \
+            "${{ github.event.inputs.sessions }}" "${{ github.event.inputs.days }}" \
+            > "abl_${{ matrix.axis }}_${{ matrix.shard }}.ndjson"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: abl-${{ matrix.axis }}-${{ matrix.shard }}
+          path: '*.ndjson'
+
+  report:
+    needs: ablate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: results
+          merge-multiple: true
+      - name: Spread per axis
+        run: |
+          python3 tools/sim/ablate_report.py 'results/*.ndjson' | tee ablation.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ablation-summary
+          path: |
+            ablation.txt
+            results/*.ndjson
