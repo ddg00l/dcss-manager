@@ -36,8 +36,7 @@ const cheats = {
   /** force an Ascension for testing: meet the gate + guarantee a positive gain */
   ascend: () => {
     save.prestiges = Math.max(save.prestiges || 0, 10);
-    const need = Math.ceil(Math.pow(((save.ascClaimed || 0) + 10) / 2, 2));
-    if ((save.stat.wins || 0) < need) save.stat.wins = need;
+    if ((save.stat.wins || 0) - (save.ascBase || 0) < 200) save.stat.wins = (save.ascBase || 0) + 200;
     const g = doAscension(save); refresh(); return g;
   },
   unlockAll: () => { save.ftue = completedFtue(); refresh(); },

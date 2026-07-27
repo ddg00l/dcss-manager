@@ -14,6 +14,7 @@ import {POTIONS,SCROLLS,consName,randConsumable} from '../data/consumables.js';
 import {MUTS,randomMut} from '../data/mutations.js';
 import {PORTALS} from '../data/portals.js';
 import {zigFee,zigStartDepth} from '../core/treasury.js';
+import {ascAutoGuild} from '../core/ascension.js';
 import {MONS,FAMILY_OF,familyDmgBonus} from '../data/monsters.js';
 import {recordVictory,recordRunnerWin,checkContract,recordNemesisKill,avengeNemesis} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
@@ -57,7 +58,7 @@ export function startRun(h,s){
   h.inv={curing:2+memEff(s,'pots')};
   h.known=[];h.status={};h.gold=0;h.keys=0;
   h.inPortal=null;h.banished=null;h.fundedZig=false;
-  if(memHas(s,'k_autoequip'))equipBestFromArmory(h,s);
+  if(memHas(s,'k_autoequip')||ascAutoGuild(s))equipBestFromArmory(h,s);
   const route=buildRoute(h.strategy);
   h.branch=route[0][0];h.floor=1;
   genFloor(h,s);
@@ -875,7 +876,7 @@ function autoSummonStep(s){
   rollHero(s,false); /* the fresh hero is dispatched on the next step */
 }
 export function advanceHeroes(s,dtSec,silent){
-  const auto=memHas(s,'k_autosummon');
+  const auto=memHas(s,'k_autosummon')||ascAutoGuild(s);
   const herald=memHas(s,'k_herald');
   let left=dtSec;
   while(left>0){
@@ -924,7 +925,7 @@ export function computeOffline(s,nowMs){
 
 /** item goes to the armory; the "Auto-dismantle" keystone grinds grey items into scrap */
 export function storeItem(s,it){
-  if(memHas(s,'k_autodismantle')&&it.rar===0){
+  if((memHas(s,'k_autodismantle')||ascAutoGuild(s))&&it.rar===0){
     s.scrap+=2;s.stat.dismantled++;
     return;
   }

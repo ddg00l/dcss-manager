@@ -13,12 +13,12 @@ export const ascLevel = s => s.ascensions || 0;
 export const ascendancy = s => s.ascendancy || 0;
 export const ascensionUnlocked = s => (s.prestiges || 0) >= ASCEND_GATE;
 
-/* Ascendancy scales sub-linearly with LIFETIME Orbs; only the potential above
-   what has already been claimed is granted, so repeated ascensions never double
-   count the same wins. TUNABLE (calibrated on the branch via sim). */
-export const ASC_K = 2;
-export const ascPotential = s => Math.floor(ASC_K * Math.sqrt(Math.max(0, s.stat?.wins || 0)));
-export const ascGain = s => Math.max(0, ascPotential(s) - (s.ascClaimed || 0));
+/* Ascendancy scales sub-linearly with the Orbs won SINCE the last Ascension, so
+   the first ascension is only a taste (the tree can't be exhausted in one go) and
+   later ascensions — richer, thanks to Ascension power — keep paying out instead
+   of decelerating like a lifetime-highwater would. TUNABLE (calibrated via sim). */
+export const ASC_K = 0.7;
+export const ascGain = s => Math.floor(ASC_K * Math.sqrt(Math.max(0, (s.stat?.wins || 0) - (s.ascBase || 0))));
 export const canAscend = s => ascensionUnlocked(s) && ascGain(s) > 0;
 
 /* ---- the Ascension tree: four flavours of game-changer ---- */
@@ -29,27 +29,32 @@ export const ASC_REGIONS = {
   auto:  { n: 'Godhood', col: '#7bc470' },
 };
 
-/* id, flavour, name, desc, icon, base cost (✦), growth g, max level, req[] */
+/* the tree canvas + its centre (the Ascension hub the four arms radiate from) */
+export const ASC_W = 760, ASC_H = 720, ASC_CX = 380, ASC_CY = 360;
+
+/* id, flavour, name, desc, icon, base cost (✦), growth g, max level, req[], x, y */
 export const ASC_NODES = [
-  /* --- meta-multipliers: dwarf everything that came before --- */
-  { id: 'am_might',  fam: 'mult', n: 'Ascendant Might',  d: '+30% damage to all heroes, per level', icon: 'ur_singing',      base: 1, g: 1.6, max: 10, req: [] },
-  { id: 'am_vigor',  fam: 'mult', n: 'Divine Vigor',     d: '+30% health to all heroes, per level',  icon: 'a_crystal_plate', base: 1, g: 1.6, max: 10, req: [] },
-  { id: 'am_fortune',fam: 'mult', n: 'Golden Ascendant', d: '×2 gold and Memory gain, per level',     icon: 'i_gold',          base: 2, g: 1.8, max: 6,  req: ['am_might'] },
-  { id: 'am_legacy', fam: 'mult', n: 'Eternal Legacy',   d: '+3% damage and health, per level — no cap', icon: 'i_orb',        base: 3, g: 1.25, max: 999, req: ['am_fortune'] },
+  /* --- meta-multipliers: dwarf everything that came before (arm: up) --- */
+  { id: 'am_might',  fam: 'mult', n: 'Ascendant Might',  d: '+30% damage to all heroes, per level', icon: 'ur_singing',      base: 2, g: 1.6, max: 10, req: [], x: 320, y: 265 },
+  { id: 'am_vigor',  fam: 'mult', n: 'Divine Vigor',     d: '+30% health to all heroes, per level',  icon: 'a_crystal_plate', base: 2, g: 1.6, max: 10, req: [], x: 440, y: 265 },
+  { id: 'am_fortune',fam: 'mult', n: 'Golden Ascendant', d: '×2 gold and Memory gain, per level',     icon: 'i_gold',          base: 2, g: 1.8, max: 6,  req: ['am_might'], x: 320, y: 165 },
+  { id: 'am_legacy', fam: 'mult', n: 'Eternal Legacy',   d: '+3% damage and health, per level — no cap', icon: 'i_orb',        base: 3, g: 1.25, max: 999, req: ['am_fortune'], x: 320, y: 70 },
 
-  /* --- rule-breakers: change how prestige & runs work --- */
-  { id: 'ar_gear',   fam: 'rule', n: 'Engraved Armoury', d: 'All gear survives prestige, not just artefacts', icon: 'a_plate',  base: 3, g: 1, max: 1, req: [] },
-  { id: 'ar_tree',   fam: 'rule', n: 'Living Memory',    d: 'Prestige keeps the whole Memory tree, not just keystones', icon: 'i_scroll', base: 4, g: 1, max: 1, req: ['ar_gear'] },
-  { id: 'ar_martyr', fam: 'rule', n: 'Martyrdom',        d: 'Hero deaths grant ×3 Dungeon Memory',   icon: 'i_corpse',        base: 2, g: 1, max: 1, req: [] },
-  { id: 'ar_twin',   fam: 'rule', n: 'Twin Delve',       d: '+1 expedition slot, forever',           icon: 'pc_human',        base: 3, g: 1.7, max: 3, req: ['ar_martyr'] },
+  /* --- rule-breakers: change how prestige & runs work (arm: right) --- */
+  { id: 'ar_gear',   fam: 'rule', n: 'Engraved Armoury', d: 'All gear survives prestige, not just artefacts', icon: 'a_plate',  base: 3, g: 1, max: 1, req: [], x: 500, y: 305 },
+  { id: 'ar_tree',   fam: 'rule', n: 'Living Memory',    d: 'Prestige keeps the whole Memory tree, not just keystones', icon: 'i_scroll', base: 4, g: 1, max: 1, req: ['ar_gear'], x: 610, y: 270 },
+  { id: 'ar_martyr', fam: 'rule', n: 'Martyrdom',        d: 'Hero deaths grant ×3 Dungeon Memory',   icon: 'i_corpse',        base: 2, g: 1, max: 1, req: [], x: 500, y: 415 },
+  { id: 'ar_twin',   fam: 'rule', n: 'Twin Delve',       d: '+1 expedition slot, forever',           icon: 'pc_human',        base: 3, g: 1.7, max: 3, req: ['ar_martyr'], x: 610, y: 450 },
 
-  /* --- new content --- */
-  { id: 'ac_abyssorb', fam: 'content', n: 'Abyssal Orb', d: 'The Abyss route also carries out Orbs — endless farming now prestiges', icon: 'd_abyss', base: 5, g: 1, max: 1, req: ['ar_twin'] },
+  /* --- new content (extends the rule arm) --- */
+  { id: 'ac_abyssorb', fam: 'content', n: 'Abyssal Orb', d: 'The Abyss route also carries out Orbs — endless farming now prestiges', icon: 'd_abyss', base: 5, g: 1, max: 1, req: ['ar_twin'], x: 690, y: 540 },
 
-  /* --- automation / godhood --- */
-  { id: 'au_summon',   fam: 'auto', n: 'Eternal Call',   d: 'Auto-summon seekers to fill empty slots', icon: 'pc_minotaur', base: 2, g: 1, max: 1, req: [] },
-  { id: 'au_dispatch', fam: 'auto', n: 'Tireless Guild', d: 'Auto-dispatch and auto-equip camp heroes', icon: 'i_rune',    base: 2, g: 1, max: 1, req: ['au_summon'] },
-  { id: 'au_prestige', fam: 'auto', n: 'Wheel of Ages',  d: 'Auto-prestige the moment the cycle allows it', icon: 'd_altar', base: 4, g: 1, max: 1, req: ['au_dispatch'] },
+  /* --- automation / godhood (arm: down-left). The Memory tree already automates
+     summon/dispatch/equip/dismantle via keystones — but those burn at Ascension.
+     Eternal Guild makes all of it permanent; Wheel of Ages adds auto-prestige,
+     which no keystone does. --- */
+  { id: 'au_guild',    fam: 'auto', n: 'Eternal Guild',  d: 'All auto-management (summon, dispatch, equip, dismantle) is permanent — it never burns away when you ascend', icon: 'i_rune', base: 3, g: 1, max: 1, req: [], x: 300, y: 470 },
+  { id: 'au_prestige', fam: 'auto', n: 'Wheel of Ages',  d: 'Auto-prestige the moment the cycle allows it — hands-free forever', icon: 'd_altar', base: 5, g: 1, max: 1, req: ['au_guild'], x: 250, y: 575 },
 ];
 
 export const ascNodeById = id => ASC_NODES.find(n => n.id === id);
@@ -79,8 +84,7 @@ export const ascDeathMemMul = s => ascHas(s, 'ar_martyr') ? 3 : 1;
 export const ascKeepGear = s => ascHas(s, 'ar_gear');
 export const ascKeepTree = s => ascHas(s, 'ar_tree');
 export const ascAbyssOrb = s => ascHas(s, 'ac_abyssorb');
-export const ascAutoSummon = s => ascHas(s, 'au_summon');
-export const ascAutoDispatch = s => ascHas(s, 'au_dispatch');
+export const ascAutoGuild = s => ascHas(s, 'au_guild'); /* summon/dispatch/equip/dismantle, permanent */
 export const ascAutoPrestige = s => ascHas(s, 'au_prestige');
 
 /* ---- the Ascension itself: a hard reset of the whole prestige layer ---- */
@@ -88,7 +92,7 @@ export function doAscension(s) {
   if (!canAscend(s)) return 0;
   const gain = ascGain(s);
   s.ascendancy = ascendancy(s) + gain;
-  s.ascClaimed = (s.ascClaimed || 0) + gain;
+  s.ascBase = s.stat.wins || 0; /* next ascension counts only Orbs won from here */
   s.ascensions = ascLevel(s) + 1;
 
   /* wipe the entire prestige layer — keystones, Legends, Zot upgrades and all */

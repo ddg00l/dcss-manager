@@ -373,6 +373,13 @@
   /* Memory tree: PoE-style drag panning */
   #memWrap{cursor:grab;user-select:none;-webkit-user-select:none}
   #memWrap.grabbing{cursor:grabbing}
+  /* Ascension tree: a bounded pannable canvas inside the Fame sub-tab */
+  #ascWrap{overflow:auto;height:calc(100dvh - 340px);min-height:300px;margin-top:8px;
+    border:1px solid var(--line);border-radius:8px;-webkit-overflow-scrolling:touch;
+    background:radial-gradient(circle at 50% 45%,#1b1526,#0a0c10 75%);
+    cursor:grab;user-select:none;-webkit-user-select:none}
+  #ascWrap.grabbing{cursor:grabbing}
+  #ascTree{position:relative}
   /* update banner */
   #updBar{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;gap:12px;
     align-items:center;justify-content:center;padding:9px 14px;

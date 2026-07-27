@@ -32,7 +32,7 @@ export function makeState() {
     stat: { kills: 0, deaths: 0, uniqKills: 0, forged: 0, dismantled: 0, memEarned: 0, wins: 0, bestXL: {} },
     runesTotal: 0, pendingDeaths: [], pendingWins: [], unrandsOwned: [],
     ng: 0, legends: 0, prestiges: 0, pupg: {}, balV: 4,
-    ascendancy: 0, ascClaimed: 0, ascensions: 0, ascUpg: {}, /* Ascension meta-layer */
+    ascendancy: 0, ascBase: 0, ascensions: 0, ascUpg: {}, /* Ascension meta-layer */
     prestReq: 1, /* Orbs the current cycle needs to prestige; snapshotted at cycle start, never rises mid-cycle */
     vic: { races: {}, classes: {} }, nemeses: {}, cycRunnerBest: 0, cycContractDone: 0,
     pantheon: {}, /* eternal: godKey → lifetime Orbs won while pledged (Pantheon favor) */

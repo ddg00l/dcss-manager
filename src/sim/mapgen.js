@@ -11,6 +11,7 @@ import {randConsumable} from '../data/consumables.js';
 import {randomItem} from '../data/items.js';
 import {PORTALS,PORTAL_KEYS} from '../data/portals.js';
 import {memHas} from '../data/memtree.js';
+import {ascAbyssOrb} from '../core/ascension.js';
 
 export const MW=24,MH=15;
 export function genFloor(h,s){
@@ -139,7 +140,8 @@ export function genFloor(h,s){
       traps.push({x:c[0],y:c[1],kind,seen:false});
     }
   }
-  if(isBossFloor&&br.orb&&free.length>2){const c=take();items.push({x:c[0],y:c[1],kind:'orb'})}
+  /* Ascension "Abyssal Orb": the Abyss route's boss floors also carry out an Orb */
+  if(isBossFloor&&free.length>2&&(br.orb||(!P&&h.branch==='abyss'&&ascAbyssOrb(s)))){const c=take();items.push({x:c[0],y:c[1],kind:'orb'})}
   /* hybrid escalation: soft stat multipliers (in-cycle compound + NG capped
      low) carry the numbers; elite monsters with qualitative affixes carry the
      depth — combinatorics instead of a growing scalar */
