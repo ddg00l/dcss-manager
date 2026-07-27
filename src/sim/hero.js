@@ -7,6 +7,7 @@ import {GODS,godField} from '../data/gods.js';
 import {HERO_NAMES} from '../data/names.js';
 import {gHp,gAtk,gSpd,freeRollAvailable,rollCost,PITY_AT,rollCombo,pickComboOfTier,shardMul} from '../core/economy.js';
 import {nextStream} from '../core/streams.js';
+import {mpMaxOf} from '../data/spells.js';
 import {hashSeed} from '../core/rng.js';
 
 /* Ring slots a hero can actually use: a race with a fixed ring count (octopode,
@@ -61,6 +62,10 @@ export function newHero(race,cls,rarity,s){
   }
   /* shield classes start with a buckler (fighter/gladiator) */
   if(cd.sh)h.gear.shield={slot:'shield',base:'buckler',plus:0,ego:null,rar:0,id:'ss'+h.id};
+  /* base spells unlock by level from the caster's school; h.spells holds only the
+     capstone(s) learned from spellbooks found in the dungeon */
+  h.spells=[];
+  h.mp=mpMaxOf(h);
   return h;
 }
 /* hero derived stats.
@@ -115,10 +120,15 @@ function heroStatsCompute(h,s){
   /* DCSS: skill of the specific weapon school (+cross-training), unarmed uses Unarmed Combat */
   const school=wep?wep.school:'unarmed';
   /* DCSS: Summonings has no attack spells — only combat schools deal direct damage */
+  /* casters: spellpower = (spellcasting + best attack school)/2. Halved so it is
+     low early (fragile start), but it climbs with skill and multiplies the spell
+     tier, so damage ramps hard late — the caster arc: weak early, strong late */
   let wskill=style==='magic'?(h.skills.spellcasting+Math.max(h.skills.conjurations,h.skills.necromancy,h.skills.fire,h.skills.ice))/2:
     effSkill(h,school);
   let base=wep?wep.dmg+ (g.weapon.plus||0):(4+h.skills.unarmed*.6);
-  if(style==='magic')base=6+h.xl*.8+(wep&&wep.mag?3:0);
+  /* casters get a LOW flat base (fragile early) — their damage comes from spellpower
+     and the spell tier, so they start weaker than melee and overtake late */
+  if(style==='magic')base=2+(wep&&wep.mag?3:0);
   /* racial physical might does not boost spells (strength is not spellpower) */
   const physMul=style==='magic'?1:rd.dmg;
   let dmg=(base+wskill*.9+h.xl*.55)*physMul*rarMul*starMul*gAtk(s);
@@ -219,6 +229,7 @@ function heroStatsCompute(h,s){
   if(rd.und)vsUndead=1; /* DCSS: the undead cannot channel holy wrath */
   return {ac,ev,dmg,hpMax:Math.floor(hpMax),aspd,acc,leech,critc,regen,resAll,retal,dodge,chill,
     vsUndead,venom,rPois,lantern,waders,twoHanded,
+    caster:style==='magic',mpMax:mpMaxOf(h),
     style,school,rng:style!=='melee'?5:(wep&&wep.reach?2:1),spd:rd.spd*gSpd(s)};
 }
 

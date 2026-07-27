@@ -13,6 +13,7 @@ import {randomItem,itemName,itemInfo,scoreItem,WEP_BASES,UNRANDS,makeUnrand} fro
 import {POTIONS,SCROLLS,consName,randConsumable} from '../data/consumables.js';
 import {MUTS,randomMut} from '../data/mutations.js';
 import {PORTALS} from '../data/portals.js';
+import {bestDamageSpell,bestSummonSpell,learnBook,mpMaxOf,spellById} from '../data/spells.js';
 import {zigFee,zigStartDepth} from '../core/treasury.js';
 import {ascAutoGuild} from '../core/ascension.js';
 import {MONS,FAMILY_OF,familyDmgBonus} from '../data/monsters.js';
@@ -58,6 +59,7 @@ export function startRun(h,s){
   h.inv={curing:2+memEff(s,'pots')};
   h.known=[];h.status={};h.gold=0;h.keys=0;
   h.inPortal=null;h.banished=null;h.fundedZig=false;
+  h.mp=mpMaxOf(h); /* casters start with a full mana pool */
   if(memHas(s,'k_autoequip')||ascAutoGuild(s))equipBestFromArmory(h,s);
   const route=buildRoute(h.strategy);
   h.branch=route[0][0];h.floor=1;
@@ -271,6 +273,7 @@ export function simTick(h,s){
   const m=h.map;
   /* regen */
   if(h.turn%8===0)h.curHp=Math.min(h.maxHpCache,h.curHp+st.regen);
+  if(st.caster&&(h.mp||0)<st.mpMax)h.mp=Math.min(st.mpMax,(h.mp||0)+0.35+(h.skills.spellcasting||0)*.06); /* mana regen */
   /* status effects: tick down */
   for(const k of Object.keys(h.status)){
     if(h.status[k]>0)h.status[k]--;
@@ -382,13 +385,20 @@ export function simTick(h,s){
   }
   /* class mechanics: summoning and blink */
   const cd0=CLASSES[h.cls];
-  if(cd0.summon){
-    h.sumCd=(h.sumCd||0)-1;
-    m.allies=m.allies||[];
-    const cap=1+Math.floor((h.skills.summonings||0)/5);
-    if(h.sumCd<=0&&m.allies.length<cap){
-      h.sumCd=10;
-      summonAlly(h,s);
+  /* summoning is now a SPELL, not a timer: a caster who knows summon spells
+     (summoner via Summonings, necromancer via Death Channel) casts the strongest
+     it can afford when short of the ally cap, spending MP and scaling the ally by
+     the spell's strength (hd). */
+  m.allies=m.allies||[];
+  const sumCap=2+Math.floor((h.skills.summonings||0)/4);
+  if(st.caster&&m.allies.length<sumCap){
+    const ss=bestSummonSpell(h);
+    if(ss){
+      h.mp-=ss.mp;
+      const count=(ss.summon.count||1);
+      for(let i=0;i<count&&m.allies.length<sumCap;i++)summonAlly(h,s,undefined,undefined,ss.summon.hd);
+      m.fx={tile:ss.icon,x:m.px,y:m.py,t:4};
+      hlog(h,'✦ '+h.name+t(' casts ')+t(ss.n),'god');
     }
   }
   if(cd0.blink&&h.curHp/h.maxHpCache<.3&&(h.turn-(h.blinkT||0))>60){
@@ -490,7 +500,21 @@ export function heroAttack(h,st,mo,s){
       mo._ph=(mo._ph||0)+1;
       if(mo._ph%3===0){if(rnd(h)<.3)hlog(h,t(mo.n)+t(' phases through the strike'),'sys');return}
     }
-    let dmg=st.dmg*(0.75+rnd(h)*.5);
+    /* casters auto-cast the strongest affordable spell from their memorised set;
+       out of MP → a weak fallback dart. The spell scales the base magic damage and
+       carries its own side-effects (AOE splash, chill, drain-heal). */
+    let spellPow=1,spellAoe=false,spellSlow=false,spellHeal=0,spellName='';
+    if(st.caster){
+      const clustered=h.map.monsters.some(o=>o!==mo&&Math.abs(o.x-mo.x)<=1&&Math.abs(o.y-mo.y)<=1);
+      const lowHp=h.curHp/(h.maxHpCache||h.curHp)<.4;
+      const sp=(h.mp||0)>0?bestDamageSpell(h,clustered,lowHp):null;
+      if(sp){
+        h.mp-=sp.mp;
+        spellPow=sp.pow;spellAoe=(sp.type==='aoe');spellSlow=!!sp.slow;spellHeal=sp.heal||0;spellName=sp.n;
+        h.map.fx={tile:sp.fx,x:mo.x,y:mo.y,t:4}; /* transient effect tile for the canvas */
+      }else spellPow=.5; /* mana-tapped: a feeble dart */
+    }
+    let dmg=st.dmg*(st.caster?spellPow:1)*(0.75+rnd(h)*.5);
     let crit=rnd(h)<st.critc;
     if(crit)dmg*=2;
     if(hasAf(mo,'antimagic')&&st.style==='magic')dmg*=.5;
@@ -501,7 +525,7 @@ export function heroAttack(h,st,mo,s){
       markUse(h,'stealth',2);
       mo.awake=true;
     }
-    if(st.chill&&mo.hp>0)mo.chill=5; /* frost slows */
+    if((st.chill||spellSlow)&&mo.hp>0)mo.chill=5; /* frost/ice spells slow */
     if(st.vsUndead>1&&mo.special&&mo.special.und)dmg*=st.vsUndead; /* holy wrath burns the undead */
     if(st.venom&&mo.hp>0&&!(mo.special&&mo.special.und))
       mo.poisonA={dps:Math.max(1,st.dmg*.12),t:4}; /* venom blade (undead are immune to poison) */
@@ -513,12 +537,13 @@ export function heroAttack(h,st,mo,s){
     if(cd.rage&&h.curHp/h.maxHpCache<.5)dmg*=1.5;
     /* Okawaru-style heroism vs uniques and bosses (Pantheon favor amplifies it) */
     if(h.god&&(mo.boss||mo.uniq)){const hb=godField(s,h.god,'hero');if(hb)dmg*=hb;}
-    if(cd.aoe){
+    if(cd.aoe||spellAoe){
       for(const o of h.map.monsters)
         if(o!==mo&&Math.abs(o.x-mo.x)<=1&&Math.abs(o.y-mo.y)<=1)o.hp-=dmg*.5;
     }
     mo.hp-=dmg;
     if(st.leech>0)h.curHp=Math.min(h.maxHpCache,h.curHp+dmg*st.leech);
+    if(spellHeal>0)h.curHp=Math.min(h.maxHpCache,h.curHp+dmg*spellHeal); /* necromancy drain */
     if(mo.special&&mo.special.chill){}
     if(hasAf(mo,'thorns')&&st.style==='melee'){
       h.curHp-=dmg*.2;
@@ -529,8 +554,9 @@ export function heroAttack(h,st,mo,s){
       for(const o of h.map.monsters)o.awake=true;
       hlog(h,'\ud83d\udce2 '+t(mo.n)+t(' bellows — the whole floor answers!'),'dmg');
     }
+    if(spellName)hlog(h,'✦ '+h.name+t(' casts ')+t(spellName)+t(' at ')+t(mo.n)+' ('+Math.round(dmg)+')','sys');
     if(mo.hp<=0)killMon(h,mo,s);
-    else{
+    else if(!spellName){
       hlog(h,h.name+t(' hits ')+t(mo.n)+' ('+Math.round(dmg)+')','sys');
       if(hasAf(mo,'blinker')&&rnd(h)<.35){
         const m2=h.map,freeC=[];
@@ -649,13 +675,27 @@ function monAttack(h,st,mo,s){
     hlog(h,h.name+t(' dodges ')+t(mo.n),'sys');
     return;
   }
-  let dmg=mo.dmg*(0.7+rnd(h)*.6);
-  dmg=Math.max(1,dmg-st.ac*.7)*(1-st.resAll);
-  if(RACES[h.race].shrug)dmg*=.9; /* the dwarf shrugs off part of the damage */
-  const cd=CLASSES[h.cls];
-  h.curHp-=dmg;
-  hlog(h,t(mo.n)+t(' hits ')+h.name+' ('+Math.round(dmg)+')','dmg');
-  if(hasAf(mo,'vampiric'))mo.hp=Math.min(mo.maxHp,mo.hp+dmg*.8);
+  let dmg;
+  if(mo.cast){
+    /* a caster monster hurls a bolt from range (DCSS-style): it partly bypasses
+       armour and physical resist, heals the caster on a necromantic drain, and
+       shows its school's effect tile on the hero */
+    const FXT={conj:'fx_iron_shot',fire:'fx_bolt_of_fire',ice:'fx_bolt_of_cold',necro:'fx_bolt_draining'};
+    h.map.fx={tile:FXT[mo.cast]||'fx_magic_dart',x:h.map.px,y:h.map.py,t:4};
+    dmg=mo.dmg*(0.8+rnd(h)*.5);
+    dmg=Math.max(1,dmg-st.ac*.35)*(1-st.resAll*.5);
+    if(RACES[h.race].shrug)dmg*=.9;
+    h.curHp-=dmg;
+    if(mo.cast==='necro')mo.hp=Math.min(mo.maxHp,mo.hp+dmg*.4);
+    hlog(h,'✦ '+t(mo.n)+t(' casts a bolt at ')+h.name+' ('+Math.round(dmg)+')','dmg');
+  }else{
+    dmg=mo.dmg*(0.7+rnd(h)*.6);
+    dmg=Math.max(1,dmg-st.ac*.7)*(1-st.resAll);
+    if(RACES[h.race].shrug)dmg*=.9; /* the dwarf shrugs off part of the damage */
+    h.curHp-=dmg;
+    hlog(h,t(mo.n)+t(' hits ')+h.name+' ('+Math.round(dmg)+')','dmg');
+    if(hasAf(mo,'vampiric'))mo.hp=Math.min(mo.maxHp,mo.hp+dmg*.8);
+  }
   if(mo.special&&mo.special.pois&&!st.rPois&&rnd(h)<.35){
     h.poison={dps:Math.max(1,mo.dmg*.15),t:5};
     hlog(h,'☠ '+h.name+t(' is poisoned (')+t(mo.n)+')','dmg');
@@ -811,6 +851,11 @@ function pickup(h,it,s){
     enterPortal(h,s,it.ptype);
   }else if(it.kind==='abyss_exit'){
     returnFromAbyss(h,s);
+  }else if(it.kind==='book'){
+    /* a spellbook holds a school's capstone spell — a caster of that school learns it */
+    const learned=learnBook(h,it.book);
+    if(learned.length)hlog(h,'📖 '+h.name+t(' masters ')+learned.map(id=>t(spellById(id).n)).join(', ')+'!','loot');
+    else hlog(h,h.name+t(' finds a spellbook (no aptitude to read it)'),'sys');
   }else if(it.kind==='item'){
     /* the item was pre-rolled at floor generation — take exactly that one */
     acquireItem(h,s,it.it||randomItem(null,Math.min(2,Math.floor(brDepth(h)/8)),()=>rnd(h)));
@@ -1232,7 +1277,7 @@ const SUMMON_TIERS=[
   {min:18,kind:'komodo',n:'summoned monitor lizard'},
   {min:24,kind:'hydra', n:'summoned hydra'},
 ];
-export function summonAlly(h,s,forceKind,forceN){
+export function summonAlly(h,s,forceKind,forceN,hdMul){
   const m=h.map;
   m.allies=m.allies||[];
   let kind=forceKind,name=forceN;
@@ -1252,8 +1297,8 @@ export function summonAlly(h,s,forceKind,forceN){
     const a={kind,n:name,t:base.t,x:nx,y:ny,
       /* the army scales with the account like the summoner himself does —
          otherwise pets melt at deep NG while monsters keep growing */
-      hp:Math.floor(base.hp*(1+powSkl*.20+depth*.06)*gHp(s)),
-      dmg:Math.floor(base.dmg*(1+powSkl*.16+depth*.05)*gAtk(s)),
+      hp:Math.floor(base.hp*(1+powSkl*.30+depth*.10)*gHp(s)*(hdMul||1)),
+      dmg:Math.floor(base.dmg*(1+powSkl*.26+depth*.09)*gAtk(s)*(hdMul||1)),
       ttl:120,mv:0,spd:base.spd||1};
     a.maxHp=a.hp;
     m.allies.push(a);
