@@ -725,7 +725,7 @@ function killMon(h,mo,s){
    banked 3 runes every future hero strolled into Zot carrying none.
    Now: the hero always picks the rune up (key), the treasury credits it only the
    first time per cycle (currency). Pacing and economy stop fighting each other. */
-function giveRune(h,name,s){
+export function giveRune(h,name,s){
   s.cycRunes=s.cycRunes||[];
   const generic=name===t("a unique's rune");
   const dupe=!generic&&s.cycRunes.includes(name);
