@@ -12,11 +12,13 @@ import { renderHeroes } from './ui/heroes.js';
 import { renderForge } from './ui/forge.js';
 import { openEquip } from './ui/equip.js';
 import { renderFame } from './ui/upgrades.js';
+import { renderTreasury } from './ui/treasury.js';
 import { renderMemTree, centerMemTree } from './ui/memtree.js';
 import { renderChips, renderWatch, setWatch } from './ui/watch.js';
 import { openSheet } from './ui/sheet.js';
 import { showOfflineReport } from './ui/offline.js';
 import { maybeShowDeath } from './ui/death.js';
+import { maybeShowWin } from './ui/win.js';
 import { ftueTick, updateGates, maybeTour } from './ui/ftue.js';
 import { tabUnlocked, TAB_HINT } from './core/ftue.js';
 import { setLang, applyStatic, DEFAULT_LANG, t } from './i18n/index.js';
@@ -70,7 +72,7 @@ function updTop() {
   if (save.zot > 0 || save.fame.some(f => f.won)) { z.style.display = ''; z.textContent = save.zot + ' ⚛'; }
 }
 function renderAll() {
-  renderChips(); renderHeroes(); renderGacha(); renderForge(); renderMemTree(); renderFame(); updTop();
+  renderChips(); renderHeroes(); renderGacha(); renderForge(); renderMemTree(); renderFame(); renderTreasury(); updTop();
 }
 
 /* main loop.
@@ -91,6 +93,7 @@ function frame(ts) {
   const dt = Math.min(t - last, .25); last = t;
   simCatchUp();
   if (document.querySelector('#pDun.active')) renderWatch();
+  maybeShowWin();
   maybeShowDeath();
   ftueTick(switchPane);
   updTop();

@@ -136,11 +136,12 @@ export function itemTile(it){
 /* random item generator (forge + drops) */
 let itemSeq=1;
 
-export function randomItem(slotChoice,tier,rng){
+export function randomItem(slotChoice,tier,rng,luck=0){
   const slots=['weapon','armour','shield','ring','amulet'];
   const slot=slotChoice||slots[Math.floor(rng()*slots.length)];
   const roll=rng();
-  const rar=roll<.5?0:roll<.8?1:roll<.95?2:3;
+  /* luck (0..1) squeezes the common tiers and fattens the rare ones */
+  const rar=roll<.5-.35*luck?0:roll<.8-.25*luck?1:roll<.95-.12*luck?2:3;
   const t=Math.min(2,tier+(rar>=2?1:0));
   const it={slot,plus:0,ego:null,rar,rand:null,id:'i'+(itemSeq++)+'_'+Date.now()%1e5};
   if(slot==='weapon'){
@@ -162,7 +163,7 @@ export function randomItem(slotChoice,tier,rng){
   }else{
     it.base=AMU_KINDS[Math.floor(rng()*AMU_KINDS.length)].k;
   }
-  if(rar===3&&rng()<.6)it.rand=RANDART_NAMES[Math.floor(rng()*RANDART_NAMES.length)];
+  if(rar===3&&rng()<.6+.35*luck)it.rand=RANDART_NAMES[Math.floor(rng()*RANDART_NAMES.length)];
   return it;
 }
 

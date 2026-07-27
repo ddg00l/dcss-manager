@@ -39,6 +39,10 @@ export const TOURS = {
     { sel: '#fameSummary', mode: 'next', text: 'Victors grant eternal bonuses to the whole guild. Zot essence ⚛ buys elite upgrades.' },
     { sel: '#fameList', mode: 'next', text: 'Here rest the fallen. I was on this list once too. Their shards empower those to come.' },
   ],
+  pTreasury: [
+    { sel: '#treasuryBody .card', mode: 'next', text: 'Late cycles drown in gold that would only burn at prestige. <b>Gozag\'s Coffers</b> exchange that surplus for eternal Memory 🕯.' },
+    { sel: '#treasuryBody', mode: 'next', text: 'Below: <b>Guild Provisions</b> — temporary boosts for this cycle only. And you can fund a hero into a <b>Ziggurat</b> from the Heroes tab for a deep farm run.' },
+  ],
   prestige: [
     { sel: '#prestigeBox .card', mode: 'next', text: 'The Orb is carried out — the cycle has peaked. <b>Prestige</b> burns heroes, armory and the small nodes of the tree; keystones, fame and the collection remain. In return — Legends ⚜ and a new depth.' },
     { sel: '#prestigeBox .upgRow', mode: 'next', text: 'Legends ⚜ buy eternal upgrades that survive every cycle. The richer the cycle lived, the more Legends it pays out.' },

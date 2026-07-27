@@ -13,6 +13,7 @@ import {randomItem,itemName,itemInfo,scoreItem,WEP_BASES,UNRANDS,makeUnrand} fro
 import {POTIONS,SCROLLS,consName,randConsumable} from '../data/consumables.js';
 import {MUTS,randomMut} from '../data/mutations.js';
 import {PORTALS} from '../data/portals.js';
+import {zigFee,zigStartDepth} from '../core/treasury.js';
 import {MONS,FAMILY_OF,familyDmgBonus} from '../data/monsters.js';
 import {recordVictory,recordRunnerWin,checkContract,recordNemesisKill,avengeNemesis} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
@@ -55,7 +56,7 @@ export function startRun(h,s){
   h.curHp=null;h.uniqSeen=[];h.runes=[];
   h.inv={curing:2+memEff(s,'pots')};
   h.known=[];h.status={};h.gold=0;h.keys=0;
-  h.inPortal=null;h.banished=null;
+  h.inPortal=null;h.banished=null;h.fundedZig=false;
   if(memHas(s,'k_autoequip'))equipBestFromArmory(h,s);
   const route=buildRoute(h.strategy);
   h.branch=route[0][0];h.floor=1;
@@ -64,6 +65,26 @@ export function startRun(h,s){
   h.curHp=st.hpMax;h.maxHpCache=st.hpMax;
   hlog(h,h.name+t(' descends into the dungeon. May the memory of Zot keep them.'),'sys');
 }
+/** pay the escalating fee to send a camp hero straight into a deep Ziggurat farm.
+    Returns true on success. Consumes an expedition slot (the zig hero is 'run'). */
+export function fundZiggurat(h,s){
+  if(h.state!=='camp')return false;
+  if(s.heroes.filter(x=>x.state==='run').length>=maxSlots(s))return false;
+  const fee=zigFee(s);
+  if(s.gold<fee)return false;
+  s.gold-=fee;
+  s.zigFunded=(s.zigFunded||0)+1;
+  startRun(h,s);
+  h.fundedZig=true; /* a glory run: it pays Memory/runes/levels, never treasury gold */
+  /* drop them into a ziggurat that starts deep enough to stay lethal */
+  h.portalRet={branch:'dungeon',floor:1,seg:0};
+  h.portalDepth=zigStartDepth(s);
+  h.inPortal={type:'zig',floor:1};
+  genFloor(h,s);
+  const st=heroStats(h,s);h.curHp=st.hpMax;h.maxHpCache=st.hpMax;
+  hlog(h,'🏛 '+h.name+t(' is funded into a Ziggurat! (')+fmt(fee)+' 🜚)','rune');
+  return true;
+}
 function nextFloor(h,s){
   if(h.inPortal){
     const P=PORTALS[h.inPortal.type];
@@ -71,8 +92,8 @@ function nextFloor(h,s){
       s.stat.zigBest=Math.max(s.stat.zigBest||0,h.inPortal.floor);
       gainMem(s,20+h.inPortal.floor*4);
       const zg=Math.floor(100*Math.pow(1.3,h.inPortal.floor));
-      h.gold+=zg;
-      hlog(h,t('Ziggurat:')+h.inPortal.floor+t(' cleared (+')+fmt(zg)+' 🜚)','rune');
+      if(!h.fundedZig){h.gold+=zg;hlog(h,t('Ziggurat:')+h.inPortal.floor+t(' cleared (+')+fmt(zg)+' 🜚)','rune');}
+      else hlog(h,t('Ziggurat:')+h.inPortal.floor+t(' conquered'),'rune');
     }
     if(h.inPortal.floor>=P.floors){exitPortal(h,s);return}
     h.inPortal.floor++;
@@ -211,11 +232,23 @@ export function heroWin(h,s){
   if(cReward)hlog(h,'📜 '+h.name+t(' fulfils the guild contract (+')+cReward+' ⚜)','rune');
   simHooks.onWin&&simHooks.onWin(h);
   hlog(h,'🏆 '+h.name+t(' TAKES THE ORB OF ZOT! A legend forever.'),'rune');
+  const walletBack=h.gold;
   if(h.gold>0)s.gold+=h.gold;
   let ess=firstWin?Math.max(6,(Math.floor(h.xl/3)+h.runes.length*2)*2):0;
   if(firstWin&&memHas(s,'k_zotplus'))ess=Math.floor(ess*1.5);
   s.zot+=ess;
-  gainMem(s,300);
+  const memWin=gainMem(s,300);
+  /* triumph screen (mirror of the morgue): the victor's tale */
+  s.pendingWins=s.pendingWins||[];
+  s.pendingWins.push({
+    name:h.name,race:h.race,cls:h.cls,rarity:h.rarity,xl:h.xl,
+    turns:h.turn,kills:h.kills,gold:h.rep.gold,wallet:walletBack,
+    runes:[...h.runes],muts:[...h.muts],god:h.god,
+    essence:ess,firstWin,mem:memWin,
+    notable:h.rep.notable.slice(-10),
+    log:h.log.slice(-14),
+  });
+  if(s.pendingWins.length>6)s.pendingWins.shift();
   s.fame.unshift({name:h.name,race:h.race,cls:h.cls,rarity:h.rarity,xl:h.xl,
     depth:t('Zot:5 — THE ORB'),by:null,won:true,runes:h.runes.length});
   if(s.fame.length>20)s.fame.length=20;
@@ -543,7 +576,7 @@ function killMon(h,mo,s){
   const eliteLoot=mo.eliteAf?(1+.5*mo.eliteAf.length)*(memHas(s,'k_elite')?2:1):1;
   const goldMul=(RACES[h.race].gold||1)*gGold(s)*todayAffix().gold*eliteLoot;
   const g=Math.floor((2+rnd(h)*4)*Math.pow(1.22,depth)*goldMul);
-  s.gold+=Math.ceil(g*.5);h.gold+=Math.floor(g*.5);h.rep.gold+=g;
+  if(h.fundedZig){h.rep.gold+=g;}else{s.gold+=Math.ceil(g*.5);h.gold+=Math.floor(g*.5);h.rep.gold+=g;}
   gainXp(h,mo.xp,s);
   if(rnd(h)<.06*gDrop(s))s.scrap++;
   if(h.god){h.piety=Math.min(200,h.piety+1);
@@ -763,7 +796,7 @@ function exploreGoal(h,df){
 function pickup(h,it,s){
   if(it.kind==='gold'){
     const g=Math.floor(it.amt*(RACES[h.race].gold||1)*gGold(s));
-    s.gold+=Math.ceil(g*.5);h.gold+=Math.floor(g*.5);h.rep.gold+=g;
+    if(h.fundedZig){h.rep.gold+=g;}else{s.gold+=Math.ceil(g*.5);h.gold+=Math.floor(g*.5);h.rep.gold+=g;}
     rnd(h);hlog(h,h.name+t(' picks up ')+g+t(' gold'),'loot'); /* keep the draw; log every pickup */
   }else if(it.kind==='cons'){
     h.inv[it.c.type]=(h.inv[it.c.type]||0)+1;

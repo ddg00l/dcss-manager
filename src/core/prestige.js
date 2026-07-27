@@ -69,7 +69,7 @@ export function legendsReward(s) {
    asymptote over dozens of prestiges instead of the runaway a capped bar allowed. */
 export const prestigeReq = s => s.prestReq || 1;
 /** requirement for the next cycle, from lifetime Orbs — snapshotted at prestige time */
-export const nextPrestigeReq = s => 1 + Math.floor(Math.sqrt(s.stat.wins || 0));
+export const nextPrestigeReq = s => 1 + Math.floor(1.1 * Math.sqrt(s.stat.wins || 0));
 export const canPrestige = s => cycleProgress(s).wins >= prestigeReq(s);
 
 /** the reset itself; returns the Legends earned or 0 when not allowed */
@@ -93,7 +93,7 @@ export function doPrestige(s) {
   s.gold = 200 + pupg(s, 'p_gold') * 750;
   s.scrap = 0; s.runes = 0; s.rolls = 0; s.forges = 0; s.pity = 0;
   s.mem = pupg(s, 'p_mem') * 600;
-  s.pendingDeaths = [];
+  s.pendingDeaths = []; s.pendingWins = [];
   s.progress = { D: 0, Lair: 0, Orc: 0, Elf: 0, Vaults: 0, Depths: 0, Zot: 0, Abyss: 0 };
 
   /* the tree burns down to its engraved keystones */
@@ -103,6 +103,7 @@ export function doPrestige(s) {
   s.tree = tree;
   s.rev = (s.rev || 0) + 1; /* tree changed: invalidate stat caches */
 
+  s.cofferBuys = 0; s.zigFunded = 0; s.provisions = {}; /* gold sinks reset each cycle */
   s.cycRunes = []; /* named runes become collectable again */
   s.cycRunnerBest = 0; s.cycContractDone = 0; /* runner arc and contract reset */
   s.prestReq = nextReq; /* the next cycle's fixed target */

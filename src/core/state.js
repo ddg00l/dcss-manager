@@ -30,13 +30,14 @@ export function makeState() {
     upg: {}, zupg: {}, fame: [],
     mem: 0, tree: { root: 1 },
     stat: { kills: 0, deaths: 0, uniqKills: 0, forged: 0, dismantled: 0, memEarned: 0, wins: 0, bestXL: {} },
-    runesTotal: 0, pendingDeaths: [], unrandsOwned: [],
+    runesTotal: 0, pendingDeaths: [], pendingWins: [], unrandsOwned: [],
     ng: 0, legends: 0, prestiges: 0, pupg: {}, balV: 4,
     prestReq: 1, /* Orbs the current cycle needs to prestige; snapshotted at cycle start, never rises mid-cycle */
     vic: { races: {}, classes: {} }, nemeses: {}, cycRunnerBest: 0, cycContractDone: 0,
     pantheon: {}, /* eternal: godKey → lifetime Orbs won while pledged (Pantheon favor) */
     bestiary: {}, /* eternal: monster kind → lifetime kills (Bestiary codex) */
     cycBase: { wins: 0, runes: 0, uniq: 0, mem: 0 }, cycRunes: [],
+    cofferBuys: 0, zigFunded: 0, provisions: {}, /* per-cycle gold sinks; reset at prestige */
     ftue: null,
     progress: { D: 0, Lair: 0, Orc: 0, Elf: 0, Vaults: 0, Depths: 0, Zot: 0, Abyss: 0 },
     last: Date.now(), muted: false, lang: 'en',
@@ -65,6 +66,7 @@ export function loadState(storage) {
         nemeses: { ...(s.nemeses || {}) },
         pantheon: { ...(s.pantheon || {}) }, bestiary: { ...(s.bestiary || {}) },
         cycBase: { ...state.cycBase, ...(s.cycBase || {}) },
+        provisions: { ...(s.provisions || {}) },
       });
       /* FTUE: veterans with progress never see the tutorial */
       if (!state.ftue) {

@@ -12,7 +12,8 @@ import {itemName,itemTile,randomItem,itemInfo} from '../data/items.js';
 import {maxSlots} from '../core/economy.js';
 import {memHas} from '../data/memtree.js';
 import {newHero,heroStats} from '../sim/hero.js';
-import {startRun,tryAutoEquip,recallHero} from '../sim/tick.js';
+import {startRun,tryAutoEquip,recallHero,fundZiggurat} from '../sim/tick.js';
+import {zigFee} from '../core/treasury.js';
 import {stackHTML} from './portrait.js';
 import { t } from '../i18n/index.js';
 /* ===================== heroes pane ===================== */
@@ -80,6 +81,18 @@ export function renderHeroes(){
       runB.dataset.ftue='dispatch';
       runB.onclick=()=>{startRun(h,save);sfx.ui();persist();window.__renderAll()};
       row.appendChild(runB);
+      /* Ziggurat funding: a paid, escalating deep-farm run — a gold sink. Shown once
+         the guild has its first Orb (same gate as the Treasury tab). */
+      if((save.stat.wins||0)>0){
+        const fee=zigFee(save);
+        const zB=document.createElement('button');
+        zB.className='purple';
+        zB.innerHTML='🏛 '+t('Ziggurat')+' · '+fmt(fee)+' 🜚';
+        zB.disabled=full||save.gold<fee;
+        zB.title=full?t('An expedition slot must be free'):t('Send this hero on a deep Ziggurat farm (escalating fee)');
+        zB.onclick=()=>{if(fundZiggurat(h,save)){sfx.ui();persist();window.__renderAll()}};
+        row.appendChild(zB);
+      }
     }else{
       const wB=document.createElement('button');
       wB.textContent=t('Watch');
