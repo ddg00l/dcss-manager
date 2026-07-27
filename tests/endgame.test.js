@@ -95,7 +95,7 @@ describe('eternal trackers survive migration and prestige', () => {
     const storage = { data: { 'dcssmanager.save.v2': JSON.stringify(s) },
       getItem(k) { return this.data[k]; }, setItem(k, v) { this.data[k] = v; } };
     const loaded = loadState(storage);
-    expect(loaded.balV).toBe(4);
+    expect(loaded.balV).toBe(5);
     expect(loaded.pantheon).toEqual({});
     expect(loaded.bestiary).toEqual({});
   });

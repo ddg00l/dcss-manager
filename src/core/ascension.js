@@ -4,7 +4,7 @@
    for Ascendancy (✦), spent on a tree of GAME-CHANGING upgrades: rule-breakers,
    meta-multipliers, new content and automation. Survives an Ascension: the eternal
    Collection (combo stars, unrands, Hall/Great, Pantheon, Bestiary) and Ascension
-   itself. Leaf-ish module: imports only NODES for the full tree wipe. */
+   itself. Leaf module: no imports, so any layer can read the gate cycle-free. */
 
 export const ASCEND_GATE = 10; /* prestiges in the current ascension-cycle before Ascension unlocks */
 export const ASC = '✦';
@@ -17,7 +17,13 @@ export const ascensionUnlocked = s => (s.prestiges || 0) >= ASCEND_GATE;
    the first ascension is only a taste (the tree can't be exhausted in one go) and
    later ascensions — richer, thanks to Ascension power — keep paying out instead
    of decelerating like a lifetime-highwater would. TUNABLE (calibrated via sim). */
-export const ASC_K = 0.7;
+/* Measured before this change: ascending cost 41% of long-run progress (105.7 vs
+   179.7 Orbs over 30 days on identical seeds) — the layer was strictly dominated
+   by never touching it. The wipe removes roughly x20 of accumulated power (tree,
+   Zot upgrades, Legends upgrades) and used to hand back ~x1.3. That wipe is
+   deliberate and stays total — keystones burn here, unlike at prestige — so the
+   Ascendancy payout has to carry the whole trade. TUNABLE — validated by sim. */
+export const ASC_K = 2.2;
 export const ascGain = s => Math.floor(ASC_K * Math.sqrt(Math.max(0, (s.stat?.wins || 0) - (s.ascBase || 0))));
 export const canAscend = s => ascensionUnlocked(s) && ascGain(s) > 0;
 
@@ -101,7 +107,7 @@ export function doAscension(s) {
   s.heroes = [];
   s.armory = s.armory.filter(it => it.unrandId); /* only artefacts survive */
   s.gold = 200; s.scrap = 0; s.runes = 0; s.rolls = 0; s.forges = 0; s.pity = 0;
-  s.mem = 0; s.tree = { root: 1 }; /* the whole Memory tree burns down */
+  s.mem = 0; s.tree = { root: 1 }; /* the whole Memory tree burns down, keystones included */
   s.pendingDeaths = []; s.pendingWins = [];
   s.progress = { D: 0, Lair: 0, Orc: 0, Elf: 0, Vaults: 0, Depths: 0, Zot: 0, Abyss: 0 };
   s.cofferBuys = 0; s.zigFunded = 0; s.provisions = {};

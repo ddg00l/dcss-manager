@@ -25,11 +25,11 @@ export const fameMul = s => {
 };
 export const ghostMul = s => memHas(s, 'k_ghosts') ? 1 + Math.min(0.30, s.stat.deaths * 0.005) : 1;
 export const runeAura = s => memHas(s, 'k_runeaura') ? 1 + 0.02 * s.runesTotal : 1;
-import { ngLevel, pupg } from './prestige.js';
+import { ngLevel, pupg, ngPlusRewardMul } from './prestige.js';
 import { greatMul } from './chronicle.js';
 import { provMul } from './treasury.js';
 import { ascDmgMul, ascHpMul, ascGoldMul, ascSlots } from './ascension.js';
-export const ngMul = s => 1 + 1.5 * Math.min(10, ngLevel(s)); /* gold reward caps with the rest of the scalars */
+export const ngMul = s => (1 + 1.5 * Math.min(10, ngLevel(s))) * ngPlusRewardMul(s); /* gold reward caps with the rest of the scalars; the New Depth keystone multiplies on top */
 
 export const gAtk  = s => (1 + memEff(s, 'atk')) * (1 + 0.1 * zupg(s, 'zatk')) * fameMul(s) * ghostMul(s) * runeAura(s) * (1 + .08 * pupg(s, 'p_dmg')) * (1 + .01 * pupg(s, 'p_legacy')) * greatMul(s) * provMul(s, 'dmg') * ascDmgMul(s);
 export const gHp   = s => (1 + memEff(s, 'hp'))  * (1 + 0.1 * zupg(s, 'zhp'))  * fameMul(s) * (1 + .08 * pupg(s, 'p_hp')) * (1 + .01 * pupg(s, 'p_legacy')) * greatMul(s) * provMul(s, 'hp') * ascHpMul(s);

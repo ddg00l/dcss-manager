@@ -1,5 +1,5 @@
 import {mulberry32} from '../core/rng.js';
-import {ngMonMul,cycleProgress,ngLevel} from '../core/prestige.js';
+import {ngMonMul,inCycleMul,ngLevel} from '../core/prestige.js';
 import {nemesisLevel} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
 import {FLOOR_KEYS,floorAffixChance,eliteChance,rollEliteAffixes,affixLevel} from '../data/eliteAffixes.js';
@@ -146,7 +146,7 @@ export function genFloor(h,s){
   /* hybrid escalation: soft stat multipliers (in-cycle compound + NG capped
      low) carry the numbers; elite monsters with qualitative affixes carry the
      depth — combinatorics instead of a growing scalar */
-  const ngPlus=ngMonMul(s)*Math.pow(1.25,Math.max(0,cycleProgress(s).wins));
+  const ngPlus=ngMonMul(s)*inCycleMul(s);
   const ech=eliteChance(afl)*(memHas(s,'k_elite')?1.5:1);
   for(const mo of monsters){
     mo.hp=Math.max(1,Math.floor(mo.hp*ngPlus*afx.monHp));mo.maxHp=mo.hp;

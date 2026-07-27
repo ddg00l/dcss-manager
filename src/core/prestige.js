@@ -6,14 +6,31 @@
 import { NODES, treeLvl } from '../data/memtree.js';
 import { ascKeepGear, ascKeepTree } from './ascension.js';
 
-/** effective NG+ level: prestiges + the legacy "New Depth" keystone */
-export const ngLevel = s => (s.ng || 0) + (treeLvl(s, 'k_ngplus') > 0 ? 1 : 0);
+/** effective NG+ level: prestiges only. The "New Depth" keystone used to add +1
+    here, which made it a 2000-Memory no-op for any account past ng 9 — both the
+    monster and the gold scalars are capped there, so the advertised "monsters x2
+    stronger, all rewards x2.5, forever" bought literally nothing. It is now its
+    own uncapped multiplier (ngPlusMonMul/ngPlusRewardMul) that does what it says. */
+export const ngLevel = s => (s.ng || 0);
+export const hasNgPlus = s => treeLvl(s, 'k_ngplus') > 0;
+export const ngPlusMonMul = s => hasNgPlus(s) ? 2 : 1;
+export const ngPlusRewardMul = s => hasNgPlus(s) ? 2.5 : 1;
 /* NG+ is only a light seasoning on monsters (capped at +150%): the real
    difficulty valve is the in-cycle hardening that compounds with every Orb
    carried out, measuring the build's actual success instead of account age.
    The first win of a fresh cycle is always within reach — no stalls, and a
    runaway build stops itself: each win makes the next one x1.3 harder */
-export const ngMonMul = s => 1 + Math.min(1, .1 * ngLevel(s)); /* hybrid: numbers cap at x2, affixes carry the depth */
+export const ngMonMul = s => (1 + Math.min(1, .1 * ngLevel(s))) * ngPlusMonMul(s); /* hybrid: numbers cap at x2, affixes carry the depth */
+
+/* In-cycle hardening: every Orb carried out this cycle makes the next one harder.
+   This MUST stay sub-exponential. It used to be 1.25^wins, which made the cost of
+   clearing a prestige bar of B Orbs grow as 1.25^B while the bar itself only grew
+   as sqrt(lifetime wins) — an exponential priced against a square root. Every
+   account therefore hit a wall it could never pass (measured: all 14 bot tactics
+   flatlined permanently, most inside two weeks). Linear growth keeps the "greed
+   costs you" pressure without ever making a reachable bar unreachable. TUNABLE. */
+export const IN_CYCLE_STEP = 0.15;
+export const inCycleMul = s => 1 + IN_CYCLE_STEP * Math.max(0, cycleProgress(s).wins);
 
 export const PUPGRADES = [
   { k: 'p_dmg', n: 'Legendary might', d: '+8% damage for all heroes per lvl', max: 20, base: 3, g: 1.5 },
@@ -91,6 +108,7 @@ export function doPrestige(s) {
   s.legends = (s.legends || 0) + reward;
   s.ng = (s.ng || 0) + 1;
   s.prestiges = (s.prestiges || 0) + 1;
+  s.prestigesTotal = (s.prestigesTotal || 0) + 1; /* lifetime; Ascension never resets it */
 
   /* unrand items survive — collect them from the armory and from worn gear.
      Ascension "Engraved Armoury" lets ALL gear survive, not just artefacts. */
@@ -109,7 +127,9 @@ export function doPrestige(s) {
   s.progress = { D: 0, Lair: 0, Orc: 0, Elf: 0, Vaults: 0, Depths: 0, Zot: 0, Abyss: 0 };
 
   /* the tree burns down to its engraved keystones — unless Ascension "Living
-     Memory" preserves the whole tree */
+     Memory" preserves the whole tree. Keystones are the one thing prestige does
+     NOT take: they are the account's engraved mechanics. Ascension, by contrast,
+     burns them too — that is the price of the meta-layer. */
   if (!ascKeepTree(s)) {
     const tree = { root: 1 };
     for (const n of NODES)

@@ -65,8 +65,15 @@ describe('prestige', () => {
     s.ng = 2;
     expect(ngLevel(s)).toBe(2);
     expect(ngMul(s)).toBe(4);
-    s.tree.k_ngplus = 1; // legacy keystone stacks as one more level
-    expect(ngLevel(s)).toBe(3);
+    /* "New Depth" is NOT an extra NG level any more. As a level it was a 2000-Memory
+       no-op past ng 9, where both the monster and the gold scalars are already
+       capped — it now multiplies on top of the caps and does what it advertises. */
+    s.tree.k_ngplus = 1;
+    expect(ngLevel(s)).toBe(2);
+    expect(ngMul(s)).toBe(4 * 2.5);
+    s.ng = 30; // deep ladder: the capped scalar stops, the keystone still pays
+    const capped = makeState(); capped.ng = 30;
+    expect(ngMul(s)).toBeCloseTo(ngMul(capped) * 2.5, 5);
   });
   it('the NG reward multiplier caps at +500% (anti-runaway)', async () => {
     const { legendsReward } = await import('../src/core/prestige.js');
@@ -117,7 +124,18 @@ describe('balance fixes from the 1000-session study', () => {
       genFloor(h, s);
       return h.map.monsters.reduce((a, m) => a + m.maxHp, 0) / h.map.monsters.length;
     };
-    expect(hpAt(3)).toBeGreaterThan(hpAt(0) * 1.5);
+    /* Hardening is LINEAR in the cycle's Orbs (1 + IN_CYCLE_STEP*wins), not
+       exponential. The old 1.25^wins priced a prestige bar of B Orbs at 1.25^B
+       while the bar itself grew only as sqrt(lifetime wins) — an exponential
+       against a square root, so every account eventually hit a bar it could
+       never clear (all 14 sim tactics flatlined, most within two weeks).
+       Greed must still cost, so keep it strictly monotonic. */
+    const { IN_CYCLE_STEP } = await import('../src/core/prestige.js');
+    expect(hpAt(3)).toBeGreaterThan(hpAt(0));
+    expect(hpAt(8)).toBeGreaterThan(hpAt(3));
+    expect(hpAt(8) / hpAt(0)).toBeCloseTo((1 + IN_CYCLE_STEP * 8) / 1, 1);
+    /* and crucially: it must NOT be exponential — 20 Orbs stays affordable */
+    expect(hpAt(20) / hpAt(0)).toBeLessThan(5);
   });
   it('a named rune is collected once per cycle; prestige resets the ledger', async () => {
     const { startRun, simTick } = await import('../src/sim/tick.js');
@@ -263,7 +281,7 @@ describe('graceful migration of rune-inflation-era saves (balV 2)', () => {
     expect(s.gold).toBe(1000 + 260 * 800);             // excess sold for gold
     const { canPrestige } = await import('../src/core/prestige.js');
     expect(canPrestige(s)).toBe(false);                // needs a NEW victory
-    expect(s.balV).toBe(4);
+    expect(s.balV).toBe(5);
   });
   it('bought elite levels keep their paid-for power after the effect nerf', async () => {
     const { gAtk, zupgCap, ZUPGRADES } = await import('../src/core/economy.js');
@@ -300,9 +318,9 @@ describe('graceful migration of rune-inflation-era saves (balV 2)', () => {
     expect(s.legends).toBeLessThan(80);
     expect(s.mem).toBe(5000); // memory balance untouched
   });
-  it('fresh accounts are born on balV 4 with no grant', () => {
+  it('fresh accounts are born on the current balV with no grant', () => {
     const s = makeState();
-    expect(s.balV).toBe(4);
+    expect(s.balV).toBe(5);
     expect(s.legends).toBe(0);
   });
 });

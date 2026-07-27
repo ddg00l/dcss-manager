@@ -2,6 +2,9 @@
    Small nodes are multi-level increments; keystones are radical mechanics,
    gated by account achievements. No respec. */
 import { ascGoldMul, ascDeathMemMul } from '../core/ascension.js';
+/* NOT imported from prestige.js: that module imports this one, and the cycle would
+   put the arrow-function exports in TDZ. The keystone level is readable locally. */
+const ngPlusRewardLocal = s => (memHas(s, 'k_ngplus') ? 2.5 : 1);
 
 export const REGIONS = {
   combat:  { a: 0,   col: '#d96055', n: 'Fighting' },
@@ -269,7 +272,7 @@ export function buyNode(s, n) {
 }
 /** Memory gain with tree multipliers applied */
 export function gainMem(s, amount, isDeath) {
-  let v = amount * (1 + memEff(s, 'mem')) * (1 + .15 * ((s.pupg && s.pupg.p_memmul) || 0)) * ascGoldMul(s);
+  let v = amount * (1 + memEff(s, 'mem')) * (1 + .15 * ((s.pupg && s.pupg.p_memmul) || 0)) * ascGoldMul(s) * ngPlusRewardLocal(s);
   if (isDeath && memHas(s, 'k_deathmem')) v *= 2;
   if (isDeath) v *= ascDeathMemMul(s); /* Ascension: Martyrdom */
   v = Math.ceil(v);
