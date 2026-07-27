@@ -30,6 +30,7 @@ import { openConflict } from './ui/conflict.js';
 import { setCloudMsg } from './ui/settings.js';
 import { toast } from './ui/toast.js';
 import { initInstallHint } from './ui/install.js';
+import './ui/cheats.js'; /* registers window.__cheats.show() */
 
 /* cross-module UI callbacks (avoids circular imports) */
 window.__renderAll = renderAll;

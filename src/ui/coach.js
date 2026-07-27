@@ -26,16 +26,29 @@ function place(target, pad) {
   Object.assign(right.style, { left: (x + w) + 'px', top: y + 'px', width: 'calc(100vw - ' + (x + w) + 'px)', height: h + 'px' });
   Object.assign(bottom.style, { left: 0, top: (y + h) + 'px', width: '100vw', height: 'calc(100vh - ' + (y + h) + 'px)' });
   Object.assign(ring.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' });
-  /* narrator bubble: sit on whichever side of the cutout has more room, and cap
-     its height to that room so it never spills off-screen (scrolls inside if long) */
+  /* narrator bubble: sit on whichever side of the cutout has more room and cap
+     its height to that room. When the cutout is so tall that neither side fits a
+     readable bubble (e.g. a whole-panel highlight on a phone), center it on the
+     screen instead so it is never clipped top or bottom. */
   const bub = els[5];
-  const gap = 12, margin = 8;
+  const gap = 12, margin = 8, MIN = 170;
   const roomBelow = window.innerHeight - (y + h) - gap - margin;
   const roomAbove = y - gap - margin;
-  if (roomBelow >= roomAbove) {
-    Object.assign(bub.style, { top: (y + h + gap) + 'px', bottom: '', maxHeight: Math.max(120, roomBelow) + 'px' });
+  if (Math.max(roomBelow, roomAbove) < MIN) {
+    Object.assign(bub.style, {
+      top: '50%', bottom: '', transform: 'translate(-50%, -50%)',
+      maxHeight: (window.innerHeight - 2 * margin) + 'px',
+    });
+  } else if (roomBelow >= roomAbove) {
+    Object.assign(bub.style, {
+      top: (y + h + gap) + 'px', bottom: '', transform: 'translateX(-50%)',
+      maxHeight: Math.max(120, roomBelow) + 'px',
+    });
   } else {
-    Object.assign(bub.style, { top: '', bottom: 'calc(100vh - ' + (y - gap) + 'px)', maxHeight: Math.max(120, roomAbove) + 'px' });
+    Object.assign(bub.style, {
+      top: '', bottom: 'calc(100vh - ' + (y - gap) + 'px)', transform: 'translateX(-50%)',
+      maxHeight: Math.max(120, roomAbove) + 'px',
+    });
   }
 }
 
