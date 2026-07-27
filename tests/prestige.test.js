@@ -323,13 +323,13 @@ describe('prestige requirement is a fixed snapshot with a forward-only ratchet',
   it('the NEXT bar tracks lifetime Orbs (sub-linear) — cadence-independent', async () => {
     const { nextPrestigeReq } = await import('../src/core/prestige.js');
     const s = makeState();
-    expect(nextPrestigeReq(s)).toBe(1);        // 0 lifetime Orbs
-    s.stat.wins = 3;                           // 1 + floor(1.1*sqrt(3)) = 2
-    expect(nextPrestigeReq(s)).toBe(2);
-    s.stat.wins = 100;                         // 1 + floor(1.1*sqrt(100)) = 12
-    expect(nextPrestigeReq(s)).toBe(12);
+    expect(nextPrestigeReq(s)).toBe(3);        // 0 lifetime Orbs → the floor
+    s.stat.wins = 3;                           // 3 + floor(1.1*sqrt(3)) = 4
+    expect(nextPrestigeReq(s)).toBe(4);
+    s.stat.wins = 100;                         // 3 + floor(1.1*sqrt(100)) = 14
+    expect(nextPrestigeReq(s)).toBe(14);
     s.stat.wins = 2000;                        // a runaway's total → an unreachable bar
-    expect(nextPrestigeReq(s)).toBe(50);       // 1 + floor(1.1*sqrt(2000)); the in-cycle 1.25^bar walls it
+    expect(nextPrestigeReq(s)).toBe(52);       // 3 + floor(1.1*sqrt(2000)); the in-cycle 1.25^bar walls it
   });
   it('doPrestige locks the next bar in from lifetime Orbs', async () => {
     const { doPrestige } = await import('../src/core/prestige.js');
@@ -338,7 +338,7 @@ describe('prestige requirement is a fixed snapshot with a forward-only ratchet',
     s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
     s.stat.wins = 5;                           // 5 lifetime Orbs (this is the first cycle)
     expect(doPrestige(s)).toBeGreaterThan(0);
-    expect(s.prestReq).toBe(3);                // 1 + floor(sqrt(5)) = 3, snapshotted for next cycle
+    expect(s.prestReq).toBe(5);                // 3 + floor(1.1*sqrt(5)) = 5, snapshotted for next cycle
   });
 });
 

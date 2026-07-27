@@ -74,7 +74,12 @@ export const prestigeReq = s => s.prestReq || 1;
    power layer, so the requirement resets with it — otherwise a fresh, weak
    post-ascension account faces a lifetime-high bar and the loop dead-ends.
    Accounts that never ascend (ascBase 0) are unaffected. */
-export const nextPrestigeReq = s => 1 + Math.floor(1.1 * Math.sqrt(Math.max(0, (s.stat.wins || 0) - (s.ascBase || 0))));
+export const PREST_FLOOR = 3;  /* Orbs the very first prestige of an ascension-cycle needs */
+export const PREST_ASC_STEP = 4; /* +Orbs per Ascension: a super-linear cost that keeps the
+   loop's rate bounded — the stronger the account (more ascensions), the more each prestige
+   costs, matching the growing Ascension power instead of letting it run away. TUNABLE. */
+export const nextPrestigeReq = s =>
+  PREST_FLOOR + PREST_ASC_STEP * (s.ascensions || 0) + Math.floor(1.1 * Math.sqrt(Math.max(0, (s.stat.wins || 0) - (s.ascBase || 0))));
 export const canPrestige = s => cycleProgress(s).wins >= prestigeReq(s);
 
 /** the reset itself; returns the Legends earned or 0 when not allowed */

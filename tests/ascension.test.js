@@ -84,20 +84,20 @@ describe('doAscension: hard reset of the prestige layer', () => {
 });
 
 describe('prestige requirement resets with ascension (no dead-end loop)', () => {
-  it('an account that never ascends uses lifetime Orbs (unchanged)', () => {
+  it('a never-ascended account: floor + sqrt of lifetime Orbs', () => {
     const s = makeState();
     s.stat.wins = 100;
-    expect(nextPrestigeReq(s)).toBe(1 + Math.floor(1.1 * Math.sqrt(100)));
+    expect(nextPrestigeReq(s)).toBe(3 + Math.floor(1.1 * Math.sqrt(100))); // ascLevel 0
   });
 
   it('after ascending, the bar drops back to the floor and re-climbs per cycle', () => {
     const s = makeState();
     s.stat.wins = 100; s.ascBase = 100; // just ascended
-    expect(nextPrestigeReq(s)).toBe(1); // wins - ascBase = 0
+    expect(nextPrestigeReq(s)).toBe(3); // wins - ascBase = 0 → the floor
     s.stat.wins = 104; // four Orbs into the fresh ascension-cycle
-    expect(nextPrestigeReq(s)).toBe(1 + Math.floor(1.1 * Math.sqrt(4)));
+    expect(nextPrestigeReq(s)).toBe(3 + Math.floor(1.1 * Math.sqrt(4)));
     // a weak post-ascension account is NOT walled by a lifetime-high bar
-    expect(nextPrestigeReq(s)).toBeLessThan(1 + Math.floor(1.1 * Math.sqrt(104)));
+    expect(nextPrestigeReq(s)).toBeLessThan(3 + Math.floor(1.1 * Math.sqrt(104)));
   });
 });
 
