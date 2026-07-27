@@ -70,7 +70,11 @@ export function legendsReward(s) {
    asymptote over dozens of prestiges instead of the runaway a capped bar allowed. */
 export const prestigeReq = s => s.prestReq || 1;
 /** requirement for the next cycle, from lifetime Orbs — snapshotted at prestige time */
-export const nextPrestigeReq = s => 1 + Math.floor(1.1 * Math.sqrt(s.stat.wins || 0));
+/* the bar tracks Orbs won SINCE the last Ascension: ascending resets the whole
+   power layer, so the requirement resets with it — otherwise a fresh, weak
+   post-ascension account faces a lifetime-high bar and the loop dead-ends.
+   Accounts that never ascend (ascBase 0) are unaffected. */
+export const nextPrestigeReq = s => 1 + Math.floor(1.1 * Math.sqrt(Math.max(0, (s.stat.wins || 0) - (s.ascBase || 0))));
 export const canPrestige = s => cycleProgress(s).wins >= prestigeReq(s);
 
 /** the reset itself; returns the Legends earned or 0 when not allowed */
