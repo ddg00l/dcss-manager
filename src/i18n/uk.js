@@ -249,6 +249,7 @@ export const UK = {
   'The patient titan: +30% HP, +15% damage, steady renewal': 'Терплячий титан: +30% HP, +15% шкоди, неквапливе відновлення',
   'Nemelex Xobeh': 'Немелекс Ксобех',
   'Pantheon': 'Пантеон',
+  'keystone': 'кейстоун',
   ' claims the Orb of Zot!': ' забирає Орб Зота!',
   'carried the Orb from ': 'виніс Орб із ',
   'Zot essence won': 'Отримано есенції Зота',

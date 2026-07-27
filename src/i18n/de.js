@@ -249,6 +249,7 @@ export const DE = {
   'The patient titan: +30% HP, +15% damage, steady renewal': 'Der geduldige Titan: +30% TP, +15% Schaden, stetige Regeneration',
   'Nemelex Xobeh': 'Nemelex Xobeh',
   'Pantheon': 'Pantheon',
+  'keystone': 'Schlussstein',
   ' claims the Orb of Zot!': ' erringt den Orb von Zot!',
   'carried the Orb from ': 'trug den Orb aus ',
   'Zot essence won': 'Zot-Essenz erhalten',
