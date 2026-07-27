@@ -10,6 +10,7 @@ import { comboKey, RARN, starStr } from '../data/combos.js';
 import { itemName, itemTile, itemInfo } from '../data/items.js';
 import { heroStats } from '../sim/hero.js';
 import { memHas } from '../data/memtree.js';
+import { knownSpells, mpMaxOf, SCHOOLS } from '../data/spells.js';
 import { POTIONS, SCROLLS, consTile } from '../data/consumables.js';
 import { MUTS } from '../data/mutations.js';
 import { fmt } from '../core/fmt.js';
@@ -96,6 +97,14 @@ export function openSheet(heroId) {
     resist: '🛡 resistance', brill: '✨ brilliance', agility: '🐇 agility', net: '🕸 netted' };
   const stHtml = Object.keys(h.status || {}).filter(k => h.status[k] > 0)
     .map(k => t(stNames[k] || k) + ' (' + h.status[k] + ')').join(' · ');
+  /* spells: casters unlock base spells by level; ✦ marks a book-only capstone */
+  const mpMax = mpMaxOf(h);
+  const spellsHtml = st.caster ? (knownSpells(h).sort((a, b) => a.lvl - b.lvl).map(sp =>
+    `<div class="slotRow"><img src="${tileURL(sp.icon)}" alt="">` +
+    `<div class="tInfo"><span style="color:${SCHOOLS[sp.school].col}">${t(sp.n)}</span>` +
+    (sp.book ? ' <span class="label" style="color:var(--gold)">✦</span>' : '') +
+    `<div class="label">${t(SCHOOLS[sp.school].n)} · L${sp.lvl} · ${sp.mp} MP</div></div></div>`
+  ).join('') || `<div class="label">${t('no spells yet — train the school or find a spellbook')}</div>`) : '';
   box.innerHTML =
     `<div class="sheetHead">${stackHTML(h,'lg')}` +
     `<div><h2 class="rar${h.rarity}">${h.name}</h2>` +
@@ -109,6 +118,7 @@ export function openSheet(heroId) {
     `<h3>${t('Attributes')}</h3><div class="sheetCols">${attrs}</div>` +
     `<h3>${t('Gear')}</h3>${gear}` +
     `<h3>${t('Skills')}</h3><div class="sheetCols">${skills}</div>` +
+    (st.caster ? `<h3>${t('Spells')} <span class="label" style="color:var(--mp)">${Math.round(h.mp ?? mpMax)} / ${mpMax} MP</span></h3>${spellsHtml}` : '') +
     (stHtml ? `<h3>${t('Statuses')}</h3><div class="label">${stHtml}</div>` : '') +
     `<h3>${t('Inventory')}</h3>${inv}` +
     `<h3>${t('Mutations')}</h3>${mutHtml}` +

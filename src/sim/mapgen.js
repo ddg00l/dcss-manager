@@ -11,6 +11,7 @@ import {randConsumable} from '../data/consumables.js';
 import {randomItem} from '../data/items.js';
 import {PORTALS,PORTAL_KEYS} from '../data/portals.js';
 import {memHas} from '../data/memtree.js';
+import {SPELLBOOK_KEYS} from '../data/spells.js';
 
 export const MW=24,MH=15;
 export function genFloor(h,s){
@@ -158,6 +159,10 @@ export function genFloor(h,s){
   }
   const explored=[];
   for(let y=0;y<MH;y++)explored.push(new Array(MW).fill(false));
+  /* rare spellbook (a school's capstone). Rolled LAST so it never shifts the
+     deterministic stream that places monsters, items and traps above. */
+  if(!P&&depth>=6&&rng()<.03&&free.length>2){const c=take();
+    items.push({x:c[0],y:c[1],kind:'book',book:SPELLBOOK_KEYS[Math.floor(rng()*SPELLBOOK_KEYS.length)]})}
   h.map={g,monsters,items,stairs:{x:far[0],y:far[1]},px:start[0],py:start[1],explored,
     bossFloor:isBossFloor,fafx,traps,clouds:[]};
   /* volcano: smoldering clouds */
@@ -179,7 +184,7 @@ export function makeMon(kind,depth,x,y,rng){
   return {kind,n:d.n,t:d.t,x,y,hp:Math.floor(d.hp*sc),maxHp:Math.floor(d.hp*sc),
     dmg:Math.floor(d.dmg*Math.pow(1.34,Math.max(0,depth-avgKind(kind)))),
     ac:d.ac,ev:d.ev,xp:d.xp*sc,spd:d.spd||1,rng:d.rng?5:1,acc:3+depth*.8,
-    mv:0,awake:false,special:d};
+    cast:d.cast||null,mv:0,awake:false,special:d};
 }
 const KIND_AVG={};
 function avgKind(kind){
