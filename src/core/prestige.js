@@ -35,8 +35,17 @@ export const ngMonMul = s => (1 + Math.min(1, .1 * ngLevel(s))) * ngPlusMonMul(s
    bot tactics flatlined permanently, most inside two weeks). The bar is therefore
    capped (PREST_CAP) so the worst case a cycle can ever demand is a FIXED
    IN_CYCLE_GROWTH^PREST_CAP, which a growing account keeps outpacing. Change one
-   of these two constants and you must re-check the other. TUNABLE. */
-export const IN_CYCLE_GROWTH = 1.18;
+   of these two constants and you must re-check the other.
+
+   Calibrated to the design target of ONE PRESTIGE PER ONE TO TWO DAYS. Measured
+   Orb rates were 12.9/day for a balanced build and 23.7 for a combat-leaning
+   one, and a 7-Orb bar turned that into 1.8-2.8 prestiges a day — two to three
+   times too fast. An 18-Orb bar lands balanced at 0.72/day and the fast builds
+   near 1.3, which is the intended band. Raising the bar alone would have
+   rebuilt the wall (1.18^18 = 20x), so the growth drops with it: 1.07^18 = 3.4x,
+   and the 18th Orb of a cycle is still a visibly harder fight than the 1st.
+   TUNABLE — the pair moves together or not at all. */
+export const IN_CYCLE_GROWTH = 1.07;
 export const inCycleMul = s => Math.pow(IN_CYCLE_GROWTH, Math.max(0, cycleProgress(s).wins));
 
 export const PUPGRADES = [
@@ -112,13 +121,13 @@ export const PREST_ASC_STEP = 4; /* +Orbs per Ascension: a super-linear cost tha
    IN_CYCLE_GROWTH^PREST_CAP (1.18^7 = 3.2x). Without it the bar keeps climbing
    and the required power climbs exponentially with it — the measured death of
    the loop. Raise this and the endgame gets exponentially harder, fast. */
-export const PREST_CAP = 7;
+export const PREST_CAP = 18;
 /* Absolute ceiling across ALL ascensions. Capping only the per-ascension curve
    is not enough: PREST_ASC_STEP would still push the bar up forever (asc 3 -> 19
    Orbs -> 1.18^19 = 23x), rebuilding the same exponential wall a few ascensions
    later. The hardest fight the game can ever demand is 1.18^12 = 7.3x, which
    Ascension's own multipliers comfortably outgrow. */
-export const PREST_CAP_ABS = 12;
+export const PREST_CAP_ABS = 30;
 export const nextPrestigeReq = s => Math.min(
   PREST_CAP_ABS,
   PREST_CAP + PREST_ASC_STEP * (s.ascensions || 0),

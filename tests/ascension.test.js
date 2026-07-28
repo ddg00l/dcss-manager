@@ -88,7 +88,9 @@ describe('prestige requirement resets with ascension (no dead-end loop)', () => 
     const s = makeState();
     s.stat.wins = 9;
     expect(nextPrestigeReq(s)).toBe(3 + Math.floor(1.1 * Math.sqrt(9))); // ascLevel 0
-    s.stat.wins = 100;                       // sqrt would say 14
+    s.stat.wins = 100;                       // still climbing the sqrt curve
+    expect(nextPrestigeReq(s)).toBe(3 + Math.floor(1.1 * Math.sqrt(100)));
+    s.stat.wins = 100000;                    // ...and the cap eventually binds
     expect(nextPrestigeReq(s)).toBe(PREST_CAP);
   });
 

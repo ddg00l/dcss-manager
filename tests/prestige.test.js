@@ -347,8 +347,8 @@ describe('prestige requirement is a fixed snapshot with a forward-only ratchet',
     expect(nextPrestigeReq(s)).toBe(3);        // 0 lifetime Orbs → the floor
     s.stat.wins = 3;                           // 3 + floor(1.1*sqrt(3)) = 4
     expect(nextPrestigeReq(s)).toBe(4);
-    s.stat.wins = 100;                         // sqrt would say 14 — the cap says 7
-    expect(nextPrestigeReq(s)).toBe(PREST_CAP);
+    s.stat.wins = 100;                         // still on the sqrt curve
+    expect(nextPrestigeReq(s)).toBe(3 + Math.floor(1.1 * Math.sqrt(100)));
     /* The old contract deliberately let the bar run to 52 Orbs and relied on the
        in-cycle compound to "wall" a runaway. It walled EVERY account instead:
        all 14 bot tactics stopped progressing for good, most within two weeks.

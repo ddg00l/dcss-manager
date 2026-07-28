@@ -63,12 +63,22 @@ export function ablate(axis, sessions, days) {
     const tail = days > 10
       ? rs.reduce((a, r) => a + (r.byDay[days - 1].wins - r.byDay[days - 11].wins), 0) / rs.length
       : null;
+    /* The per-seed spread matters as much as the mean, and a mean hides it
+       completely. This loop's accounts do not cluster around their average:
+       they split into a fast mode and a stalled one, and the same constant can
+       produce 70 Orbs or 2482 depending only on the seed. Reporting just the
+       centre made that invisible and cost several rounds of chasing phantom
+       tuning. Ship the whole distribution and let the report judge it. */
+    const perSeed = rs.map(r => r.wins).sort((a, b) => a - b);
+    const at = q => perSeed[Math.min(perSeed.length - 1, Math.floor(q * perSeed.length))];
     rows.push({
       axis, label, sessions, days,
       wins: +avg('wins').toFixed(2), prestiges: +avg('prestiges').toFixed(2),
       ascensions: +avg('ascensions').toFixed(2), depth: +avg('depth').toFixed(1),
       deaths: +avg('deaths').toFixed(1), mem: Math.round(avg('mem')),
       gold: Math.round(avg('gold')), winsLast10d: tail === null ? null : +tail.toFixed(2),
+      winsPerSeed: perSeed, median: at(0.5), lo: perSeed[0], hi: perSeed[perSeed.length - 1],
+      stalledSeeds: perSeed.filter(w => w === 0).length,
     });
   }
   return rows;
