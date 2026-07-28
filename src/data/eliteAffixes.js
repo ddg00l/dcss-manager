@@ -72,18 +72,21 @@ export function readiness(s) {
    so the change is not "slower", it is "most expeditions do not come back with
    the Orb" — which is what DCSS actually feels like.
 
-   Calibrated by sim, and the sweep is worth recording because it bounds what
-   this lever can do at all:
-     x1.0  69% of delves win, 16 Orbs/day    x1.5  48%, 13.8
-     x1.2  59%, 21.9                          x2.0  40%, 12.1
-     x3.0   0%, 0
-   The response is a STEP, not a curve. Heroes are homogeneous — same account
-   power, same build — so either the party can clear Zot or none of it can, and
-   there is no regime where one delve in twenty succeeds. A ~5% win rate is
-   therefore unreachable through difficulty alone; it would need real variance
-   between runs (gear, gods, mutations mattering far more) or simply fewer
-   attempts per day. x2.0 takes what this lever honestly offers. TUNABLE. */
-export const ZOT_LETHALITY = 2.0;
+   Calibrated by sim (3 seeds, 8 days each). The full curve is worth recording:
+     x1.0  69% of delves win, 16.0 Orbs/day     x2.75  21%,  7.6
+     x1.5  48%, 13.8                            x3.0   10%,  6.5
+     x2.0  40%, 12.1                            x3.5   11%,  5.9  <- chosen
+     x2.5  21%, 12.8                            x4.5    0.8%, 0.2
+   x3.5 makes victory genuinely rare (11%), cuts Orbs from 16 a day to 6, keeps
+   the prestige cadence at ~0.7/day and leaves every seed alive and consistent.
+   x4.5 is where the Realm stops being passable at all.
+
+   A caution for whoever tunes this next: an earlier pass measured x3.0 at a flat
+   0% and concluded the response was a step function with no usable middle. That
+   was a single seed that happened to die. Three seeds show a smooth curve. Near
+   a cliff, never trust n=1.
+   */
+export const ZOT_LETHALITY = 3.5;
 export const ZOT_EASE_FLOOR = 0.55;
 export const ZOT_HARD_CEIL = 2.0;
 export const zotScale = s => ZOT_LETHALITY * Math.min(ZOT_HARD_CEIL,
