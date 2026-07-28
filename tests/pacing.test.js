@@ -6,7 +6,7 @@ import { makeState } from '../src/core/state.js';
 import { newHero } from '../src/sim/hero.js';
 import { startRun, advanceHeroes, heroDie, runeBranchFor, giveRune, ZOT_RUNES } from '../src/sim/tick.js';
 import { BRANCHES } from '../src/data/branches.js';
-import { IN_CYCLE_GROWTH, inCycleMul, nextPrestigeReq, PREST_CAP_ABS } from '../src/core/prestige.js';
+import { IN_CYCLE_PEAK, inCycleMul, nextPrestigeReq, prestigeReq, TARGET_DAYS, PREST_FLOOR } from '../src/core/prestige.js';
 import { cofferCost, zigFee, provCostOf, PROVISIONS, goldScale } from '../src/core/treasury.js';
 import { endgameUnlocked, ENDGAME_GATE } from '../src/data/endgame.js';
 
@@ -79,25 +79,37 @@ describe('a rune is both a key and a coin', () => {
   });
 });
 
-describe('in-cycle hardening escalates, and the bar it is priced against is capped', () => {
-  it('each Orb of a cycle makes the dungeon harder', () => {
-    const s = makeState();
-    s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
-    s.stat.wins = 0;
-    expect(inCycleMul(s)).toBeCloseTo(1, 5);
-    s.stat.wins = 8;
-    expect(inCycleMul(s)).toBeCloseTo(Math.pow(IN_CYCLE_GROWTH, 8), 5);
-    /* greed costs: strictly increasing */
-    const at = w => { s.stat.wins = w; return inCycleMul(s); };
-    expect(at(9)).toBeGreaterThan(at(3));
+describe('the cycle escalates, and its bar is quoted in days of output', () => {
+  it('the last Orb of a cycle is IN_CYCLE_PEAK times the first, at any length', () => {
+    const at = (bar, done) => {
+      const s = makeState();
+      s.prestReq = bar;
+      s.stat.wins = done; s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
+      return inCycleMul(s);
+    };
+    /* short cycle and long cycle feel the same arc — that is the point of
+       measuring progress THROUGH the cycle instead of powering the Orb count */
+    expect(at(4, 0)).toBeCloseTo(1, 5);
+    expect(at(4, 4)).toBeCloseTo(IN_CYCLE_PEAK, 5);
+    expect(at(400, 0)).toBeCloseTo(1, 5);
+    expect(at(400, 400)).toBeCloseTo(IN_CYCLE_PEAK, 5);
+    expect(at(400, 200)).toBeCloseTo(1 + (IN_CYCLE_PEAK - 1) / 2, 5);
+    /* and it is bounded: overshooting the bar cannot push past the peak. The old
+       curve was GROWTH^wins, which on a bar that now reaches the hundreds would
+       rebuild the wall this whole effort started from (1.07^100 = 868x). */
+    expect(at(4, 999)).toBeCloseTo(IN_CYCLE_PEAK, 5);
   });
-  it('the bar is capped, so the hardest demandable fight is a fixed constant', () => {
+
+  it('the bar asks for about TARGET_DAYS of the guild\'s own output', () => {
     const s = makeState();
-    s.stat.wins = 100000; s.ascensions = 50; /* absurdly deep account */
-    expect(nextPrestigeReq(s)).toBe(PREST_CAP_ABS);
-    /* the worst cycle the game can ask for must stay something a growing
-       account can outpace -- this is the guard against the measured loop death */
-    expect(Math.pow(IN_CYCLE_GROWTH, PREST_CAP_ABS)).toBeLessThan(10);
+    /* a brand-new account always gets a reachable first target */
+    expect(nextPrestigeReq(s)).toBe(PREST_FLOOR);
+    s.orbRate = 40;                       // a guild taking 40 Orbs a day
+    expect(nextPrestigeReq(s)).toBe(Math.round(40 * TARGET_DAYS));
+    s.orbRate = 4;                        // ...and one taking four
+    expect(nextPrestigeReq(s)).toBe(Math.max(PREST_FLOOR, Math.round(4 * TARGET_DAYS)));
+    /* cadence therefore holds at both ends instead of only in the middle: a
+       fixed bar gave 1.8 prestiges/day at day eight and 3.9 by day twelve */
   });
 });
 

@@ -19,6 +19,8 @@
 import { session } from './worker.mjs';
 
 /* the control tactic every axis perturbs — a plain engaged player */
+const SEED_BASE = parseInt(process.env.SEED_BASE || '0', 10);
+
 const BASE = {
   checkin: 300, tree: 'balanced', route: 'classic', caution: 'normal',
   rollFactor: 1, goldReserve: 0, forge: false, prestige: true, prestigeAfter: 2,
@@ -52,7 +54,11 @@ export function ablate(axis, sessions, days) {
          each session's cost so a runaway is visible in the log immediately
          instead of looking like a stuck job. */
       const t0 = Date.now();
-      const r = session(tac, days, i); /* same seeds per variant */
+      /* Honour SEED_BASE. The workflow gives each shard its own base so the two
+         explore different accounts; ignoring it made both shards run seeds 0..N
+         and return byte-identical rows — double the CI cost for zero extra
+         information, and a seed list that looked twice as large as it was. */
+      const r = session(tac, days, SEED_BASE + i); /* same seeds per variant */
       rs.push(r);
       console.error(`[${axis}/${label}] seed ${i + 1}/${sessions} · ` +
         `${((Date.now() - t0) / 1000).toFixed(1)}s · ${r.wins} Orbs`);

@@ -22,31 +22,22 @@ export const ngPlusRewardMul = s => hasNgPlus(s) ? 2.5 : 1;
    runaway build stops itself: each win makes the next one x1.3 harder */
 export const ngMonMul = s => (1 + Math.min(1, .1 * ngLevel(s))) * ngPlusMonMul(s); /* hybrid: numbers cap at x2, affixes carry the depth */
 
-/* In-cycle hardening: every Orb carried out this cycle makes the dungeon harder,
-   and it resets at prestige. This is what stops a cycle from being the same fast
-   delve on repeat — the 4th Orb of a cycle is a genuinely different fight from
-   the 1st — and it is what ends a cycle naturally: you prestige when the
-   escalation outgrows your build, not because a counter told you to.
+/* In-cycle hardening, expressed as a FRACTION OF THE CYCLE rather than a power
+   of the Orb count. The last Orb before a prestige is always IN_CYCLE_PEAK times
+   harder than the first, whether the cycle is four Orbs long or four hundred.
 
-   It is geometric on purpose. The danger is NOT the growth rate itself but its
-   product with the prestige bar: the original 1.25^wins was priced against a bar
-   that grew as sqrt(lifetime wins), so clearing a bar of B Orbs cost 1.25^B — an
-   exponential chasing a square root, which every account eventually loses (all 14
-   bot tactics flatlined permanently, most inside two weeks). The bar is therefore
-   capped (PREST_CAP) so the worst case a cycle can ever demand is a FIXED
-   IN_CYCLE_GROWTH^PREST_CAP, which a growing account keeps outpacing. Change one
-   of these two constants and you must re-check the other.
-
-   Calibrated to the design target of ONE PRESTIGE PER ONE TO TWO DAYS. Measured
-   Orb rates were 12.9/day for a balanced build and 23.7 for a combat-leaning
-   one, and a 7-Orb bar turned that into 1.8-2.8 prestiges a day — two to three
-   times too fast. An 18-Orb bar lands balanced at 0.72/day and the fast builds
-   near 1.3, which is the intended band. Raising the bar alone would have
-   rebuilt the wall (1.18^18 = 20x), so the growth drops with it: 1.07^18 = 3.4x,
-   and the 18th Orb of a cycle is still a visibly harder fight than the 1st.
-   TUNABLE — the pair moves together or not at all. */
-export const IN_CYCLE_GROWTH = 1.07;
-export const inCycleMul = s => Math.pow(IN_CYCLE_GROWTH, Math.max(0, cycleProgress(s).wins));
+   It used to be GROWTH^wins, which was fine only while the bar was a small fixed
+   number. Now that the bar tracks the guild's own output it can reach the
+   hundreds, and any exponent on it would rebuild the wall this entire effort
+   began with (1.07^100 is 868x). Tying the arc to progress THROUGH the cycle
+   keeps the felt escalation — a cycle is never the same delve on repeat — while
+   making that wall structurally impossible. TUNABLE. */
+export const IN_CYCLE_PEAK = 3;
+export const inCycleMul = s => {
+  const bar = Math.max(1, prestigeReq(s));
+  const done = Math.min(1, Math.max(0, cycleProgress(s).wins) / bar);
+  return 1 + done * (IN_CYCLE_PEAK - 1);
+};
 
 export const PUPGRADES = [
   { k: 'p_dmg', n: 'Legendary might', d: '+8% damage for all heroes per lvl', max: 20, base: 3, g: 1.5 },
@@ -112,26 +103,35 @@ export const prestigeReq = s => s.prestReq || 1;
    power layer, so the requirement resets with it — otherwise a fresh, weak
    post-ascension account faces a lifetime-high bar and the loop dead-ends.
    Accounts that never ascend (ascBase 0) are unaffected. */
-export const PREST_FLOOR = 3;  /* Orbs the very first prestige of an ascension-cycle needs */
-export const PREST_ASC_STEP = 4; /* +Orbs per Ascension: a super-linear cost that keeps the
-   loop's rate bounded — the stronger the account (more ascensions), the more each prestige
-   costs, matching the growing Ascension power instead of letting it run away. TUNABLE. */
 /* Hard ceiling on Orbs-per-cycle. The in-cycle hardening is geometric, so this
    cap is what bounds the hardest fight the game can ever demand:
    IN_CYCLE_GROWTH^PREST_CAP (1.18^7 = 3.2x). Without it the bar keeps climbing
    and the required power climbs exponentially with it — the measured death of
    the loop. Raise this and the endgame gets exponentially harder, fast. */
-export const PREST_CAP = 18;
-/* Absolute ceiling across ALL ascensions. Capping only the per-ascension curve
-   is not enough: PREST_ASC_STEP would still push the bar up forever (asc 3 -> 19
-   Orbs -> 1.18^19 = 23x), rebuilding the same exponential wall a few ascensions
-   later. The hardest fight the game can ever demand is 1.18^12 = 7.3x, which
-   Ascension's own multipliers comfortably outgrow. */
-export const PREST_CAP_ABS = 30;
-export const nextPrestigeReq = s => Math.min(
-  PREST_CAP_ABS,
-  PREST_CAP + PREST_ASC_STEP * (s.ascensions || 0),
-  PREST_FLOOR + PREST_ASC_STEP * (s.ascensions || 0) + Math.floor(1.1 * Math.sqrt(Math.max(0, (s.stat.wins || 0) - (s.ascBase || 0)))));
+/* The bar is measured in DAYS OF THE GUILD'S OWN OUTPUT, not in a fixed number
+   of Orbs. A fixed bar cannot hold a steady cadence, because output is not
+   steady: the same build took 12.9 Orbs a day at day eight and 68 a day by day
+   twelve, so a 7-Orb bar meant 1.8 prestiges a day early and 5 later. Every
+   fixed value is wrong at some point on that curve.
+
+   Expressed as "roughly a day and a half of whatever you currently produce", the
+   cadence holds by construction at both ends: a fast guild faces a proportionally
+   larger bar, a struggling one a smaller, and neither can be walled or run away.
+   PREST_FLOOR still guarantees a reachable first target for a brand-new account.
+
+   TARGET_DAYS is NOT the observed cadence, it is the Orb budget expressed in
+   days. A cycle takes longer than budget/rate because the in-cycle escalation
+   slows its final Orbs, so 1.5 measured out at one prestige per 2.2-3.7 days.
+   0.8 lands inside the design goal of one per one to two days. TUNABLE — this is
+   the dial for that goal. */
+export const TARGET_DAYS = 0.8;
+export const PREST_FLOOR = 3;
+export const PREST_ASC_STEP = 4;
+export const orbRate = s => Math.max(0, s.orbRate || 0); /* Orbs per day, smoothed */
+export const nextPrestigeReq = s => Math.max(
+  PREST_FLOOR + PREST_ASC_STEP * (s.ascensions || 0),
+  Math.round(orbRate(s) * TARGET_DAYS));
+
 export const canPrestige = s => cycleProgress(s).wins >= prestigeReq(s);
 
 /** the reset itself; returns the Legends earned or 0 when not allowed */

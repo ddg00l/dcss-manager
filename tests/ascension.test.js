@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { makeState } from '../src/core/state.js';
-import { doPrestige, nextPrestigeReq, PREST_CAP } from '../src/core/prestige.js';
+import { doPrestige, nextPrestigeReq, PREST_FLOOR, PREST_ASC_STEP, TARGET_DAYS } from '../src/core/prestige.js';
 import { maxSlots } from '../src/core/economy.js';
 import {
   ASCEND_GATE, ASC_K, ascGain, canAscend, ascensionUnlocked, doAscension,
@@ -84,28 +84,23 @@ describe('doAscension: hard reset of the prestige layer', () => {
 });
 
 describe('prestige requirement resets with ascension (no dead-end loop)', () => {
-  it('a never-ascended account climbs floor+sqrt, then stops at the cap', () => {
-    const s = makeState();
-    s.stat.wins = 9;
-    expect(nextPrestigeReq(s)).toBe(3 + Math.floor(1.1 * Math.sqrt(9))); // ascLevel 0
-    s.stat.wins = 100;                       // still climbing the sqrt curve
-    expect(nextPrestigeReq(s)).toBe(3 + Math.floor(1.1 * Math.sqrt(100)));
-    s.stat.wins = 100000;                    // ...and the cap eventually binds
-    expect(nextPrestigeReq(s)).toBe(PREST_CAP);
+  it('a never-ascended account asks for TARGET_DAYS of its own output', () => {
+    const s2 = makeState();
+    expect(nextPrestigeReq(s2)).toBe(PREST_FLOOR);   // brand new: reachable floor
+    s2.orbRate = 30;
+    expect(nextPrestigeReq(s2)).toBe(Math.round(30 * TARGET_DAYS));
   });
-
-  it('after ascending, the bar drops back to the floor and re-climbs per cycle', () => {
-    const s = makeState();
-    s.stat.wins = 100; s.ascBase = 100; // just ascended
-    expect(nextPrestigeReq(s)).toBe(3); // wins - ascBase = 0 → the floor
-    s.stat.wins = 104; // four Orbs into the fresh ascension-cycle
-    expect(nextPrestigeReq(s)).toBe(3 + Math.floor(1.1 * Math.sqrt(4)));
-    // a weak post-ascension account is NOT walled by a lifetime-high bar
-    expect(nextPrestigeReq(s)).toBeLessThan(3 + Math.floor(1.1 * Math.sqrt(104)));
+  it('ascending raises the floor the bar can never fall below', () => {
+    const s2 = makeState();
+    s2.orbRate = 0;
+    expect(nextPrestigeReq(s2)).toBe(PREST_FLOOR);
+    s2.ascensions = 2;
+    /* Ascension power is meant to cost something, so each one lifts the minimum
+       target — but the bar still follows output once output exceeds it. */
+    expect(nextPrestigeReq(s2)).toBe(PREST_FLOOR + PREST_ASC_STEP * 2);
+    s2.orbRate = 100;
+    expect(nextPrestigeReq(s2)).toBe(Math.round(100 * TARGET_DAYS));
   });
-});
-
-describe('ascension tree: buying, gating, multipliers', () => {
   it('buys nodes, enforces cost and prerequisites', () => {
     const s = makeState();
     s.ascendancy = 100;

@@ -312,6 +312,7 @@ export function heroWin(h,s){
   /* Zot essence pays out once per cycle — the FIRST Orb is the one that matters */
   const firstWin=((s.stat.wins||0)-((s.cycBase&&s.cycBase.wins)||0))===0;
   s.stat.wins=(s.stat.wins||0)+1;
+  s.orbsThisWindow=(s.orbsThisWindow||0)+1; /* feeds the smoothed Orbs-per-day rate */
   s.progress.Zot=Math.max(s.progress.Zot||0,5);
   /* eternal Pantheon: an Orb carried out while pledged deepens that god's favor */
   if(h.god)s.pantheon[h.god]=(s.pantheon[h.god]||0)+1;
@@ -1027,7 +1028,20 @@ function autoSummonStep(s){
   if(!freeRollAvailable(s)&&s.gold<2*rollCost(s))return;
   rollHero(s,false); /* the fresh hero is dispatched on the next step */
 }
+/* Smoothed Orbs per day. The prestige bar is quoted in days of the guild's own
+   output, so it needs to know that output; a raw instantaneous count would make
+   the bar jitter, hence the day-long window and the even blend with history. */
+export const ORB_RATE_WINDOW=86400;
+function tickOrbRate(s,dtSec){
+  s.rateWindow=(s.rateWindow||0)+dtSec;
+  while(s.rateWindow>=ORB_RATE_WINDOW){
+    s.rateWindow-=ORB_RATE_WINDOW;
+    s.orbRate=((s.orbRate||0)+(s.orbsThisWindow||0))/2;
+    s.orbsThisWindow=0;
+  }
+}
 export function advanceHeroes(s,dtSec,silent){
+  tickOrbRate(s,dtSec);
   const auto=memHas(s,'k_autosummon')||ascAutoGuild(s);
   const herald=memHas(s,'k_herald');
   let left=dtSec;

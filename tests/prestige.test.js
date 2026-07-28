@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { makeState } from '../src/core/state.js';
 import { newHero, heroStats } from '../src/sim/hero.js';
 import {
-  ngLevel, legendsReward, canPrestige, doPrestige, cycleProgress, PUPGRADES, pupg, pupgCost, PREST_CAP,
+  ngLevel, legendsReward, canPrestige, doPrestige, cycleProgress, PUPGRADES, pupg, pupgCost, PREST_FLOOR, TARGET_DAYS,
 } from '../src/core/prestige.js';
 import { gAtk, gHp, ngMul, rollCost } from '../src/core/economy.js';
 import { gainMem } from '../src/data/memtree.js';
@@ -116,29 +116,26 @@ describe('prestige', () => {
 describe('balance fixes from the 1000-session study', () => {
   it('each victory in the cycle hardens the dungeon', async () => {
     const { genFloor } = await import('../src/sim/mapgen.js');
-    const hpAt = (wins) => {
+    const { IN_CYCLE_PEAK } = await import('../src/core/prestige.js');
+    const BAR = 10;
+    const hpAt = (cycleWins) => {
       const s = makeState();
-      s.stat.wins = wins;
+      s.prestReq = BAR;
+      s.stat.wins = cycleWins;
+      s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
       const h = newHero('human', 'fighter', 0, s);
       h.branch = 'dungeon'; h.floor = 3; h.seed = 42; h.regenN = 0;
       genFloor(h, s);
       return h.map.monsters.reduce((a, m) => a + m.maxHp, 0) / h.map.monsters.length;
     };
-    /* Hardening is geometric per Orb carried out this cycle and resets at
-       prestige — that is what stops a cycle from being one fast delve on repeat.
-       What must stay bounded is not the rate but the hardest cycle the game can
-       DEMAND: the old 1.25^wins was priced against a bar growing as sqrt(lifetime
-       wins), so clearing a bar of B Orbs cost 1.25^B and every account eventually
-       hit a bar it could never clear (all 14 sim tactics flatlined, most within
-       two weeks). The bar is capped now — see PREST_CAP_ABS below. */
-    const { IN_CYCLE_GROWTH } = await import('../src/core/prestige.js');
-    expect(hpAt(3)).toBeGreaterThan(hpAt(0));
-    expect(hpAt(8)).toBeGreaterThan(hpAt(3));
-    expect(hpAt(8) / hpAt(0)).toBeCloseTo(Math.pow(IN_CYCLE_GROWTH, 8), 0);
-    /* The escalation is geometric on purpose, so what must stay bounded is the
-       hardest cycle the game can DEMAND — the bar is capped for exactly this. */
-    const { PREST_CAP_ABS } = await import('../src/core/prestige.js');
-    expect(hpAt(PREST_CAP_ABS) / hpAt(0)).toBeLessThan(10);
+    /* The arc is progress THROUGH the cycle, so it reads the same at any bar
+       length — and it cannot exceed IN_CYCLE_PEAK, which is what makes a bar
+       that tracks the guild's output safe. The old GROWTH^wins form would have
+       rebuilt the original wall the moment the bar reached the hundreds. */
+    expect(hpAt(BAR / 2)).toBeGreaterThan(hpAt(0));
+    expect(hpAt(BAR)).toBeGreaterThan(hpAt(BAR / 2));
+    expect(hpAt(BAR) / hpAt(0)).toBeCloseTo(IN_CYCLE_PEAK, 0);
+    expect(hpAt(BAR * 10) / hpAt(0)).toBeCloseTo(IN_CYCLE_PEAK, 0);
   });
   it('a named rune is collected once per cycle; prestige resets the ledger', async () => {
     const { startRun, simTick } = await import('../src/sim/tick.js');
@@ -344,30 +341,29 @@ describe('prestige requirement is a fixed snapshot with a forward-only ratchet',
   it('the NEXT bar tracks lifetime Orbs (sub-linear) — cadence-independent', async () => {
     const { nextPrestigeReq } = await import('../src/core/prestige.js');
     const s = makeState();
-    expect(nextPrestigeReq(s)).toBe(3);        // 0 lifetime Orbs → the floor
-    s.stat.wins = 3;                           // 3 + floor(1.1*sqrt(3)) = 4
-    expect(nextPrestigeReq(s)).toBe(4);
-    s.stat.wins = 100;                         // still on the sqrt curve
-    expect(nextPrestigeReq(s)).toBe(3 + Math.floor(1.1 * Math.sqrt(100)));
-    /* The old contract deliberately let the bar run to 52 Orbs and relied on the
-       in-cycle compound to "wall" a runaway. It walled EVERY account instead:
-       all 14 bot tactics stopped progressing for good, most within two weeks.
-       The bar is capped now, so a deep account still faces a finite cycle. */
-    s.stat.wins = 2000;
-    expect(nextPrestigeReq(s)).toBe(PREST_CAP);
+    expect(nextPrestigeReq(s)).toBe(PREST_FLOOR);   // a new account: reachable floor
+    /* The bar is no longer a curve over lifetime Orbs. That could not hold a
+       cadence, because output is not steady: the same build took 12.9 Orbs a day
+       at day eight and 68 by day twelve, so any fixed curve was right at one
+       point on it and wrong everywhere else. It now asks for roughly
+       TARGET_DAYS of whatever the guild currently produces. */
+    s.orbRate = 30;
+    expect(nextPrestigeReq(s)).toBe(Math.round(30 * TARGET_DAYS));
+    s.stat.wins = 5000;                             // lifetime total is irrelevant now
+    expect(nextPrestigeReq(s)).toBe(Math.round(30 * TARGET_DAYS));
   });
-  it('doPrestige locks the next bar in from lifetime Orbs', async () => {
+  it('doPrestige locks the next bar in as a snapshot', async () => {
     const { doPrestige } = await import('../src/core/prestige.js');
-    const s = makeState();
-    s.prestReq = 2;
-    s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
-    s.stat.wins = 5;                           // 5 lifetime Orbs (this is the first cycle)
-    expect(doPrestige(s)).toBeGreaterThan(0);
-    expect(s.prestReq).toBe(5);                // 3 + floor(1.1*sqrt(5)) = 5, snapshotted for next cycle
+    const s2 = makeState();
+    s2.orbRate = 20;
+    winCycle(s2, 5);
+    doPrestige(s2);
+    /* the target is fixed for the cycle: it can never rise under a delver */
+    const locked = s2.prestReq;
+    expect(locked).toBe(Math.round(20 * TARGET_DAYS));
+    s2.orbRate = 200;
+    expect(s2.prestReq).toBe(locked);
   });
-});
-
-describe('no-softlock guarantees (asymptotic NG + unbounded stars)', () => {
   it('NG+ is a light capped seasoning; in-cycle wins are the real valve', async () => {
     const { ngMonMul } = await import('../src/core/prestige.js');
     const at = (ng) => { const s = makeState(); s.ng = ng; return ngMonMul(s); };
