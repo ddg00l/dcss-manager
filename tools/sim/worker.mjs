@@ -55,6 +55,19 @@ function buyTree(s, tactic, budgetShare) {
       pick = affordable.find(n => n.id.startsWith('hslot')) ||
         affordable.find(n => n.region === 'heroes') ||
         affordable.sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0];
+    } else if (tactic.tree === 'combat_fair') {
+      /* A combat-LEANING player, not a hermit. The plain 'combat' strategy below
+         only ever buys from the combat and dungeon regions, and expedition slots
+         live in 'heroes' — so it plays the entire game with a single seeker and
+         loses to a slots build ~6x. That measures the cost of refusing a core
+         mechanic, not a flaw in combat nodes. This variant takes the seekers any
+         real player would take, then spends the rest on fighting, which is the
+         comparison that actually asks whether combat investment is worth it. */
+      pick = affordable.find(n => n.id.startsWith('hslot')) ||
+        affordable.find(n => n.keystone && (n.region === 'combat' || n.region === 'dungeon')) ||
+        affordable.filter(n => n.region === 'combat' || n.region === 'dungeon')
+          .sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0] ||
+        affordable.sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0];
     } else if (tactic.tree === 'combat') {
       pick = affordable.find(n => n.keystone && (n.region === 'combat' || n.region === 'dungeon')) ||
         affordable.filter(n => n.region === 'combat' || n.region === 'dungeon')

@@ -32,6 +32,7 @@ export const AXES = {
   spend:     [['thrifty', { spend: 'thrifty' }], ['balanced', { spend: 'balanced' }], ['lavish', { spend: 'lavish' }]],
   route:     [['classic', { route: 'classic' }], ['speedrun', { route: 'speed', caution: 'bold' }]],
   tree:      [['balanced', { tree: 'balanced' }], ['combat', { tree: 'combat' }],
+              ['combat_fair', { tree: 'combat_fair' }],
               ['slots', { tree: 'slots' }], ['keystones', { tree: 'keystones' }]],
   /* is the Ascension layer worth taking at all? tactic.ascend===false opts out */
   ascend:    [['ascend ON', {}], ['ascend OFF', { ascend: false }]],
