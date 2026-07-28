@@ -43,7 +43,19 @@ export function ablate(axis, sessions, days) {
   for (const [label, patch] of AXES[axis]) {
     const tac = { ...BASE, ...patch };
     const rs = [];
-    for (let i = 0; i < sessions; i++) rs.push(session(tac, days, i)); /* same seeds per variant */
+    for (let i = 0; i < sessions; i++) {
+      /* Cost is super-linear in days, because a session's work scales with the
+         Orbs it wins and an unbalanced economy wins exponentially more of them:
+         measured 5 days = 10s / 54 Orbs but 10 days = 42s / 472 Orbs. A single
+         30-day sweep ran past 90 minutes on CI for this reason alone. Report
+         each session's cost so a runaway is visible in the log immediately
+         instead of looking like a stuck job. */
+      const t0 = Date.now();
+      const r = session(tac, days, i); /* same seeds per variant */
+      rs.push(r);
+      console.error(`[${axis}/${label}] seed ${i + 1}/${sessions} · ` +
+        `${((Date.now() - t0) / 1000).toFixed(1)}s · ${r.wins} Orbs`);
+    }
     const avg = k => rs.reduce((a, r) => a + (r[k] || 0), 0) / rs.length;
     /* wins earned in the LAST 10 days: 0 means the account has hard-stalled,
        which a cumulative total cannot reveal */

@@ -10,11 +10,11 @@ on:
   workflow_dispatch:
     inputs:
       days:
-        description: 'Game days per session'
-        default: '30'
+        description: 'Game days per session (cost is SUPER-LINEAR: 5d=10s, 10d=42s per session)'
+        default: '12'
       sessions:
         description: 'Paired seeds per variant (per shard)'
-        default: '8'
+        default: '6'
       axes:
         description: 'Axes to run (JSON array)'
         default: '["attention","caution","spend","route","tree","ascend"]'
