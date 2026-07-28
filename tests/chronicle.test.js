@@ -99,7 +99,7 @@ describe('qualitative escalation: elite affixes and floor affixes', () => {
   it('elite frequency and affix count grow slowly and endlessly with NG', async () => {
     const { eliteChance, eliteAffixCount, rollEliteAffixes, ELITE_KEYS, affixLevel, readiness } = await import('../src/data/eliteAffixes.js');
     expect(eliteChance(0)).toBeCloseTo(.05);
-    expect(eliteChance(100)).toBeCloseTo(.80); // ceiling raised: a mid-game account used to reach the old .48 cap and then nothing further ever happened
+    expect(eliteChance(100)).toBeCloseTo(.48); // capped frequency
     expect(eliteAffixCount(0)).toBe(1);
     expect(eliteAffixCount(20)).toBe(3);
     const { mulberry32 } = await import('../src/core/rng.js');
@@ -107,20 +107,14 @@ describe('qualitative escalation: elite affixes and floor affixes', () => {
     expect(af.length).toBe(3);
     expect(new Set(af).size).toBe(3);          // no duplicates
     for (const k of af) expect(ELITE_KEYS).toContain(k);
-    /* Affix pressure FOLLOWS readiness. It used to be throttled by min(ng, ...),
-       and that ceiling defeated the system's whole purpose: NG rises one step per
-       prestige while readiness runs into the hundreds, so the strongest accounts
-       met elites at 23% with a single affix and never saw hard content. */
+    /* Affix pressure is capped by readiness AND by NG. Letting it follow
+       readiness uncapped was measured as overtightening the game to a halt and
+       is reverted; see eliteAffixes.js. */
     const { makeState } = await import('../src/core/state.js');
     const weak = makeState(); weak.ng = 30;
     expect(affixLevel(weak, 30)).toBeLessThan(10); // out-prestiged a weak build → eased
     const strong = makeState(); strong.ng = 30; strong.stars = { a: 12 };
-    expect(affixLevel(strong, 30)).toBeGreaterThan(affixLevel(weak, 30));
-    /* and unlike before, a far stronger account keeps escalating past the old cap */
-    const titan = makeState(); titan.ng = 30; titan.stars = { a: 40 };
-    titan.pupg = { p_legacy: 200 };
-    expect(affixLevel(titan, 30)).toBeGreaterThan(affixLevel(strong, 30));
-    expect(eliteChance(affixLevel(titan, 30))).toBeGreaterThan(.48);
+    expect(affixLevel(strong, 30)).toBe(30);       // kept pace → full intensity
   });
   it('deep-NG floors spawn affixed elites deterministically per seed', async () => {
     const { genFloor } = await import('../src/sim/mapgen.js');

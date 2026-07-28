@@ -90,16 +90,18 @@ describe('prestige requirement resets with ascension (no dead-end loop)', () => 
     s2.orbRate = 30;
     expect(nextPrestigeReq(s2)).toBe(Math.round(30 * TARGET_DAYS));
   });
-  it('ascending raises the floor the bar can never fall below', () => {
+  it('ascending does NOT raise the bar: the bar answers to output alone', () => {
     const s2 = makeState();
-    s2.orbRate = 0;
-    expect(nextPrestigeReq(s2)).toBe(PREST_FLOOR);
-    s2.ascensions = 2;
-    /* Ascension power is meant to cost something, so each one lifts the minimum
-       target — but the bar still follows output once output exceeds it. */
-    expect(nextPrestigeReq(s2)).toBe(PREST_FLOOR + PREST_ASC_STEP * 2);
-    s2.orbRate = 100;
-    expect(nextPrestigeReq(s2)).toBe(Math.round(100 * TARGET_DAYS));
+    s2.orbRate = 20;
+    const before = nextPrestigeReq(s2);
+    s2.ascensions = 12;
+    /* An ascension floor is output-blind. At twelve ascensions it demanded 51
+       Orbs a cycle from an account producing far fewer, and the loop stopped
+       dead around day 30 — the same wall this rebalance began with. Ascension
+       already pays by wiping its layer, and its power raises output, which
+       raises this bar on its own. */
+    expect(nextPrestigeReq(s2)).toBe(before);
+    expect(nextPrestigeReq(s2)).toBe(Math.round(20 * TARGET_DAYS));
   });
   it('buys nodes, enforces cost and prerequisites', () => {
     const s = makeState();

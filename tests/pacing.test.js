@@ -80,26 +80,21 @@ describe('a rune is both a key and a coin', () => {
 });
 
 describe('the cycle escalates, and its bar is quoted in days of output', () => {
-  it('the last Orb of a cycle is IN_CYCLE_PEAK times the first, at any length', () => {
-    const at = (bar, done) => {
+  it('escalates gently per Orb and never past the cap', () => {
+    const at = (wins) => {
       const s = makeState();
-      s.prestReq = bar;
-      s.stat.wins = done; s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
+      s.stat.wins = wins; s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
       return inCycleMul(s);
     };
-    /* short cycle and long cycle feel the same arc — that is the point of
-       measuring progress THROUGH the cycle instead of powering the Orb count */
-    expect(at(4, 0)).toBeCloseTo(1, 5);
-    expect(at(4, 4)).toBeCloseTo(IN_CYCLE_PEAK, 5);
-    expect(at(400, 0)).toBeCloseTo(1, 5);
-    expect(at(400, 400)).toBeCloseTo(IN_CYCLE_PEAK, 5);
-    expect(at(400, 200)).toBeCloseTo(1 + (IN_CYCLE_PEAK - 1) / 2, 5);
-    /* and it is bounded: overshooting the bar cannot push past the peak. The old
-       curve was GROWTH^wins, which on a bar that now reaches the hundreds would
-       rebuild the wall this whole effort started from (1.07^100 = 868x). */
-    expect(at(4, 999)).toBeCloseTo(IN_CYCLE_PEAK, 5);
+    /* Gentle per Orb at ANY bar length. A fraction-of-the-cycle form walled short
+       cycles instead of long ones: at the floor bar of 3 every victory added ~67%
+       and accounts took three Orbs in thirty days, then stopped. */
+    expect(at(0)).toBeCloseTo(1, 5);
+    expect(at(1) / at(0)).toBeCloseTo(1.07, 2);
+    expect(at(10)).toBeGreaterThan(at(5));
+    /* ...and hard-capped, so no bar length can rebuild the original wall */
+    expect(at(500)).toBeCloseTo(IN_CYCLE_PEAK, 5);
   });
-
   it('the bar asks for about TARGET_DAYS of the guild\'s own output', () => {
     const s = makeState();
     /* a brand-new account always gets a reachable first target */
@@ -205,37 +200,12 @@ describe('the Realm of Zot answers to the guild that enters it', () => {
   it('eases for a guild that cannot land its first Orb, hardens for a titan', async () => {
     const { zotScale, ZOT_EASE_FLOOR, ZOT_HARD_CEIL } = await import('../src/data/eliteAffixes.js');
     const fresh = makeState();
-    /* the measured stall case: reached Zot:4 again and again at readiness ~13 */
-    const struggling = makeState(); struggling.stars = { 'human/fighter': 4 };
     const titan = makeState(); titan.stars = { 'human/fighter': 30 };
     titan.pupg = { p_legacy: 150, p_dmg: 20, p_hp: 20 };
-    expect(zotScale(fresh)).toBeLessThan(1);              // a fresh guild is given a chance
-    expect(zotScale(struggling)).toBeLessThan(1);
-    expect(zotScale(titan)).toBeGreaterThan(1.5);         // and a titan is not
-    /* bounded at both ends: never trivial, never impossible */
+    expect(zotScale(fresh)).toBeLessThan(1);        // a fresh guild is given a chance
+    expect(zotScale(titan)).toBeGreaterThan(1.5);   // and a titan is not
     expect(zotScale(fresh)).toBeGreaterThanOrEqual(ZOT_EASE_FLOOR);
     expect(zotScale(titan)).toBeLessThanOrEqual(ZOT_HARD_CEIL);
   });
-
-  it('Zot answers to readiness harder than the dungeon at large', async () => {
-    const { genFloor } = await import('../src/sim/mapgen.js');
-    const hpIn = (branch, floor, mut) => {
-      const s = makeState(); mut(s);
-      const h = newHero('human', 'fighter', 0, s);
-      s.heroes.push(h);
-      h.branch = branch; h.floor = floor; h.seed = 11; h.regenN = 0;
-      genFloor(h, s);
-      return h.map.monsters.reduce((a, m) => a + m.maxHp, 0) / h.map.monsters.length;
-    };
-    const weak = s => {};
-    const strong = s => { s.stars = { 'human/fighter': 30 }; s.pupg = { p_legacy: 150 }; };
-    /* Affix pressure follows readiness EVERYWHERE — a strong guild meets more
-       elites in the Dungeon too, which is the intended design. */
-    const dungeonRatio = hpIn('dungeon', 5, strong) / hpIn('dungeon', 5, weak);
-    expect(dungeonRatio).toBeGreaterThan(1);
-    /* Zot carries that plus its own scaling, so it must react distinctly harder:
-       it is the gate every other system sits behind, in both directions. */
-    const zotRatio = hpIn('zot', 3, strong) / hpIn('zot', 3, weak);
-    expect(zotRatio).toBeGreaterThan(dungeonRatio * 1.5);
-  });
 });
+

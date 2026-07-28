@@ -22,8 +22,17 @@ export const ngPlusRewardMul = s => hasNgPlus(s) ? 2.5 : 1;
    runaway build stops itself: each win makes the next one x1.3 harder */
 export const ngMonMul = s => (1 + Math.min(1, .1 * ngLevel(s))) * ngPlusMonMul(s); /* hybrid: numbers cap at x2, affixes carry the depth */
 
-/* In-cycle hardening, expressed as a FRACTION OF THE CYCLE rather than a power
-   of the Orb count. The last Orb before a prestige is always IN_CYCLE_PEAK times
+/* In-cycle hardening: a gentle step PER ORB, hard-capped.
+
+   Two failure modes had to be avoided at once, and each earlier attempt hit the
+   other. A pure power of the Orb count walls a long cycle (1.07^100 is 868x). A
+   pure fraction of the cycle walls a SHORT one instead: with the bar down at its
+   floor of 3, reaching the peak over three Orbs meant every victory added ~67%
+   difficulty, and accounts took three Orbs in thirty days and then stopped.
+
+   A capped geometric step gives both: ~7% per Orb, familiar and gentle at any
+   bar length, and never more than IN_CYCLE_PEAK no matter how long the cycle
+   runs. The old prose about fractions of the cycle follows. The last Orb before a prestige is always IN_CYCLE_PEAK times
    harder than the first, whether the cycle is four Orbs long or four hundred.
 
    It used to be GROWTH^wins, which was fine only while the bar was a small fixed
@@ -33,11 +42,10 @@ export const ngMonMul = s => (1 + Math.min(1, .1 * ngLevel(s))) * ngPlusMonMul(s
    keeps the felt escalation — a cycle is never the same delve on repeat — while
    making that wall structurally impossible. TUNABLE. */
 export const IN_CYCLE_PEAK = 3;
-export const inCycleMul = s => {
-  const bar = Math.max(1, prestigeReq(s));
-  const done = Math.min(1, Math.max(0, cycleProgress(s).wins) / bar);
-  return 1 + done * (IN_CYCLE_PEAK - 1);
-};
+export const IN_CYCLE_STEP = 1.07;
+export const inCycleMul = s => Math.min(IN_CYCLE_PEAK,
+  Math.pow(IN_CYCLE_STEP, Math.max(0, cycleProgress(s).wins)));
+
 
 export const PUPGRADES = [
   { k: 'p_dmg', n: 'Legendary might', d: '+8% damage for all heroes per lvl', max: 20, base: 3, g: 1.5 },
@@ -97,7 +105,17 @@ export function legendsReward(s) {
    grows — that is precisely how the loop died before (bar 18, cost 55x, every
    tactic frozen). With the cap the hardest cycle the game can ever ask for is a
    fixed constant, and an account that keeps growing keeps clearing it. */
-export const prestigeReq = s => s.prestReq || 1;
+/* The live target, from current output. */
+export const livePrestigeReq = s => Math.max(PREST_FLOOR, Math.round(orbRate(s) * TARGET_DAYS));
+/* The bar a cycle is actually chasing. The snapshot exists so the goal can never
+   RISE under a delver mid-cycle — but a snapshot alone cannot FALL either, and
+   that is a deadlock: a bar locked in at 46 Orbs while output was high became
+   unreachable when output dropped, and since clearing it is the only way to take
+   a new snapshot, the account never prestiged again. Measured: ninety days
+   returned exactly what thirty did.
+   So it may only ever get easier while you chase it. A brand-new account still
+   gets its one-Orb onboarding prestige. */
+export const prestigeReq = s => Math.min(s.prestReq || 1, livePrestigeReq(s));
 /** requirement for the next cycle, from lifetime Orbs — snapshotted at prestige time */
 /* the bar tracks Orbs won SINCE the last Ascension: ascending resets the whole
    power layer, so the requirement resets with it — otherwise a fresh, weak
@@ -120,17 +138,28 @@ export const prestigeReq = s => s.prestReq || 1;
    PREST_FLOOR still guarantees a reachable first target for a brand-new account.
 
    TARGET_DAYS is NOT the observed cadence, it is the Orb budget expressed in
-   days. A cycle takes longer than budget/rate because the in-cycle escalation
+   days, and the two differ by more than the escalation alone: the rate is
+   smoothed over a day and the bar is snapshotted from it, so while output is
+   climbing a cycle finishes against a target set by a lower, older rate. 0.8
+   measured out at 3.4 prestiges a day; 3.5 lands in the intended band. A cycle takes longer than budget/rate because the in-cycle escalation
    slows its final Orbs, so 1.5 measured out at one prestige per 2.2-3.7 days.
    0.8 lands inside the design goal of one per one to two days. TUNABLE — this is
    the dial for that goal. */
-export const TARGET_DAYS = 0.8;
+export const TARGET_DAYS = 3.5;
 export const PREST_FLOOR = 3;
 export const PREST_ASC_STEP = 4;
 export const orbRate = s => Math.max(0, s.orbRate || 0); /* Orbs per day, smoothed */
-export const nextPrestigeReq = s => Math.max(
-  PREST_FLOOR + PREST_ASC_STEP * (s.ascensions || 0),
-  Math.round(orbRate(s) * TARGET_DAYS));
+/* No Ascension term. It used to add PREST_ASC_STEP per ascension as a floor, and
+   that floor is independent of output — at twelve ascensions it demanded 51 Orbs
+   a cycle from an account producing far fewer, which is the same output-blind
+   wall this whole rebalance started from. Measured: the loop stopped dead around
+   day 30 and ninety days returned exactly what thirty did.
+
+   Ascension already costs what it costs by wiping the layer, and its power feeds
+   output, which raises this bar on its own. Anything that does not scale with
+   output does not belong in it. */
+export const nextPrestigeReq = s =>
+  Math.max(PREST_FLOOR, Math.round(orbRate(s) * TARGET_DAYS));
 
 export const canPrestige = s => cycleProgress(s).wins >= prestigeReq(s);
 

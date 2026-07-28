@@ -55,49 +55,35 @@ export function readiness(s) {
   let zot = 0; if (s.zupg) for (const k in s.zupg) zot += s.zupg[k];
   return greatCount * .35 + starPower * 1.5 + legacy * .5 + zot * .5;
 }
-/* Affix level follows READINESS — the account's own power — which is what this
-   whole system was built for. It used to be throttled by min(ng, ...), and that
-   ceiling quietly defeated the design: NG rises one step per prestige while
-   readiness runs into the hundreds, so a monstrously strong account met elites
-   at 23% with a single affix. Strong guilds never saw hard content, which is a
-   large part of why they ran away.
-
-   Escalating here rather than by shrinking rewards is deliberate. Elites drop
-   MORE loot, and their affixes are qualitative — Bonecaller, Shielded, Thorned,
-   Mirrored ask for different tactics and different heroes, not bigger numbers.
-   A strong account should meet a more dangerous dungeon, not a poorer one.
-
-   readiness is measured in the hundreds, so the map is sqrt-shaped: readiness 15
-   -> level 10, 105 -> 23, 600 -> 51. The NG term stays as a small floor so an
-   account that stayed deliberately "unready" still cannot outrun the pressure.
-   TUNABLE — calibrated by sim. */
-export const affixLevel = (s, ng) =>
-  Math.round(2.0 * Math.sqrt(Math.max(0, readiness(s))) + .12 * ng);
-/* The Realm of Zot scales to the guild that walks into it — the same principle
-   as affix pressure, applied in BOTH directions.
-
-   Measured problem: an account can stall on the very first Orb and never start
-   the meta-loop at all. One sim seed reached Zot:4 repeatedly over ten days and
-   died there every time, at readiness 12.9 with a prestige bar of 1 — a single
-   victory would have opened prestige, Legends and NG, and it could not land one.
-   That cliff got steeper when the Gates began demanding three runes of every
-   delver: authentic, but it front-loads cost onto the one victory that
-   everything else is gated behind.
-
-   So a struggling guild meets a Realm it can actually finish, and a titan meets
-   one worth the name. This is not a discount for being weak — the easing fades
-   as readiness grows, and the same curve keeps hardening well past the old fixed
-   values for strong accounts, which is exactly where the runaway lives. */
-export const ZOT_EASE_FLOOR = 0.55;  /* the gentlest the Realm ever gets */
-export const ZOT_HARD_CEIL = 2.0;    /* and the harshest */
+/* The Realm of Zot scales to the guild that walks into it, in BOTH directions.
+   An account can otherwise stall on the very first Orb and never start the
+   meta-loop at all: one seed reached Zot:4 again and again across ten days at
+   readiness 12.9 with a prestige bar of 1, and a single victory would have
+   opened prestige, Legends and NG. A struggling guild meets a Realm it can
+   finish; a titan meets one worth the name. Bounded at both ends. */
+export const ZOT_EASE_FLOOR = 0.55;
+export const ZOT_HARD_CEIL = 2.0;
 export const zotScale = s => Math.min(ZOT_HARD_CEIL,
   Math.max(ZOT_EASE_FLOOR, 0.55 + readiness(s) / 55));
 
-/* Ceilings raised to match: the old .48/3 caps were reachable by a mid-game
-   account and then nothing further ever happened. */
-export const eliteChance = lvl => Math.min(.80, .05 + .015 * lvl);
-export const eliteAffixCount = lvl => 1 + Math.min(5, Math.floor(lvl / 8));
-export const floorAffixChance = lvl => Math.min(.65, .07 + .018 * lvl);
+/* Affix level is capped by NG again.
+
+   Letting it follow readiness was the right instinct — a strong guild should
+   meet a dangerous dungeon rather than a poorer one — but the version measured
+   here overtightened badly. With the ceilings raised alongside it (elites to
+   80%, five affixes) accounts stopped being able to start at all: thirty
+   simulated days produced two Orbs, and a run that ascended met a hard world
+   with a beginner's tree and never took another Orb in the following eighty
+   days. Readiness also proved a poor proxy for CURRENT power, since stars are
+   eternal and survive an Ascension that wipes everything else.
+
+   Reverted to the NG-capped form until the escalation can be re-derived against
+   a measure of power the account actually still has. The Realm of Zot keeps its
+   own two-way scaling (zotScale), which was measured separately and is bounded.  */
+export const affixLevel = (s, ng) => Math.round(Math.min(ng, readiness(s) + ng * .12));
+export const eliteChance = lvl => Math.min(.48, .05 + .02 * lvl);
+export const eliteAffixCount = lvl => 1 + Math.min(3, Math.floor(lvl / 10));
+export const floorAffixChance = lvl => Math.min(.48, .07 + .022 * lvl);
 
 /** roll elite affixes for a monster (floor rng keeps it deterministic per seed) */
 export function rollEliteAffixes(ng, rng) {

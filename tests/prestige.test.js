@@ -114,13 +114,11 @@ describe('prestige', () => {
 });
 
 describe('balance fixes from the 1000-session study', () => {
-  it('each victory in the cycle hardens the dungeon', async () => {
+  it('each victory in the cycle hardens the dungeon, up to a cap', async () => {
     const { genFloor } = await import('../src/sim/mapgen.js');
     const { IN_CYCLE_PEAK } = await import('../src/core/prestige.js');
-    const BAR = 10;
     const hpAt = (cycleWins) => {
       const s = makeState();
-      s.prestReq = BAR;
       s.stat.wins = cycleWins;
       s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
       const h = newHero('human', 'fighter', 0, s);
@@ -128,14 +126,10 @@ describe('balance fixes from the 1000-session study', () => {
       genFloor(h, s);
       return h.map.monsters.reduce((a, m) => a + m.maxHp, 0) / h.map.monsters.length;
     };
-    /* The arc is progress THROUGH the cycle, so it reads the same at any bar
-       length — and it cannot exceed IN_CYCLE_PEAK, which is what makes a bar
-       that tracks the guild's output safe. The old GROWTH^wins form would have
-       rebuilt the original wall the moment the bar reached the hundreds. */
-    expect(hpAt(BAR / 2)).toBeGreaterThan(hpAt(0));
-    expect(hpAt(BAR)).toBeGreaterThan(hpAt(BAR / 2));
-    expect(hpAt(BAR) / hpAt(0)).toBeCloseTo(IN_CYCLE_PEAK, 0);
-    expect(hpAt(BAR * 10) / hpAt(0)).toBeCloseTo(IN_CYCLE_PEAK, 0);
+    expect(hpAt(6)).toBeGreaterThan(hpAt(0));
+    expect(hpAt(15)).toBeGreaterThan(hpAt(6));
+    /* bounded: greed costs, but never without limit */
+    expect(hpAt(500) / hpAt(0)).toBeCloseTo(IN_CYCLE_PEAK, 0);
   });
   it('a named rune is collected once per cycle; prestige resets the ledger', async () => {
     const { startRun, simTick } = await import('../src/sim/tick.js');
