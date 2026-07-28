@@ -39,6 +39,16 @@ const STAT_ICON = {
 };
 
 /* stat descriptions of small nodes: [effKey, "per level", label] */
+/* Combat stats were a measured trap: a combat-first build finished on 47 Orbs
+   where a slots-first build took 322. The asymmetry is structural — a slot is a
+   compounding throughput multiplier while +1% damage is a linear addition to an
+   already-large product — but combat stats DO reach throughput, just too weakly
+   to matter. Killing faster clears floors faster, and surviving avoids the
+   single largest time sink in the game: a dead hero loses every level and skill
+   and restarts from floor 1, and the sim buries hundreds of them per ten days.
+   The offensive and survival lines are therefore worth roughly 1.6x what they
+   were, with attack speed lifted furthest since it converts most directly into
+   floors cleared per hour. TUNABLE — validated by the tree ablation. */
 const STAT = {
   atk:   [.010, '+1% damage for all heroes'],
   hp:    [.010, '+1% health for all heroes'],
@@ -126,14 +136,26 @@ for (const [reg, spine] of Object.entries(SPINES)) {
     });
   });
 }
-/* expedition slots — a chain in the heroes region (deep and expensive) */
-/* the 2nd seeker is early and cheap (target: ~20-30 minutes of gameplay);
-   from there the chain goes deeper and gets steeply more expensive */
+/* Expedition slots — a chain in the heroes region.
+
+   These were by far the most underpriced nodes in the game. A slot is not a
+   stat: a second seeker doubles EVERYTHING the guild produces — kills, loot,
+   gold, Memory — and that extra Memory buys more tree, which compounds. No stat
+   node can answer a compounding throughput multiplier, and the sim showed it
+   plainly: a slots-first build took 322 Orbs in ten days where a combat-first
+   build took 47, a 6.8x spread on identical seeds.
+
+   The 2nd seeker stays cheap on purpose: it is the game's first real goal and
+   the lesson that expeditions run in parallel, reachable inside half an hour.
+   The runaway is not there — it is in STACKING slots, so every later rung is
+   repriced steeply against the compounding it unlocks. This is repricing, not a
+   nerf: a slot grants exactly what it always did. TUNABLE — validated by the
+   tree ablation. */
 ['slot1', 'slot2', 'slot3', 'slot4'].forEach((id, i) => {
   node('hslot' + i, 'heroes', REGIONS.heroes.a - 8, [3, 5, 6, 7][i] * RING_R + 30, {
     n: ['2nd', '3rd', '4th', '5th'][i] + ' seeker', d: '+1 concurrent expedition',
     icon: 'pc_human', eff: { slot: 1 }, max: 1,
-    base: [230, 900, 4000, 18000][i], g: 1,
+    base: [230, 4200, 26000, 150000][i], g: 1,
     req: [i === 0 ? 'heroes_s2' : 'hslot' + (i - 1)],
   });
 });

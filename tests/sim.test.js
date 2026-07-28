@@ -28,8 +28,12 @@ describe('heroStats', () => {
     const s = makeState();
     const h = freshHero(s);
     const base = heroStats(h, s).dmg;
-    s.tree.combat_s1 = 12; // +1%/lvl
-    expect(heroStats(h, s).dmg).toBeCloseTo(base * 1.12, 0);
+    /* read the rate from the data rather than pinning a number: combat stats
+       were retuned once already after measuring that a combat-first build lost
+       to a slots-first one 47 Orbs to 322 */
+    s.tree.combat_s1 = 12;
+    const per = NODES.find(n => n.id === 'combat_s1').eff.atk;
+    expect(heroStats(h, s).dmg).toBeCloseTo(base * (1 + 12 * per), 0);
   });
   it('felid has no weapon, troll no armour', () => {
     const s = makeState();
