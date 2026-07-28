@@ -55,17 +55,29 @@ export function readiness(s) {
   let zot = 0; if (s.zupg) for (const k in s.zupg) zot += s.zupg[k];
   return greatCount * .35 + starPower * 1.5 + legacy * .5 + zot * .5;
 }
-/* Affix level tracks readiness, but a floor rising with NG guarantees that a
-   low-readiness build (wide/dilute army) can never permanently outrun affix
-   pressure by staying "unready" — the deeper the ladder, the more the floor
-   drags the effective level up toward NG. Surgical: when readiness >= ng the
-   min() still picks ng (focused mid-game unchanged); it only bites the
-   deep-and-wide runaway regime where readiness lagged far behind NG. */
-export const affixLevel = (s, ng) => Math.round(Math.min(ng, readiness(s) + ng * .12));
-/* the escalation curves now take the effective affix level, not raw NG */
-export const eliteChance = lvl => Math.min(.48, .05 + .02 * lvl);
-export const eliteAffixCount = lvl => 1 + Math.min(3, Math.floor(lvl / 10));
-export const floorAffixChance = lvl => Math.min(.48, .07 + .022 * lvl);
+/* Affix level follows READINESS — the account's own power — which is what this
+   whole system was built for. It used to be throttled by min(ng, ...), and that
+   ceiling quietly defeated the design: NG rises one step per prestige while
+   readiness runs into the hundreds, so a monstrously strong account met elites
+   at 23% with a single affix. Strong guilds never saw hard content, which is a
+   large part of why they ran away.
+
+   Escalating here rather than by shrinking rewards is deliberate. Elites drop
+   MORE loot, and their affixes are qualitative — Bonecaller, Shielded, Thorned,
+   Mirrored ask for different tactics and different heroes, not bigger numbers.
+   A strong account should meet a more dangerous dungeon, not a poorer one.
+
+   readiness is measured in the hundreds, so the map is sqrt-shaped: readiness 15
+   -> level 10, 105 -> 23, 600 -> 51. The NG term stays as a small floor so an
+   account that stayed deliberately "unready" still cannot outrun the pressure.
+   TUNABLE — calibrated by sim. */
+export const affixLevel = (s, ng) =>
+  Math.round(2.0 * Math.sqrt(Math.max(0, readiness(s))) + .12 * ng);
+/* Ceilings raised to match: the old .48/3 caps were reachable by a mid-game
+   account and then nothing further ever happened. */
+export const eliteChance = lvl => Math.min(.80, .05 + .015 * lvl);
+export const eliteAffixCount = lvl => 1 + Math.min(5, Math.floor(lvl / 8));
+export const floorAffixChance = lvl => Math.min(.65, .07 + .018 * lvl);
 
 /** roll elite affixes for a monster (floor rng keeps it deterministic per seed) */
 export function rollEliteAffixes(ng, rng) {
