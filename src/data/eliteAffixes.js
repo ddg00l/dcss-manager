@@ -61,9 +61,32 @@ export function readiness(s) {
    readiness 12.9 with a prestige bar of 1, and a single victory would have
    opened prestige, Legends and NG. A struggling guild meets a Realm it can
    finish; a titan meets one worth the name. Bounded at both ends. */
+/* ZOT_LETHALITY is what makes the Orb an achievement again. Measured before it:
+   69% of delves ended in victory, so two expedition slots produced 16 Orbs a day
+   and the prestige bar — quoted in days of output — ballooned to 275 Orbs a
+   cycle. The Orb of Zot is a life's achievement in the source material; here it
+   was a harvest unit.
+
+   The lethality sits on the Realm of Zot alone, deliberately. Runs stay fast and
+   everything on the way there still pays (deep floors carry a Memory premium),
+   so the change is not "slower", it is "most expeditions do not come back with
+   the Orb" — which is what DCSS actually feels like.
+
+   Calibrated by sim, and the sweep is worth recording because it bounds what
+   this lever can do at all:
+     x1.0  69% of delves win, 16 Orbs/day    x1.5  48%, 13.8
+     x1.2  59%, 21.9                          x2.0  40%, 12.1
+     x3.0   0%, 0
+   The response is a STEP, not a curve. Heroes are homogeneous — same account
+   power, same build — so either the party can clear Zot or none of it can, and
+   there is no regime where one delve in twenty succeeds. A ~5% win rate is
+   therefore unreachable through difficulty alone; it would need real variance
+   between runs (gear, gods, mutations mattering far more) or simply fewer
+   attempts per day. x2.0 takes what this lever honestly offers. TUNABLE. */
+export const ZOT_LETHALITY = 2.0;
 export const ZOT_EASE_FLOOR = 0.55;
 export const ZOT_HARD_CEIL = 2.0;
-export const zotScale = s => Math.min(ZOT_HARD_CEIL,
+export const zotScale = s => ZOT_LETHALITY * Math.min(ZOT_HARD_CEIL,
   Math.max(ZOT_EASE_FLOOR, 0.55 + readiness(s) / 55));
 
 /* Affix level is capped by NG again.

@@ -198,14 +198,16 @@ describe('Rune Aura curve change is not retroactive punishment', () => {
 
 describe('the Realm of Zot answers to the guild that enters it', () => {
   it('eases for a guild that cannot land its first Orb, hardens for a titan', async () => {
-    const { zotScale, ZOT_EASE_FLOOR, ZOT_HARD_CEIL } = await import('../src/data/eliteAffixes.js');
+    const { zotScale, ZOT_EASE_FLOOR, ZOT_HARD_CEIL, ZOT_LETHALITY } = await import('../src/data/eliteAffixes.js');
     const fresh = makeState();
     const titan = makeState(); titan.stars = { 'human/fighter': 30 };
     titan.pupg = { p_legacy: 150, p_dmg: 20, p_hp: 20 };
-    expect(zotScale(fresh)).toBeLessThan(1);        // a fresh guild is given a chance
-    expect(zotScale(titan)).toBeGreaterThan(1.5);   // and a titan is not
-    expect(zotScale(fresh)).toBeGreaterThanOrEqual(ZOT_EASE_FLOOR);
-    expect(zotScale(titan)).toBeLessThanOrEqual(ZOT_HARD_CEIL);
+    /* the Realm is lethal for everyone now — the Orb is meant to be an
+       achievement, not a harvest unit — but it still eases for a guild that
+       cannot yet finish it and hardens for one that long since could */
+    expect(zotScale(fresh)).toBeLessThan(zotScale(titan));
+    expect(zotScale(fresh)).toBeGreaterThanOrEqual(ZOT_LETHALITY * ZOT_EASE_FLOOR);
+    expect(zotScale(titan)).toBeLessThanOrEqual(ZOT_LETHALITY * ZOT_HARD_CEIL);
   });
 });
 
