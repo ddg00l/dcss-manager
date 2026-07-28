@@ -1,5 +1,6 @@
 import { defaultFtue, completedFtue, isVeteranSave } from './ftue.js';
 import { ASCEND_GATE } from './ascension.js';
+import { RUNE_AURA_K } from './economy.js';
 import { stream, hashSeed } from './rng.js';
 import { WEP_BASES } from '../data/items.js';
 import { CLASSES } from '../data/classes.js';
@@ -32,7 +33,8 @@ export function makeState() {
     mem: 0, tree: { root: 1 },
     stat: { kills: 0, deaths: 0, uniqKills: 0, forged: 0, dismantled: 0, memEarned: 0, wins: 0, bestXL: {} },
     runesTotal: 0, pendingDeaths: [], pendingWins: [], unrandsOwned: [],
-    ng: 0, legends: 0, prestiges: 0, prestigesTotal: 0, pupg: {}, balV: 5,
+    ng: 0, legends: 0, prestiges: 0, prestigesTotal: 0, pupg: {}, balV: 6,
+    runeAuraLegacy: 0, /* frozen grandfathered Rune Aura from the balV 6 curve change */
     ascendancy: 0, ascBase: 0, ascensions: 0, ascUpg: {}, /* Ascension meta-layer */
     prestReq: 1, /* Orbs the current cycle needs to prestige; snapshotted at cycle start, never rises mid-cycle */
     vic: { races: {}, classes: {} }, nemeses: {}, cycRunnerBest: 0, cycContractDone: 0,
@@ -147,7 +149,19 @@ export function loadState(storage) {
          ascended account gets credit for what it can prove. */
       if (s.prestigesTotal === undefined)
         state.prestigesTotal = (s.prestiges || 0) + ASCEND_GATE * (s.ascensions || 0);
-      state.balV = 5;
+      /* balV 6: Rune Auras become sub-linear (see economy.js). Applying the new
+         curve bare would retroactively strip a veteran of most of their aura —
+         punishment for having played — so the shortfall is frozen into
+         runeAuraLegacy. The account keeps exactly the multiplier it had at
+         migration and every rune from here on adds on the new, gentler curve.
+         Only accounts that actually own the keystone are compensated. */
+      if (s.runeAuraLegacy === undefined) {
+        const runes = s.runesTotal || 0;
+        const old = 0.02 * runes;                       /* the bonus they had */
+        const now = RUNE_AURA_K * Math.sqrt(runes);     /* what the curve now grants */
+        state.runeAuraLegacy = (s.tree && s.tree.k_runeaura) ? Math.max(0, old - now) : 0;
+      }
+      state.balV = 6;
       pruneSave(state); /* shrink pre-existing bloated saves (accumulated dead heroes) */
       if (s.masterSeed === undefined) {
         /* derive a stable seed from immutable account facts so it never shifts */

@@ -112,14 +112,23 @@ describe('keystone mechanics', () => {
     const other = newHero('human', 'monk', 0, s);
     expect(other.xl).toBe(1);
   });
-  it('ghosts and rune auras multiply global attack', () => {
+  it('ghosts and rune auras multiply global attack', async () => {
     const s = makeState();
     const base = gAtk(s);
     s.tree.k_ghosts = 1; s.stat.deaths = 20;
     expect(ghostMul(s)).toBeCloseTo(1.10);
+    /* Rune Auras are sub-linear: the one permanent multiplier that had neither
+       a cap nor a price, it reached x12.5 on a lifetime total that just piles up
+       (574 runes in ten days). sqrt keeps early runes worth roughly what they
+       were while killing the runaway tail. */
     s.tree.k_runeaura = 1; s.runesTotal = 5;
-    expect(runeAura(s)).toBeCloseTo(1.10);
-    expect(gAtk(s)).toBeCloseTo(base * 1.1 * 1.1, 5);
+    const { RUNE_AURA_K } = await import('../src/core/economy.js');
+    expect(runeAura(s)).toBeCloseTo(1 + RUNE_AURA_K * Math.sqrt(5), 5);
+    expect(gAtk(s)).toBeCloseTo(base * 1.1 * runeAura(s), 5);
+    /* the tail is what matters: a huge lifetime total must not explode */
+    s.runesTotal = 574;
+    expect(runeAura(s)).toBeLessThan(4);        // was 1 + 0.02*574 = 12.5
+    expect(runeAura(s)).toBeGreaterThan(2);     // still a real reward
   });
   it('gacha discount nodes reduce roll cost up to 50% cap', () => {
     const s = makeState();

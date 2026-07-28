@@ -155,3 +155,36 @@ describe('the loop does not livelock', () => {
     expect(moved).toBe(true);
   });
 });
+
+describe('Rune Aura curve change is not retroactive punishment', () => {
+  const fakeStore = (save) => ({ getItem: () => JSON.stringify(save) });
+
+  it('a veteran keeps the exact multiplier they had, and stops compounding', async () => {
+    const { loadState } = await import('../src/core/state.js');
+    const { runeAura } = await import('../src/core/economy.js');
+    const RUNES = 574;
+    /* a pre-migration save: the old aura was a flat +2% per lifetime rune */
+    const old = { balV: 5, runesTotal: RUNES, tree: { root: 1, k_runeaura: 1 }, stat: {}, fame: [] };
+    const s = loadState(fakeStore(old));
+    expect(s.balV).toBe(6);
+    /* nothing is taken away: the migrated aura equals the old one */
+    expect(runeAura(s)).toBeCloseTo(1 + 0.02 * RUNES, 5);
+    /* but it no longer runs away — 400 further runes add far less than the old
+       linear curve would have (+8.0) */
+    const before = runeAura(s);
+    s.runesTotal += 400;
+    expect(runeAura(s) - before).toBeLessThan(2);
+  });
+
+  it('an account without the keystone is granted nothing', async () => {
+    const { loadState } = await import('../src/core/state.js');
+    const old = { balV: 5, runesTotal: 300, tree: { root: 1 }, stat: {}, fame: [] };
+    const s = loadState(fakeStore(old));
+    expect(s.runeAuraLegacy).toBe(0);
+  });
+
+  it('a fresh account carries no legacy term', async () => {
+    const { makeState } = await import('../src/core/state.js');
+    expect(makeState().runeAuraLegacy).toBe(0);
+  });
+});

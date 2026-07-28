@@ -30,7 +30,26 @@ export const fameMul = s => {
   return 1 + Math.min(1, w <= 5 ? w * .08 : .4 + (w - 5) * .03);
 };
 export const ghostMul = s => memHas(s, 'k_ghosts') ? 1 + Math.min(0.30, s.stat.deaths * 0.005) : 1;
-export const runeAura = s => memHas(s, 'k_runeaura') ? 1 + 0.02 * s.runesTotal : 1;
+/* Rune Auras. This was the one permanent multiplier with neither a cap nor a
+   price: +2% damage and gold per rune, linear in a lifetime total that simply
+   accumulates as a by-product of delving (measured: 574 runes in ten days, i.e.
+   x12.5 to damage AND to gold, still climbing). Every other permanent term is
+   disciplined — fame and ghosts are capped, Great records are bounded by the
+   content, and the Legacy engravings pay linearly for an exponentially rising
+   price, which is diminishing returns by another name. The aura had none of
+   that, so it drove the runaway on both the power and the gold side.
+
+   Sub-linear now: sqrt keeps the early game almost identical (25 runes: +0.45
+   against the old +0.50) while 574 runes give x3.2 instead of x12.5. Runes stay
+   worth chasing; they stop being an engine.
+
+   s.runeAuraLegacy grandfathers existing accounts — see the balV 6 migration.
+   It is a frozen constant, so veterans lose nothing they had earned and still
+   stop compounding from here on. */
+export const RUNE_AURA_K = 0.09;
+export const runeAura = s => memHas(s, 'k_runeaura')
+  ? 1 + RUNE_AURA_K * Math.sqrt(Math.max(0, s.runesTotal || 0)) + (s.runeAuraLegacy || 0)
+  : 1;
 import { ngLevel, pupg, ngPlusRewardMul } from './prestige.js';
 import { greatMul } from './chronicle.js';
 import { provMul } from './treasury.js';
