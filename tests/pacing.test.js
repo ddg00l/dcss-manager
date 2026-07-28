@@ -188,3 +188,42 @@ describe('Rune Aura curve change is not retroactive punishment', () => {
     expect(makeState().runeAuraLegacy).toBe(0);
   });
 });
+
+describe('the Realm of Zot answers to the guild that enters it', () => {
+  it('eases for a guild that cannot land its first Orb, hardens for a titan', async () => {
+    const { zotScale, ZOT_EASE_FLOOR, ZOT_HARD_CEIL } = await import('../src/data/eliteAffixes.js');
+    const fresh = makeState();
+    /* the measured stall case: reached Zot:4 again and again at readiness ~13 */
+    const struggling = makeState(); struggling.stars = { 'human/fighter': 4 };
+    const titan = makeState(); titan.stars = { 'human/fighter': 30 };
+    titan.pupg = { p_legacy: 150, p_dmg: 20, p_hp: 20 };
+    expect(zotScale(fresh)).toBeLessThan(1);              // a fresh guild is given a chance
+    expect(zotScale(struggling)).toBeLessThan(1);
+    expect(zotScale(titan)).toBeGreaterThan(1.5);         // and a titan is not
+    /* bounded at both ends: never trivial, never impossible */
+    expect(zotScale(fresh)).toBeGreaterThanOrEqual(ZOT_EASE_FLOOR);
+    expect(zotScale(titan)).toBeLessThanOrEqual(ZOT_HARD_CEIL);
+  });
+
+  it('Zot answers to readiness harder than the dungeon at large', async () => {
+    const { genFloor } = await import('../src/sim/mapgen.js');
+    const hpIn = (branch, floor, mut) => {
+      const s = makeState(); mut(s);
+      const h = newHero('human', 'fighter', 0, s);
+      s.heroes.push(h);
+      h.branch = branch; h.floor = floor; h.seed = 11; h.regenN = 0;
+      genFloor(h, s);
+      return h.map.monsters.reduce((a, m) => a + m.maxHp, 0) / h.map.monsters.length;
+    };
+    const weak = s => {};
+    const strong = s => { s.stars = { 'human/fighter': 30 }; s.pupg = { p_legacy: 150 }; };
+    /* Affix pressure follows readiness EVERYWHERE — a strong guild meets more
+       elites in the Dungeon too, which is the intended design. */
+    const dungeonRatio = hpIn('dungeon', 5, strong) / hpIn('dungeon', 5, weak);
+    expect(dungeonRatio).toBeGreaterThan(1);
+    /* Zot carries that plus its own scaling, so it must react distinctly harder:
+       it is the gate every other system sits behind, in both directions. */
+    const zotRatio = hpIn('zot', 3, strong) / hpIn('zot', 3, weak);
+    expect(zotRatio).toBeGreaterThan(dungeonRatio * 1.5);
+  });
+});

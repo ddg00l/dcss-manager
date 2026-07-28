@@ -73,6 +73,26 @@ export function readiness(s) {
    TUNABLE — calibrated by sim. */
 export const affixLevel = (s, ng) =>
   Math.round(2.0 * Math.sqrt(Math.max(0, readiness(s))) + .12 * ng);
+/* The Realm of Zot scales to the guild that walks into it — the same principle
+   as affix pressure, applied in BOTH directions.
+
+   Measured problem: an account can stall on the very first Orb and never start
+   the meta-loop at all. One sim seed reached Zot:4 repeatedly over ten days and
+   died there every time, at readiness 12.9 with a prestige bar of 1 — a single
+   victory would have opened prestige, Legends and NG, and it could not land one.
+   That cliff got steeper when the Gates began demanding three runes of every
+   delver: authentic, but it front-loads cost onto the one victory that
+   everything else is gated behind.
+
+   So a struggling guild meets a Realm it can actually finish, and a titan meets
+   one worth the name. This is not a discount for being weak — the easing fades
+   as readiness grows, and the same curve keeps hardening well past the old fixed
+   values for strong accounts, which is exactly where the runaway lives. */
+export const ZOT_EASE_FLOOR = 0.55;  /* the gentlest the Realm ever gets */
+export const ZOT_HARD_CEIL = 2.0;    /* and the harshest */
+export const zotScale = s => Math.min(ZOT_HARD_CEIL,
+  Math.max(ZOT_EASE_FLOOR, 0.55 + readiness(s) / 55));
+
 /* Ceilings raised to match: the old .48/3 caps were reachable by a mid-game
    account and then nothing further ever happened. */
 export const eliteChance = lvl => Math.min(.80, .05 + .015 * lvl);
