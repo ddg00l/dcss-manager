@@ -1,5 +1,5 @@
 import {mulberry32} from '../core/rng.js';
-import {GOLD_DEPTH_BASE,powerMonMul} from '../core/economy.js';
+import {GOLD_DEPTH_BASE} from '../core/economy.js';
 import {ngMonMul,inCycleMul,ngLevel} from '../core/prestige.js';
 import {nemesisLevel} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
@@ -147,10 +147,7 @@ export function genFloor(h,s){
   /* hybrid escalation: soft stat multipliers (in-cycle compound + NG capped
      low) carry the numbers; elite monsters with qualitative affixes carry the
      depth — combinatorics instead of a growing scalar */
-  /* three stacked pressures: the NG seasoning (capped), the guild's own power
-     (uncapped, damped -- keeps the ladder honest across cycles) and the in-cycle
-     escalation (resets at prestige -- gives each cycle its arc) */
-  const ngPlus=ngMonMul(s)*powerMonMul(s)*inCycleMul(s);
+  const ngPlus=ngMonMul(s)*inCycleMul(s);
   const ech=eliteChance(afl)*(memHas(s,'k_elite')?1.5:1);
   for(const mo of monsters){
     mo.hp=Math.max(1,Math.floor(mo.hp*ngPlus*afx.monHp));mo.maxHp=mo.hp;

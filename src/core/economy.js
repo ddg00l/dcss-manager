@@ -42,38 +42,6 @@ export const gHp   = s => (1 + memEff(s, 'hp'))  * (1 + 0.1 * zupg(s, 'zhp'))  *
 export const gSpd  = s => 1 + memEff(s, 'spd');
 export const gGold = s => (1 + memEff(s, 'gold')) * (1 + 0.15 * zupg(s, 'zloot')) * runeAura(s) * ngMul(s) * provMul(s, 'gold') * ascGoldMul(s);
 export const gDrop = s => 1 + memEff(s, 'drop');
-
-/* ---- the dungeon tracks the guild's PERMANENT power ----
-   Every difficulty scalar is capped (ngMonMul x2, eliteChance 48%, affixLevel at
-   the NG level) while several power scalars are not (Legacy Engraving +1%/lvl to
-   9999, Eternal Legacy +3%/lvl, the rune aura per rune). Capped difficulty
-   against uncapped power runs away exactly as reliably as the old uncapped
-   difficulty against a sqrt bar walled: with the wall gone the sim reached 116
-   Orbs a day, still accelerating, on 21 billion gold.
-
-   Damping the FULL power stack by an exponent does not fix it, and the sim shows
-   why: at MON_TRACK 0.20 the loop still exploded (330 Orbs/day) and at 0.78 it
-   died outright (0/day from day 10). The knife-edge is structural, not a bad
-   guess — power compounds exponentially, so the guild's advantage, power^(1-k),
-   is exponential for every k below 1 and vanishes at 1. No exponent is stable.
-
-   What is tracked has to change instead. Monsters follow only the PERMANENT
-   layer — Legends, Zot essence, Ascension, fame, ghosts, the rune aura — the
-   things that survive a prestige. They deliberately ignore the Memory tree,
-   provisions and gear, which are bought and burned inside a cycle. So:
-     · across cycles the world levels up with you (no runaway, no wall);
-     · inside a cycle every purchase is pure, felt gain against a fixed floor;
-     · the in-cycle escalation supplies the arc, and prestige upgrades let each
-       new cycle push further before that arc stops you.
-   MON_TRACK sits near 1 because it now tracks a slow, permanent quantity. */
-export const MON_TRACK = 0.85;
-/** the cross-cycle half of the guild's multiplier stack (survives prestige) */
-export const permanentPower = s =>
-  fameMul(s) * ghostMul(s) * runeAura(s) * greatMul(s) *
-  Math.sqrt((1 + 0.1 * zupg(s, 'zatk')) * (1 + 0.1 * zupg(s, 'zhp'))) *
-  (1 + .08 * pupg(s, 'p_dmg')) * (1 + .01 * pupg(s, 'p_legacy')) *
-  Math.sqrt(ascDmgMul(s) * ascHpMul(s));
-export const powerMonMul = s => Math.pow(Math.max(1, permanentPower(s)), MON_TRACK);
 export const gXp   = s => 1 + memEff(s, 'xp');
 export const maxSlots = s => 1 + memEff(s, 'slot') + ascSlots(s);
 export const shardMul = s => 1 + memEff(s, 'shard');
