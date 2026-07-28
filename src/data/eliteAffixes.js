@@ -72,25 +72,34 @@ export function readiness(s) {
    so the change is not "slower", it is "most expeditions do not come back with
    the Orb" — which is what DCSS actually feels like.
 
-   Calibrated by sim (3 seeds, 8 days each). The full curve is worth recording:
-     x1.0  69% of delves win, 16.0 Orbs/day     x2.75  21%,  7.6
-     x1.5  48%, 13.8                            x3.0   10%,  6.5
-     x2.0  40%, 12.1                            x3.5   11%,  5.9  <- chosen
-     x2.5  21%, 12.8                            x4.5    0.8%, 0.2
-   x3.5 makes victory genuinely rare (11%), cuts Orbs from 16 a day to 6, keeps
-   the prestige cadence at ~0.7/day and leaves every seed alive and consistent.
-   x4.5 is where the Realm stops being passable at all.
+   Calibrated by sim at n=12 (8 days each), with the easing working:
+     x3.0  8.2 +/-2.2 Orbs/day, 20.2% of delves win, 0.76 prestiges/day, 1/12 dead
+     x3.5  6.0 +/-2.0,          13.5%,                0.58,               2/12 dead
+   x3.5 ships: victory is roughly one delve in seven, against 69% before any of
+   this, and Orbs fall from 16 a day to 6 while the prestige cadence stays inside
+   its one-per-1-to-2-days target.
 
-   A caution for whoever tunes this next: an earlier pass measured x3.0 at a flat
-   0% and concluded the response was a step function with no usable middle. That
-   was a single seed that happened to die. Three seeds show a smooth curve. Near
-   a cliff, never trust n=1.
+   Two cautions for whoever tunes this next, both learned the hard way here.
+   First, n=3 is worthless on this metric: at that size x3.0 measured a 95%
+   interval of [0.1 .. 12.9], which cannot distinguish a healthy loop from a dead
+   one, and it produced two wrong conclusions in a row -- a phantom cliff at x3.0
+   (one unlucky seed) and a 50% overestimate of x3.5. Resolving a 2 Orbs/day
+   difference needs n>=9; 1 Orb/day needs n>=35.
+   Second, raising lethality without lowering the base of the easing curve makes
+   the easing stop easing: it multiplied that base too, so a struggling guild met
+   a Realm ~1.9x harder than baseline and simply died. A fresh guild now meets
+   Zot at x0.98 and a titan at x7.
    */
 export const ZOT_LETHALITY = 3.5;
-export const ZOT_EASE_FLOOR = 0.55;
+export const ZOT_EASE_FLOOR = 0.28;
 export const ZOT_HARD_CEIL = 2.0;
+/* The floor had to drop when lethality went up: multiplying it too meant even a
+   struggling guild met a Realm ~1.9x harder than baseline, so the easing stopped
+   easing and accounts died outright (2 of 12 never took an Orb at all). At 0.28
+   a guild that cannot yet finish Zot meets it at roughly baseline strength,
+   while a titan still faces the full multiple. */
 export const zotScale = s => ZOT_LETHALITY * Math.min(ZOT_HARD_CEIL,
-  Math.max(ZOT_EASE_FLOOR, 0.55 + readiness(s) / 55));
+  Math.max(ZOT_EASE_FLOOR, ZOT_EASE_FLOOR + readiness(s) / 55));
 
 /* Affix level is capped by NG again.
 
