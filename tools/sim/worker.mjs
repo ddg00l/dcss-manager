@@ -9,7 +9,7 @@
    Aggregate:      python3 tools/sim/aggregate.py 'out_*.ndjson' */
 import { makeState } from '../../src/core/state.js';
 import { newHero, rollHero } from '../../src/sim/hero.js';
-import { advanceHeroes, startRun, equipBestFromArmory, recallHero, fundZiggurat } from '../../src/sim/tick.js';
+import { advanceHeroes, startRun, equipBestFromArmory, recallHero, fundZiggurat, resetSimClocks } from '../../src/sim/tick.js';
 import { cofferCost, buyCoffer, PROVISIONS, provCostOf, provStacks, buyProvision, zigFee } from '../../src/core/treasury.js';
 import { NODES, canBuy, buyNode, treeLvl, nodeCost, memHas } from '../../src/data/memtree.js';
 import { rollCost, maxSlots, forgeDisc, freeRollAvailable, ZUPGRADES, zupg, zupgCost, zupgCap } from '../../src/core/economy.js';
@@ -229,6 +229,7 @@ const trueRandom = Math.random;
 function session(tactic, days = 1, seed = 0) {
   Math.random = mulberry32(0x9e3779b9 ^ seed); /* bot decisions (tactic/forge choices) */
   GAMEPLAY_SEED = (0x1234567 ^ seed) >>> 0; /* gameplay determinism via the account master seed */
+  resetSimClocks(); /* sessions share a process: never inherit the last account's clocks */
   const s = makeState(); s.masterSeed = GAMEPLAY_SEED; s.seq = {};
   const m = { summons: 0, prestiges: 0, spentLegends: 0, cofferGold: 0, cofferMem: 0, provGold: 0, zigGold: 0, zigRuns: 0 };
   const step = tactic.checkin;
