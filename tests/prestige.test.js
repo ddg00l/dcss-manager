@@ -124,12 +124,13 @@ describe('balance fixes from the 1000-session study', () => {
       genFloor(h, s);
       return h.map.monsters.reduce((a, m) => a + m.maxHp, 0) / h.map.monsters.length;
     };
-    /* Hardening is LINEAR in the cycle's Orbs (1 + IN_CYCLE_STEP*wins), not
-       exponential. The old 1.25^wins priced a prestige bar of B Orbs at 1.25^B
-       while the bar itself grew only as sqrt(lifetime wins) — an exponential
-       against a square root, so every account eventually hit a bar it could
-       never clear (all 14 sim tactics flatlined, most within two weeks).
-       Greed must still cost, so keep it strictly monotonic. */
+    /* Hardening is geometric per Orb carried out this cycle and resets at
+       prestige — that is what stops a cycle from being one fast delve on repeat.
+       What must stay bounded is not the rate but the hardest cycle the game can
+       DEMAND: the old 1.25^wins was priced against a bar growing as sqrt(lifetime
+       wins), so clearing a bar of B Orbs cost 1.25^B and every account eventually
+       hit a bar it could never clear (all 14 sim tactics flatlined, most within
+       two weeks). The bar is capped now — see PREST_CAP_ABS below. */
     const { IN_CYCLE_GROWTH } = await import('../src/core/prestige.js');
     expect(hpAt(3)).toBeGreaterThan(hpAt(0));
     expect(hpAt(8)).toBeGreaterThan(hpAt(3));
