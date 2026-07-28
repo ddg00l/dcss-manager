@@ -53,6 +53,31 @@ function hlog(h,txt,cls){
   if(h.log.length>LOG_MAX)h.log.shift();
 }
 
+/* What a cleared floor is worth in Memory, by depth.
+
+   This is the role combat power was missing. Throughput multiplies volume: a
+   second seeker doubles the floors cleared per hour. It cannot multiply DEPTH —
+   five weak heroes reach exactly as deep as one weak hero, because depth is
+   gated by a single delver's power. So as long as shallow floors paid nearly as
+   well as deep ones (depth 26 paid 4.6x depth 3, near-linear), farming wide
+   strictly beat delving deep, and no coefficient on a stat node could answer
+   that: measured, a slots-first build took 322 Orbs to a combat-first build's
+   47, and buffing the stats 1.6x only widened it to 26x because every build
+   buys stat nodes and only the wide one compounds them.
+
+   The depth premium is ADDED to the old curve rather than replacing it. The
+   first attempt redistributed instead: deep floors gained, shallow ones lost,
+   and the default balanced build fell from 88 Orbs to 29 — punishing the way
+   most people play to fix a comparison between two builds. Now no floor pays
+   less than it used to and depth 26 pays about 10x depth 3 (it paid 4.6x).
+
+   Pairs with the depth-scaled death payout: a seeker who dies deep still brings
+   something home. TUNABLE. */
+export const floorMemory = depth => {
+  const d = Math.max(0, depth);
+  return 2 + d * 0.6 + Math.pow(d, 1.75) / 12;
+};
+
 /* Runes the Gates of Zot demand of every delver (DCSS asks for 3). TUNABLE: this
    is the main dial for how long a full run takes, because each rune costs a
    branch descent and a branch boss. */
@@ -124,7 +149,7 @@ function nextFloor(h,s){
   const seg=route[h.segIdx];
   const br=BRANCHES[h.branch];
   h.rep.floors++;
-  gainMem(s,2+brDepth(h)*.6);
+  gainMem(s,floorMemory(brDepth(h)));
   /* progress tracking */
   const short=br.short;
   const pk=short==='D'?'D':short;
