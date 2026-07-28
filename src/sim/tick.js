@@ -985,6 +985,13 @@ export function heroTps(h,s){
   return 1.4*(RACES[h.race].spd||1)*gSpd(s);
 }
 let simAcc={};
+/* Sessions run back-to-back inside one process in the sim harness, and hero ids
+   restart at 1 for every new account — so a leftover fractional turn
+   accumulator from the previous account lands on an unrelated hero. Small, but
+   it makes a "deterministic" seed depend on which sessions ran before it: the
+   same seed measured 0 wins in one batch and 142 in another. Any harness that
+   reuses the process must call this between accounts. */
+export function resetSimClocks(){simAcc={}}
 /* the "Auto-summon" keystone: fills a free slot with an idle hero, or buys a
    summon when the treasury holds at least twice the price; runs inside the sim
    so it works identically online, in background tabs and in offline catch-up */
