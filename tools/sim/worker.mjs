@@ -262,7 +262,11 @@ function session(tactic, days = 1, seed = 0) {
       playerActions(s, tactic, m);
       advanceHeroes(s, step, true);
     }
-    byDay.push({ wins: s.stat.wins, prest: m.prestiges, ng: ngLevel(s), mem: s.stat.memEarned, afx: todayAffixKey() });
+    /* bar and rate are the whole point of the output-tracking prestige design:
+       without them a long run cannot show whether cadence held or why */
+    byDay.push({ wins: s.stat.wins, prest: m.prestiges, ng: ngLevel(s),
+      mem: s.stat.memEarned, deaths: s.stat.deaths, afx: todayAffixKey(),
+      bar: prestigeReq(s), rate: +(s.orbRate || 0).toFixed(2) });
   }
   playerActions(s, tactic, m);
   Math.random = trueRandom;
@@ -291,6 +295,7 @@ function session(tactic, days = 1, seed = 0) {
     zlv: Object.values(s.zupg||{}).reduce((a,b)=>a+b,0),
     plv: Object.values(s.pupg||{}).reduce((a,b)=>a+b,0),
     ng: ngLevel(s), byDay, debug: m.debug,
+    orbRate: +(s.orbRate || 0).toFixed(2), prestReq: prestigeReq(s),
     greats: greatRaces(s).length + greatClasses(s).length,
     zig: s.stat.zigBest || 0, contracts: s.stat.contracts || 0,
     gold: Math.round(s.gold), spentLegends: m.spentLegends,
@@ -303,6 +308,11 @@ function session(tactic, days = 1, seed = 0) {
   };
 }
 
+/* NOTE: no named archetype uses tree:'combat'. That strategy buys only from the
+   combat and dungeon regions, and expedition slots live in 'heroes', so it plays
+   whole accounts with a single seeker — a useful ABLATION CONTROL for pricing
+   combat nodes, but not a player. Three archetypes used it by accident and their
+   numbers were meaningless as archetypes. They run 'combat_fair' now. */
 const TACTICS = {
   afk:        { checkin: 6 * 3600, tree: 'balanced', route: 'classic', caution: 'normal', rollFactor: 1, goldReserve: 0, forge: false , prestige: true, prestigeAfter: 1 },
   lazy:       { checkin: 1800, tree: 'balanced', route: 'classic', caution: 'normal', rollFactor: 1, goldReserve: 0, forge: false , prestige: true, prestigeAfter: 2 },
@@ -310,15 +320,15 @@ const TACTICS = {
   rush_slots: { checkin: 300, tree: 'slots', route: 'classic', caution: 'cautious', rollFactor: 1, goldReserve: 0, forge: false , prestige: true, prestigeAfter: 2 },
   keystoner:  { checkin: 300, tree: 'keystones', route: 'classic', caution: 'normal', rollFactor: 1, goldReserve: 0, forge: false , prestige: true, prestigeAfter: 2 },
   whale:      { checkin: 300, tree: 'balanced', route: 'classic', caution: 'normal', rollFactor: 1, dark: true, goldReserve: 0, forge: false , prestige: true, prestigeAfter: 2, zig: true },
-  smith:      { checkin: 300, tree: 'combat', route: 'classic', caution: 'normal', rollFactor: 2, goldReserve: 300, forge: true , prestige: true, prestigeAfter: 2 },
-  speedrun:   { checkin: 300, tree: 'combat', route: 'speed', caution: 'bold', rollFactor: 1, goldReserve: 0, forge: false, prestige: true },
+  smith:      { checkin: 300, tree: 'combat_fair', route: 'classic', caution: 'normal', rollFactor: 2, goldReserve: 300, forge: true , prestige: true, prestigeAfter: 2 },
+  speedrun:   { checkin: 300, tree: 'combat_fair', route: 'speed', caution: 'bold', rollFactor: 1, goldReserve: 0, forge: false, prestige: true },
   shardwhale: { checkin: 300, tree: 'balanced', route: 'classic', caution: 'normal', rollFactor: 1, dark: true, shardFarm: true, goldReserve: 0, forge: false, prestige: true, prestigeAfter: 2 },
   /* --- gold-sink & mechanic coverage --- */
   treasurer:     { checkin: 300, tree: 'balanced', route: 'classic', caution: 'normal', rollFactor: 1, goldReserve: 0, forge: false, prestige: true, prestigeAfter: 2, zig: true, zigAggressive: true },
   abyssal:       { checkin: 300, tree: 'keystones', route: 'abyss', caution: 'normal', rollFactor: 1, goldReserve: 0, forge: false, prestige: false },
   miser:         { checkin: 300, tree: 'balanced', route: 'classic', caution: 'normal', rollFactor: 4, goldReserve: 0, forge: false, prestige: true, prestigeAfter: 2, hoard: true },
   completionist: { checkin: 300, tree: 'balanced', route: 'classic', caution: 'normal', rollFactor: 1, goldReserve: 0, forge: false, prestige: true, prestigeAfter: 2, collect: true },
-  berserker:     { checkin: 300, tree: 'combat', route: 'classic', caution: 'bold', rollFactor: 1, goldReserve: 0, forge: false, prestige: true, prestigeAfter: 2, spend: 'lavish' },
+  berserker:     { checkin: 300, tree: 'combat_fair', route: 'classic', caution: 'bold', rollFactor: 1, goldReserve: 0, forge: false, prestige: true, prestigeAfter: 2, spend: 'lavish' },
 };
 
 /* The session runner is importable so other harnesses (tools/sim/ablate.mjs)
