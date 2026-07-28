@@ -42,6 +42,25 @@ export const gHp   = s => (1 + memEff(s, 'hp'))  * (1 + 0.1 * zupg(s, 'zhp'))  *
 export const gSpd  = s => 1 + memEff(s, 'spd');
 export const gGold = s => (1 + memEff(s, 'gold')) * (1 + 0.15 * zupg(s, 'zloot')) * runeAura(s) * ngMul(s) * provMul(s, 'gold') * ascGoldMul(s);
 export const gDrop = s => 1 + memEff(s, 'drop');
+
+/* ---- the dungeon tracks the guild's power ----
+   Every difficulty scalar in the game is capped (ngMonMul at x2, eliteChance at
+   48%, affixLevel at the NG level) while several power scalars are not (Legacy
+   Engraving +1%/lvl to 9999, Eternal Legacy +3%/lvl, the rune aura per rune).
+   Capped difficulty against uncapped power can only end one way, and it did:
+   with the old exponential wall removed the sim ran to 116 Orbs a day and still
+   accelerating, banking 21 billion gold.
+
+   So monsters now scale with the account's OWN multiplier stack, damped by
+   MON_TRACK. Because the exponent is below 1 the guild still pulls ahead — real,
+   felt progress — but the gap widens slowly instead of exploding. The in-cycle
+   escalation stays on top of this: it supplies the arc WITHIN a cycle, this
+   supplies the floor ACROSS cycles. TUNABLE, and the pair must be tuned
+   together. */
+export const MON_TRACK = 0.78;
+/** geometric mean of the guild's damage and health multipliers */
+export const accountPower = s => Math.sqrt(gAtk(s) * gHp(s));
+export const powerMonMul = s => Math.pow(Math.max(1, accountPower(s)), MON_TRACK);
 export const gXp   = s => 1 + memEff(s, 'xp');
 export const maxSlots = s => 1 + memEff(s, 'slot') + ascSlots(s);
 export const shardMul = s => 1 + memEff(s, 'shard');
