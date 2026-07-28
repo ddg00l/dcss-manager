@@ -62,35 +62,12 @@ export const gSpd  = s => 1 + memEff(s, 'spd');
 export const gGold = s => (1 + memEff(s, 'gold')) * (1 + 0.15 * zupg(s, 'zloot')) * runeAura(s) * ngMul(s) * provMul(s, 'gold') * ascGoldMul(s);
 export const gDrop = s => 1 + memEff(s, 'drop');
 export const gXp   = s => 1 + memEff(s, 'xp');
-/* Expedition slots the guild has EARNED. */
-export const maxSlotsBase = s => 1 + memEff(s, 'slot') + ascSlots(s);
-/* ...and the ones it can actually field right now. A guild reeling from losses
-   cannot muster full strength, so grief costs the one resource that is genuinely
-   scarce here: time in flight.
-
-   Pricing churn in gold did nothing — measured, the conveyor build simply paid
-   and went from 223 Orbs to 343 on 1082 corpses, because gold is abundant and a
-   summon is cheap. Throughput is what the conveyor actually sells, so that is
-   what a corpse has to cost. Never drops below one slot: a guild can always
-   send someone. */
-export const mourningSlotLoss = s => Math.floor((s.mourning || 0) / 2);
-export const maxSlots = s => Math.max(1, maxSlotsBase(s) - mourningSlotLoss(s));
+export const maxSlots = s => 1 + memEff(s, 'slot') + ascSlots(s);
 export const shardMul = s => 1 + memEff(s, 'shard');
 export const forgeDisc = s => 1 - Math.min(0.5, memEff(s, 'fdisc'));
 
-/* How long the guild grieves, and how much dearer a replacement is while it
-   does. Deaths were free: gear came back, the wallet came back, and Memory and
-   shards were granted on top, so a conveyor of disposable seekers outperformed
-   any careful build (measured: 808 corpses to 82). Mourning prices the RATE of
-   losses — an occasional death barely moves it, a conveyor pays on every
-   summon — and it decays, so it is never a permanent tax. TUNABLE. */
-export const MOURN_HALFLIFE = 900;   /* seconds */
-export const MOURN_PER_DEATH = 0.55;
-export const MOURN_CAP = 4;
-export const mourningMul = s => Math.min(MOURN_CAP, 1 + MOURN_PER_DEATH * (s.mourning || 0));
-
 export const rollCost = s =>
-  Math.floor(150 * Math.pow(1.18, s.rolls) * mourningMul(s) * (1 - Math.min(0.5, memEff(s, 'gdisc'))) * (1 - .05 * pupg(s, 'p_roll')));
+  Math.floor(150 * Math.pow(1.18, s.rolls) * (1 - Math.min(0.5, memEff(s, 'gdisc'))) * (1 - .05 * pupg(s, 'p_roll')));
 /** all heroes dead/gone — the guild sends a seeker for free */
 export const freeRollAvailable = s => !s.heroes.some(h => h.state === 'camp' || h.state === 'run');
 export const effectiveRollCost = s => freeRollAvailable(s) ? 0 : rollCost(s);

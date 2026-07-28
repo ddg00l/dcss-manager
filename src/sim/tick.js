@@ -1,4 +1,4 @@
-import {gXp,gGold,gDrop,gSpd,gAtk,gHp,shardMul as shardMulF,maxSlots,rollCost,freeRollAvailable,GOLD_DEPTH_BASE,MOURN_HALFLIFE} from '../core/economy.js';
+import {gXp,gGold,gDrop,gSpd,gAtk,gHp,shardMul as shardMulF,maxSlots,rollCost,freeRollAvailable,GOLD_DEPTH_BASE} from '../core/economy.js';
 import {gainMem,memEff,memHas} from '../data/memtree.js';
 import {clamp,fmt} from '../core/fmt.js';
 import {heroStats,rollHero,ringSlotKeys} from './hero.js';
@@ -77,10 +77,6 @@ export const floorMemory = depth => {
   const d = Math.max(0, depth);
   return 2 + d * 0.6 + Math.pow(d, 1.75) / 12;
 };
-
-/* Fraction of a fallen seeker's kit the guild recovers. Artefacts always are.
-   TUNABLE — this is the main price of churning heroes. */
-export const GEAR_RECOVERED=0.6;
 
 /* Runes the Gates of Zot demand of every delver (DCSS asks for 3). TUNABLE: this
    is the main dial for how long a full run takes, because each rune costs a
@@ -300,23 +296,11 @@ export function heroDie(h,killer,s){
     log:h.log.slice(-14),
   });
   if(s.pendingDeaths.length>6)s.pendingDeaths.shift();
-  /* What the guild recovers from a corpse. It used to be 90% of the gear, the
-     whole wallet, Memory and shards — so feeding heroes into the dungeon cost
-     effectively nothing, and the sim showed a slots-first conveyor winning on
-     808 corpses where a combat build spent 82. Losing a seeker is now a real
-     loss of kit, which is a cost gold cannot simply pay off: the armoury drains
-     and the next delver goes in worse equipped. Artefacts are exempt — they are
-     the eternal Collection and are never destroyed. */
+  /* gear back to armory (90%) */
   for(const slot of Object.keys(h.gear)){
     const it=h.gear[slot];
-    if(!it||it.id.startsWith('st'))continue;
-    if(it.unrandId||rnd(h)<GEAR_RECOVERED)storeItem(s,it);
+    if(it&&!it.id.startsWith('st')&&rnd(h)<.9)storeItem(s,it);
   }
-  /* Mourning: the guild's losses make replacements dearer for a while. This
-     prices the RATE of deaths rather than death itself — an occasional loss
-     barely registers, a conveyor pays for every corpse. It decays in real time
-     (see advanceHeroes), so it never becomes a permanent tax. */
-  s.mourning=(s.mourning||0)+1;
   s.fame.unshift({name:h.name,race:h.race,cls:h.cls,rarity:h.rarity,xl:h.xl,
     depth:h.maxDepth||brTag(h),by:killer,won:false,runes:h.runes.length});
   if(s.fame.length>20)s.fame.length=20;
@@ -1044,10 +1028,6 @@ function autoSummonStep(s){
   rollHero(s,false); /* the fresh hero is dispatched on the next step */
 }
 export function advanceHeroes(s,dtSec,silent){
-  /* mourning fades in real time, halving every MOURN_HALFLIFE seconds: a guild
-     that stops losing seekers is most of the way back within an hour and clear
-     within two, so it is a running cost of churn and never a permanent tax */
-  if(s.mourning>0)s.mourning=Math.max(0,s.mourning*Math.pow(0.5,dtSec/MOURN_HALFLIFE));
   const auto=memHas(s,'k_autosummon')||ascAutoGuild(s);
   const herald=memHas(s,'k_herald');
   let left=dtSec;

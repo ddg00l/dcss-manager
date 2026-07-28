@@ -227,36 +227,3 @@ describe('the Realm of Zot answers to the guild that enters it', () => {
     expect(zotRatio).toBeGreaterThan(dungeonRatio * 1.5);
   });
 });
-
-describe('losing a seeker is a real loss', () => {
-  it('kit is destroyed on death, but artefacts never are', async () => {
-    const { GEAR_RECOVERED } = await import('../src/sim/tick.js');
-    expect(GEAR_RECOVERED).toBeLessThan(1);
-    const s = makeState();
-    const h = hero(s); startRun(h, s);
-    h.gear.weapon = { slot: 'weapon', base: 'long_sword', plus: 0, ego: null, rar: 3, id: 'u9', unrandId: 'singing' };
-    h.rep = { gold: 0, kills: 0, floors: 0, notable: [] };
-    heroDie(h, 'a test', s);
-    /* the eternal Collection is never destroyed */
-    expect(s.armory.some(i => i.unrandId === 'singing')).toBe(true);
-  });
-
-  it('mourning prices the RATE of losses, and fades', async () => {
-    const { mourningMul, MOURN_CAP } = await import('../src/core/economy.js');
-    const { rollCost } = await import('../src/core/economy.js');
-    const { advanceHeroes } = await import('../src/sim/tick.js');
-    const s = makeState();
-    const calm = rollCost(s);
-    expect(mourningMul(s)).toBe(1);
-    /* a conveyor: many losses in quick succession */
-    s.mourning = 6;
-    expect(rollCost(s)).toBeGreaterThan(calm * 2);
-    expect(mourningMul(s)).toBeLessThanOrEqual(MOURN_CAP); // never unbounded
-    /* ...but a guild that stops losing seekers recovers: mostly within an hour,
-       clear within two. Grief is a running cost of churn, not a permanent tax. */
-    advanceHeroes(s, 3600, true);
-    expect(mourningMul(s)).toBeLessThan(1.25);
-    advanceHeroes(s, 3600, true);
-    expect(mourningMul(s)).toBeLessThan(1.02);
-  });
-});
