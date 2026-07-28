@@ -22,15 +22,22 @@ export const ngPlusRewardMul = s => hasNgPlus(s) ? 2.5 : 1;
    runaway build stops itself: each win makes the next one x1.3 harder */
 export const ngMonMul = s => (1 + Math.min(1, .1 * ngLevel(s))) * ngPlusMonMul(s); /* hybrid: numbers cap at x2, affixes carry the depth */
 
-/* In-cycle hardening: every Orb carried out this cycle makes the next one harder.
-   This MUST stay sub-exponential. It used to be 1.25^wins, which made the cost of
-   clearing a prestige bar of B Orbs grow as 1.25^B while the bar itself only grew
-   as sqrt(lifetime wins) — an exponential priced against a square root. Every
-   account therefore hit a wall it could never pass (measured: all 14 bot tactics
-   flatlined permanently, most inside two weeks). Linear growth keeps the "greed
-   costs you" pressure without ever making a reachable bar unreachable. TUNABLE. */
-export const IN_CYCLE_STEP = 0.15;
-export const inCycleMul = s => 1 + IN_CYCLE_STEP * Math.max(0, cycleProgress(s).wins);
+/* In-cycle hardening: every Orb carried out this cycle makes the dungeon harder,
+   and it resets at prestige. This is what stops a cycle from being the same fast
+   delve on repeat — the 4th Orb of a cycle is a genuinely different fight from
+   the 1st — and it is what ends a cycle naturally: you prestige when the
+   escalation outgrows your build, not because a counter told you to.
+
+   It is geometric on purpose. The danger is NOT the growth rate itself but its
+   product with the prestige bar: the original 1.25^wins was priced against a bar
+   that grew as sqrt(lifetime wins), so clearing a bar of B Orbs cost 1.25^B — an
+   exponential chasing a square root, which every account eventually loses (all 14
+   bot tactics flatlined permanently, most inside two weeks). The bar is therefore
+   capped (PREST_CAP) so the worst case a cycle can ever demand is a FIXED
+   IN_CYCLE_GROWTH^PREST_CAP, which a growing account keeps outpacing. Change one
+   of these two constants and you must re-check the other. TUNABLE. */
+export const IN_CYCLE_GROWTH = 1.18;
+export const inCycleMul = s => Math.pow(IN_CYCLE_GROWTH, Math.max(0, cycleProgress(s).wins));
 
 export const PUPGRADES = [
   { k: 'p_dmg', n: 'Legendary might', d: '+8% damage for all heroes per lvl', max: 20, base: 3, g: 1.5 },
@@ -82,9 +89,14 @@ export function legendsReward(s) {
    lifetime total accrues just as fast, so its bar rises just as fast — no
    artificial per-prestige floor needed. Greed still pays, since this cycle's
    Orbs are part of the total. The curve is sqrt (sub-linear) so early cycles stay
-   fast and frequent, then — because the in-cycle 1.25^wins compound is
-   exponential in the bar — an ever-rising bar bends cadence into a graceful
-   asymptote over dozens of prestiges instead of the runaway a capped bar allowed. */
+   fast and frequent.
+
+   It is now CAPPED, and the cap is not cosmetic. The in-cycle hardening is
+   geometric, so a cycle that demands B Orbs demands IN_CYCLE_GROWTH^B power. An
+   uncapped bar therefore prices itself out of reach no matter how gently it
+   grows — that is precisely how the loop died before (bar 18, cost 55x, every
+   tactic frozen). With the cap the hardest cycle the game can ever ask for is a
+   fixed constant, and an account that keeps growing keeps clearing it. */
 export const prestigeReq = s => s.prestReq || 1;
 /** requirement for the next cycle, from lifetime Orbs — snapshotted at prestige time */
 /* the bar tracks Orbs won SINCE the last Ascension: ascending resets the whole
@@ -95,8 +107,22 @@ export const PREST_FLOOR = 3;  /* Orbs the very first prestige of an ascension-c
 export const PREST_ASC_STEP = 4; /* +Orbs per Ascension: a super-linear cost that keeps the
    loop's rate bounded — the stronger the account (more ascensions), the more each prestige
    costs, matching the growing Ascension power instead of letting it run away. TUNABLE. */
-export const nextPrestigeReq = s =>
-  PREST_FLOOR + PREST_ASC_STEP * (s.ascensions || 0) + Math.floor(1.1 * Math.sqrt(Math.max(0, (s.stat.wins || 0) - (s.ascBase || 0))));
+/* Hard ceiling on Orbs-per-cycle. The in-cycle hardening is geometric, so this
+   cap is what bounds the hardest fight the game can ever demand:
+   IN_CYCLE_GROWTH^PREST_CAP (1.18^7 = 3.2x). Without it the bar keeps climbing
+   and the required power climbs exponentially with it — the measured death of
+   the loop. Raise this and the endgame gets exponentially harder, fast. */
+export const PREST_CAP = 7;
+/* Absolute ceiling across ALL ascensions. Capping only the per-ascension curve
+   is not enough: PREST_ASC_STEP would still push the bar up forever (asc 3 -> 19
+   Orbs -> 1.18^19 = 23x), rebuilding the same exponential wall a few ascensions
+   later. The hardest fight the game can ever demand is 1.18^12 = 7.3x, which
+   Ascension's own multipliers comfortably outgrow. */
+export const PREST_CAP_ABS = 12;
+export const nextPrestigeReq = s => Math.min(
+  PREST_CAP_ABS,
+  PREST_CAP + PREST_ASC_STEP * (s.ascensions || 0),
+  PREST_FLOOR + PREST_ASC_STEP * (s.ascensions || 0) + Math.floor(1.1 * Math.sqrt(Math.max(0, (s.stat.wins || 0) - (s.ascBase || 0)))));
 export const canPrestige = s => cycleProgress(s).wins >= prestigeReq(s);
 
 /** the reset itself; returns the Legends earned or 0 when not allowed */

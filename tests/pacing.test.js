@@ -6,7 +6,7 @@ import { makeState } from '../src/core/state.js';
 import { newHero } from '../src/sim/hero.js';
 import { startRun, advanceHeroes, heroDie, runeBranchFor, giveRune, ZOT_RUNES } from '../src/sim/tick.js';
 import { BRANCHES } from '../src/data/branches.js';
-import { IN_CYCLE_STEP, inCycleMul } from '../src/core/prestige.js';
+import { IN_CYCLE_GROWTH, inCycleMul, nextPrestigeReq, PREST_CAP_ABS } from '../src/core/prestige.js';
 import { cofferCost, zigFee, provCostOf, PROVISIONS, goldScale } from '../src/core/treasury.js';
 import { endgameUnlocked, ENDGAME_GATE } from '../src/data/endgame.js';
 
@@ -79,20 +79,25 @@ describe('a rune is both a key and a coin', () => {
   });
 });
 
-describe('in-cycle hardening is linear, never exponential', () => {
-  it('a 20-Orb cycle stays affordable', () => {
+describe('in-cycle hardening escalates, and the bar it is priced against is capped', () => {
+  it('each Orb of a cycle makes the dungeon harder', () => {
     const s = makeState();
     s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
     s.stat.wins = 0;
     expect(inCycleMul(s)).toBeCloseTo(1, 5);
     s.stat.wins = 8;
-    expect(inCycleMul(s)).toBeCloseTo(1 + IN_CYCLE_STEP * 8, 5);
-    s.stat.wins = 20;
-    /* the old 1.25^20 was 87x -- a bar no account could ever clear */
-    expect(inCycleMul(s)).toBeLessThan(5);
-    /* but greed still costs: strictly increasing */
+    expect(inCycleMul(s)).toBeCloseTo(Math.pow(IN_CYCLE_GROWTH, 8), 5);
+    /* greed costs: strictly increasing */
     const at = w => { s.stat.wins = w; return inCycleMul(s); };
     expect(at(9)).toBeGreaterThan(at(3));
+  });
+  it('the bar is capped, so the hardest demandable fight is a fixed constant', () => {
+    const s = makeState();
+    s.stat.wins = 100000; s.ascensions = 50; /* absurdly deep account */
+    expect(nextPrestigeReq(s)).toBe(PREST_CAP_ABS);
+    /* the worst cycle the game can ask for must stay something a growing
+       account can outpace -- this is the guard against the measured loop death */
+    expect(Math.pow(IN_CYCLE_GROWTH, PREST_CAP_ABS)).toBeLessThan(10);
   });
 });
 

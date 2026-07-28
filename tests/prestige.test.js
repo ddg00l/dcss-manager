@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { makeState } from '../src/core/state.js';
 import { newHero, heroStats } from '../src/sim/hero.js';
 import {
-  ngLevel, legendsReward, canPrestige, doPrestige, cycleProgress, PUPGRADES, pupg, pupgCost,
+  ngLevel, legendsReward, canPrestige, doPrestige, cycleProgress, PUPGRADES, pupg, pupgCost, PREST_CAP,
 } from '../src/core/prestige.js';
 import { gAtk, gHp, ngMul, rollCost } from '../src/core/economy.js';
 import { gainMem } from '../src/data/memtree.js';
@@ -130,12 +130,14 @@ describe('balance fixes from the 1000-session study', () => {
        against a square root, so every account eventually hit a bar it could
        never clear (all 14 sim tactics flatlined, most within two weeks).
        Greed must still cost, so keep it strictly monotonic. */
-    const { IN_CYCLE_STEP } = await import('../src/core/prestige.js');
+    const { IN_CYCLE_GROWTH } = await import('../src/core/prestige.js');
     expect(hpAt(3)).toBeGreaterThan(hpAt(0));
     expect(hpAt(8)).toBeGreaterThan(hpAt(3));
-    expect(hpAt(8) / hpAt(0)).toBeCloseTo((1 + IN_CYCLE_STEP * 8) / 1, 1);
-    /* and crucially: it must NOT be exponential — 20 Orbs stays affordable */
-    expect(hpAt(20) / hpAt(0)).toBeLessThan(5);
+    expect(hpAt(8) / hpAt(0)).toBeCloseTo(Math.pow(IN_CYCLE_GROWTH, 8), 0);
+    /* The escalation is geometric on purpose, so what must stay bounded is the
+       hardest cycle the game can DEMAND — the bar is capped for exactly this. */
+    const { PREST_CAP_ABS } = await import('../src/core/prestige.js');
+    expect(hpAt(PREST_CAP_ABS) / hpAt(0)).toBeLessThan(10);
   });
   it('a named rune is collected once per cycle; prestige resets the ledger', async () => {
     const { startRun, simTick } = await import('../src/sim/tick.js');
@@ -344,10 +346,14 @@ describe('prestige requirement is a fixed snapshot with a forward-only ratchet',
     expect(nextPrestigeReq(s)).toBe(3);        // 0 lifetime Orbs → the floor
     s.stat.wins = 3;                           // 3 + floor(1.1*sqrt(3)) = 4
     expect(nextPrestigeReq(s)).toBe(4);
-    s.stat.wins = 100;                         // 3 + floor(1.1*sqrt(100)) = 14
-    expect(nextPrestigeReq(s)).toBe(14);
-    s.stat.wins = 2000;                        // a runaway's total → an unreachable bar
-    expect(nextPrestigeReq(s)).toBe(52);       // 3 + floor(1.1*sqrt(2000)); the in-cycle 1.25^bar walls it
+    s.stat.wins = 100;                         // sqrt would say 14 — the cap says 7
+    expect(nextPrestigeReq(s)).toBe(PREST_CAP);
+    /* The old contract deliberately let the bar run to 52 Orbs and relied on the
+       in-cycle compound to "wall" a runaway. It walled EVERY account instead:
+       all 14 bot tactics stopped progressing for good, most within two weeks.
+       The bar is capped now, so a deep account still faces a finite cycle. */
+    s.stat.wins = 2000;
+    expect(nextPrestigeReq(s)).toBe(PREST_CAP);
   });
   it('doPrestige locks the next bar in from lifetime Orbs', async () => {
     const { doPrestige } = await import('../src/core/prestige.js');

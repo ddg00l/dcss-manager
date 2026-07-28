@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { makeState } from '../src/core/state.js';
-import { doPrestige, nextPrestigeReq } from '../src/core/prestige.js';
+import { doPrestige, nextPrestigeReq, PREST_CAP } from '../src/core/prestige.js';
 import { maxSlots } from '../src/core/economy.js';
 import {
   ASCEND_GATE, ASC_K, ascGain, canAscend, ascensionUnlocked, doAscension,
@@ -84,10 +84,12 @@ describe('doAscension: hard reset of the prestige layer', () => {
 });
 
 describe('prestige requirement resets with ascension (no dead-end loop)', () => {
-  it('a never-ascended account: floor + sqrt of lifetime Orbs', () => {
+  it('a never-ascended account climbs floor+sqrt, then stops at the cap', () => {
     const s = makeState();
-    s.stat.wins = 100;
-    expect(nextPrestigeReq(s)).toBe(3 + Math.floor(1.1 * Math.sqrt(100))); // ascLevel 0
+    s.stat.wins = 9;
+    expect(nextPrestigeReq(s)).toBe(3 + Math.floor(1.1 * Math.sqrt(9))); // ascLevel 0
+    s.stat.wins = 100;                       // sqrt would say 14
+    expect(nextPrestigeReq(s)).toBe(PREST_CAP);
   });
 
   it('after ascending, the bar drops back to the floor and re-climbs per cycle', () => {
