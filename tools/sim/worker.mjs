@@ -11,7 +11,6 @@ import { makeState } from '../../src/core/state.js';
 import { newHero, rollHero } from '../../src/sim/hero.js';
 import { advanceHeroes, startRun, equipBestFromArmory, recallHero, fundZiggurat, resetSimClocks } from '../../src/sim/tick.js';
 import { cofferCost, buyCoffer, PROVISIONS, provCostOf, provStacks, buyProvision, zigFee } from '../../src/core/treasury.js';
-import { canAscend, doAscension, ASC_NODES, ascCanBuy, buyAscNode, ascNodeCost } from '../../src/core/ascension.js';
 import { NODES, canBuy, buyNode, treeLvl, nodeCost, memHas } from '../../src/data/memtree.js';
 import { rollCost, maxSlots, forgeDisc, freeRollAvailable, ZUPGRADES, zupg, zupgCost, zupgCap } from '../../src/core/economy.js';
 import { canPrestige, doPrestige, PUPGRADES, pupg, pupgCost, cycleProgress, ngLevel, prestigeReq } from '../../src/core/prestige.js';
@@ -64,6 +63,18 @@ function buyTree(s, tactic, budgetShare) {
          mechanic, not a flaw in combat nodes. This variant takes the seekers any
          real player would take, then spends the rest on fighting, which is the
          comparison that actually asks whether combat investment is worth it. */
+      pick = affordable.find(n => n.id.startsWith('hslot')) ||
+        affordable.find(n => n.keystone && (n.region === 'combat' || n.region === 'dungeon')) ||
+        affordable.filter(n => n.region === 'combat' || n.region === 'dungeon')
+          .sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0] ||
+        affordable.sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0];
+    } else if (tactic.tree === 'combat_fair') {
+      /* A combat-LEANING player, not a hermit. The plain 'combat' strategy below
+         only ever buys from the combat and dungeon regions, and expedition slots
+         live in 'heroes' — so it plays entire accounts with a single seeker and
+         its ~6x deficit measures the cost of refusing a core mechanic rather
+         than any flaw in the tree. This variant takes the seekers any real
+         player takes, then spends the rest on fighting. */
       pick = affordable.find(n => n.id.startsWith('hslot')) ||
         affordable.find(n => n.keystone && (n.region === 'combat' || n.region === 'dungeon')) ||
         affordable.filter(n => n.region === 'combat' || n.region === 'dungeon')
@@ -137,14 +148,6 @@ function playerActions(s, tactic, m) {
      squeeze one more win out of the cycle before resetting */
   if (tactic.prestige && canPrestige(s) && cycleProgress(s).wins >= (tactic.prestigeAfter || 1)) {
     doPrestige(s); m.prestiges++;
-  }
-  /* Ascension: shed the prestige layer at the gate, then invest Ascendancy
-     greedily (cheapest first). tactic.ascend===false opts out (control). */
-  if (tactic.ascend !== false && canAscend(s)) { doAscension(s); m.ascensions = (m.ascensions || 0) + 1; }
-  for (let g = 0; g < 30; g++) {
-    const n = ASC_NODES.filter(nn => ascCanBuy(s, nn)).sort((a, b) => ascNodeCost(s, a) - ascNodeCost(s, b))[0];
-    if (!n) break;
-    if (!buyAscNode(s, n)) break;
   }
   /* both permanent shops: greedy cheapest affordable */
   for (let g = 0; g < 20; g++) {
@@ -253,7 +256,7 @@ function session(tactic, days = 1, seed = 0) {
   GAMEPLAY_SEED = (0x1234567 ^ seed) >>> 0; /* gameplay determinism via the account master seed */
   resetSimClocks(); /* sessions share a process: never inherit the last account's clocks */
   const s = makeState(); s.masterSeed = GAMEPLAY_SEED; s.seq = {};
-  const m = { summons: 0, prestiges: 0, spentLegends: 0, cofferGold: 0, cofferMem: 0, provGold: 0, zigGold: 0, zigRuns: 0, ascensions: 0 };
+  const m = { summons: 0, prestiges: 0, spentLegends: 0, cofferGold: 0, cofferMem: 0, provGold: 0, zigGold: 0, zigRuns: 0 };
   const step = tactic.checkin;
   const byDay = [];
   for (let day = 0; day < days; day++) {
@@ -295,8 +298,7 @@ function session(tactic, days = 1, seed = 0) {
     zig: s.stat.zigBest || 0, contracts: s.stat.contracts || 0,
     gold: Math.round(s.gold), spentLegends: m.spentLegends,
     cofferGold: m.cofferGold, cofferMem: m.cofferMem, provGold: m.provGold,
-    zigGold: m.zigGold, zigRuns: m.zigRuns, ascensions: m.ascensions || 0,
-    ascLvl: Object.values(s.ascUpg||{}).reduce((a,b)=>a+b,0),
+    zigGold: m.zigGold, zigRuns: m.zigRuns,
     clsWins: (s.vic && s.vic.classes) || {},
     stars: Object.values(s.stars || {}).reduce((a, b) => a + b, 0),
     nemMax: Math.max(0, ...Object.values(s.nemeses || {})),
