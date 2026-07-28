@@ -1274,6 +1274,9 @@ export function exitPortal(h,s){
     h.rep.notable.push(t('🏛 Ziggurat: ')+zf+t(' floors'));
   }else hlog(h,h.name+t(' returns from the portal'),'sys');
 }
+/* how strongly a shop's stock is biased toward rarer gear (same knob ziggurats
+   use). Shops are the one place a delver can convert a fat purse into power. */
+export const SHOP_LUCK=0.55;
 export function shopVisit(h,s,stype){
   const depth=brDepth(h);
   const frac={thrifty:.3,balanced:.6,lavish:1}[h.spend||'balanced'];
@@ -1284,8 +1287,14 @@ export function shopVisit(h,s,stype){
     const wantGear=(stype==='weapon'||stype==='armour')?rnd(h)<.6:rnd(h)<.25;
     if(wantGear){
       const slot=stype==='weapon'?'weapon':stype==='armour'?'armour':null;
-      const it=randomItem(slot,Math.min(2,Math.floor(depth/7)),()=>rnd(h));
-      const price=Math.floor((60+depth*20)*(1+it.rar)*(.8+rnd(h)*.5));
+      /* Shops stock the good stuff. The spending dial was measured as a pure
+         placebo (1.03x spread across thrifty/balanced/lavish) because every
+         offer was cheap enough for every budget: a 460 gold item against a
+         wallet holding thousands is not a choice. Rarity is luck-biased up and
+         priced super-linearly, so a full purse reaches gear a thrifty one never
+         will — and the gold spent here is gold the treasury never banks. */
+      const it=randomItem(slot,Math.min(2,Math.floor(depth/7)),()=>rnd(h),SHOP_LUCK);
+      const price=Math.floor((60+depth*20)*Math.pow(1+it.rar,2.2)*(.8+rnd(h)*.5));
       if(price<=budget){
         const eq=tryAutoEquip(h,it,s);
         if(eq){budget-=price;h.gold-=price;bought.push(itemName(it))}
