@@ -17,6 +17,42 @@ PLACEBO = 1.15   # below this spread, a decision is not worth the UI it occupies
 TARGET = 1.5     # a decision worth presenting should move outcomes at least this much
 
 
+SPLIT_GAP = 0.45   # one gap holding this share of the range reads as two modes
+
+
+def bimodality_report(rows):
+    """Do accounts cluster around the mean, or split into fast and stalled modes?
+
+    A mean cannot answer this and actively hides it: the same constant was
+    measured producing 70 Orbs on one seed and 2482 on another, which averages to
+    a healthy-looking number describing an outcome no account actually had. So
+    pool every seed of the axis, sort, and look for a dominant gap. If one gap
+    holds most of the range, the loop is bistable and the mean is a fiction.
+    """
+    pooled = []
+    for r in rows:
+        pooled.extend(r.get('winsPerSeed') or [])
+    pooled.sort()
+    n = len(pooled)
+    if n < 4:
+        return
+    stalled = sum(1 for w in pooled if w == 0)
+    span = pooled[-1] - pooled[0]
+    gaps = [(pooled[i + 1] - pooled[i], i) for i in range(n - 1)]
+    width, idx = max(gaps)
+    share = (width / span) if span > 0 else 0.0
+    print('  seeds: ' + ' '.join(str(int(w)) for w in pooled))
+    if stalled:
+        print(f'  {stalled}/{n} seeds took no Orb at all')
+    if share >= SPLIT_GAP:
+        below, above = pooled[:idx + 1], pooled[idx + 1:]
+        print(f'  BIMODAL: {len(below)} seeds <= {int(below[-1])}, '
+              f'{len(above)} seeds >= {int(above[0])} — one gap holds '
+              f'{share * 100:.0f}% of the range; the mean describes no real account')
+    else:
+        print(f'  unimodal (largest gap holds {share * 100:.0f}% of the range)')
+
+
 def main():
     pattern = sys.argv[1] if len(sys.argv) > 1 else 'results/*.ndjson'
     rows = collections.defaultdict(list)
@@ -53,6 +89,7 @@ def main():
             print('%-12s %8.1f %8.1f %8.1f %8.1f %12s' %
                   (label, wavg('wins'), wavg('prestiges'), wavg('depth'), wavg('deaths'),
                    '-' if tail is None else ('%.2f%s' % (tail, '  STALLED' if tail == 0 else ''))))
+        bimodality_report(rows[axis])
         lo, hi = min(means.values()), max(means.values())
         best = max(means, key=means.get)
         if lo <= 0:
