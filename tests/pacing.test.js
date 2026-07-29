@@ -303,3 +303,18 @@ describe('the dark summoning gets dearer the more you lean on it', () => {
     expect(darkRollCost(s)).toBe(1);   // a new cycle starts cheap again
   });
 });
+
+describe('portals are inside the difficulty system', () => {
+  it('a ziggurat answers to readiness; a shallow portal does not', async () => {
+    const { endgamePressure, ENDGAME_FROM } = await import('../src/data/eliteAffixes.js');
+    const { zigStartDepth } = await import('../src/core/treasury.js');
+    const strong = makeState(); strong.stars = { a: 12 }; strong.pupg = { p_legacy: 60 };
+    /* Exempting portals left ziggurats outside the whole system: a strong guild
+       met x9 in Zot and x1 in a Ziggurat, making the deepest content the safest
+       place in the game -- measured records of 176, 177 and 260 floors against
+       8-13 elsewhere. */
+    expect(endgamePressure(strong, zigStartDepth(strong))).toBeGreaterThan(3);
+    /* ...while a portal entered in the early Dungeon stays untouched */
+    expect(endgamePressure(strong, ENDGAME_FROM - 3)).toBeCloseTo(1, 5);
+  });
+});

@@ -147,11 +147,18 @@ export function genFloor(h,s){
   /* hybrid escalation: soft stat multipliers (in-cycle compound + NG capped
      low) carry the numbers; elite monsters with qualitative affixes carry the
      depth — combinatorics instead of a growing scalar */
-  /* The Realm of Zot answers to the guild's readiness in both directions: it
-     eases for a guild that cannot yet land its first Orb (the victory every
-     other system is gated behind) and hardens past its old fixed strength for
-     one that has long outgrown it. */
-  const zotMul=P?1:endgamePressure(s,depth);
+  /* Endgame pressure answers to the guild's readiness in both directions and
+     ramps with depth: gentle for a guild that cannot yet land its first Orb,
+     merciless for one that outgrew the dungeon long ago.
+
+     It applies to PORTALS TOO. Exempting them left ziggurats outside the whole
+     difficulty system: a strong guild met x9 in Zot and x1 in a Ziggurat, so the
+     deepest content in the game became the safest place in it — measured records
+     of 176, 177 and 260 floors against 8-13 elsewhere. The depth formula above
+     already gives portals a sensible depth (a ziggurat starts at zigStartDepth,
+     a normal portal at the floor it was entered from), so the ramp needs no
+     special case: shallow portals sit below ENDGAME_FROM and are untouched. */
+  const zotMul=endgamePressure(s,depth);
   const ngPlus=ngMonMul(s)*inCycleMul(s)*zotMul;
   const ech=eliteChance(afl)*(memHas(s,'k_elite')?1.5:1);
   for(const mo of monsters){
