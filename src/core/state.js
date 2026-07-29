@@ -36,6 +36,7 @@ export function makeState() {
     ng: 0, legends: 0, prestiges: 0, prestigesTotal: 0, pupg: {}, balV: 6,
     runeAuraLegacy: 0, /* frozen grandfathered Rune Aura from the balV 6 curve change */
     runesSpent: 0, /* runes burned on dark summonings — they no longer feed the aura */
+    darkRolls: 0, /* dark summonings this cycle; each one makes the next dearer */
     orbRate: 0, orbsThisWindow: 0, rateWindow: 0, /* smoothed Orbs/day; the prestige bar is quoted against it */
     ascendancy: 0, ascBase: 0, ascensions: 0, ascUpg: {}, /* Ascension meta-layer */
     prestReq: 1, /* Orbs the current cycle needs to prestige; snapshotted at cycle start, never rises mid-cycle */

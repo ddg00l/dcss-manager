@@ -285,3 +285,21 @@ describe('a rune spent is a rune the guild stops drawing on', () => {
     expect(runeAura(s)).toBeGreaterThan(1);
   });
 });
+
+describe('the dark summoning gets dearer the more you lean on it', () => {
+  it('price escalates within a cycle and resets at prestige', async () => {
+    const { darkRollCost, DARK_STEP } = await import('../src/core/economy.js');
+    const { doPrestige } = await import('../src/core/prestige.js');
+    const s = makeState();
+    expect(darkRollCost(s)).toBe(1);
+    s.darkRolls = DARK_STEP;      expect(darkRollCost(s)).toBe(2);
+    s.darkRolls = DARK_STEP * 5;  expect(darkRollCost(s)).toBe(6);
+    /* A flat price could not hold: runes accumulate faster than any fixed
+       penalty grows, so charging the aura per spent rune faded exactly as its
+       sqrt curve predicts -- whales led 22-29% at 8 days and 71-76% by day 30.
+       Escalating attacks the conversion RATE, which cannot fade. */
+    s.stat.wins = 50; s.runesTotal = 10; s.stat.uniqKills = 5; s.stat.memEarned = 5000;
+    doPrestige(s);
+    expect(darkRollCost(s)).toBe(1);   // a new cycle starts cheap again
+  });
+});

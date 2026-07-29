@@ -93,6 +93,22 @@ export const rollCost = s =>
 /** all heroes dead/gone — the guild sends a seeker for free */
 export const freeRollAvailable = s => !s.heroes.some(h => h.state === 'camp' || h.state === 'run');
 export const effectiveRollCost = s => freeRollAvailable(s) ? 0 : rollCost(s);
+/* The dark summoning gets dearer the more the guild leans on it, within a cycle.
+
+   A flat one-rune price could not hold, because runes accumulate faster than any
+   FIXED penalty grows. Charging the aura for a spent rune helped early and then
+   faded exactly as the sqrt curve says it must: measured at 8 days the whale
+   builds led by 22-29%, and by day 30 they were back to +71-76% on 2169 and 3639
+   summons. A linear penalty against a square-root reward always loses at scale.
+
+   Escalating the price attacks the conversion RATE instead, so it cannot fade:
+   the Nth summon of a cycle costs 1 + floor(N/DARK_STEP) runes, which caps the
+   total conversion a rune stock can buy at roughly sqrt(2*DARK_STEP*runes).
+   Resets at prestige like every other in-cycle pressure, so it prices leaning on
+   the mechanic rather than using it. TUNABLE. */
+export const DARK_STEP = 60;
+export const darkRollCost = s => 1 + Math.floor((s.darkRolls || 0) / DARK_STEP);
+
 export const PITY_AT = 40;
 /** Roll a race/class combo. Pure: rng is injected. */
 export function rollCombo(s, premium, rng) {

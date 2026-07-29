@@ -5,7 +5,7 @@ import {comboKey,RARMUL,SHARDS_PER} from '../data/combos.js';
 import {WEP_BASES,ARM_BASES,SH_BASES,itemInfo} from '../data/items.js';
 import {GODS,godField} from '../data/gods.js';
 import {HERO_NAMES} from '../data/names.js';
-import {gHp,gAtk,gSpd,freeRollAvailable,rollCost,PITY_AT,rollCombo,pickComboOfTier,shardMul} from '../core/economy.js';
+import {gHp,gAtk,gSpd,freeRollAvailable,rollCost,PITY_AT,rollCombo,pickComboOfTier,shardMul, darkRollCost} from '../core/economy.js';
 import {nextStream} from '../core/streams.js';
 import {mpMaxOf} from '../data/spells.js';
 import {hashSeed} from '../core/rng.js';
@@ -237,10 +237,12 @@ function heroStatsCompute(h,s){
     Returns {kind:'dup',res,sh} | {kind:'hero',res,h} | null when unaffordable. */
 export function rollHero(s,premium,rng){
   if(premium){
-    if(s.runes<1)return null;
-    s.runes--;
-    /* the rune leaves the guild's collection for good: it stops feeding the aura */
-    s.runesSpent=(s.runesSpent||0)+1;
+    const cost=darkRollCost(s);
+    if(s.runes<cost)return null;
+    s.runes-=cost;
+    s.darkRolls=(s.darkRolls||0)+1;
+    /* the runes leave the guild's collection for good: they stop feeding the aura */
+    s.runesSpent=(s.runesSpent||0)+cost;
   }
   else if(freeRollAvailable(s)){/* the guild pays when the party is gone */}
   else{const c=rollCost(s);if(s.gold<c)return null;s.gold-=c;s.rolls++}
