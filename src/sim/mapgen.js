@@ -3,7 +3,7 @@ import {GOLD_DEPTH_BASE} from '../core/economy.js';
 import {ngMonMul,inCycleMul,ngLevel} from '../core/prestige.js';
 import {nemesisLevel} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
-import {FLOOR_KEYS,floorAffixChance,eliteChance,rollEliteAffixes,affixLevel,zotScale} from '../data/eliteAffixes.js';
+import {FLOOR_KEYS,floorAffixChance,eliteChance,rollEliteAffixes,affixLevel,endgamePressure} from '../data/eliteAffixes.js';
 import {BRANCHES,brDepth,BR_OFFSET,BR_ORDER} from '../data/branches.js';
 import {MONS,UNIQUES} from '../data/monsters.js';
 import {GODKEYS} from '../data/gods.js';
@@ -151,7 +151,7 @@ export function genFloor(h,s){
      eases for a guild that cannot yet land its first Orb (the victory every
      other system is gated behind) and hardens past its old fixed strength for
      one that has long outgrown it. */
-  const zotMul=(!P&&h.branch==='zot')?zotScale(s):1;
+  const zotMul=P?1:endgamePressure(s,depth);
   const ngPlus=ngMonMul(s)*inCycleMul(s)*zotMul;
   const ech=eliteChance(afl)*(memHas(s,'k_elite')?1.5:1);
   for(const mo of monsters){

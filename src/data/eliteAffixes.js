@@ -90,6 +90,20 @@ export function readiness(s) {
    a Realm ~1.9x harder than baseline and simply died. A fresh guild now meets
    Zot at x0.98 and a titan at x7.
    */
+/* Where the endgame begins to bite, and where it peaks. Concentrating all the
+   lethality on the Realm of Zot made a cliff: every delve died at the same
+   place, at the last step, which is both the least informative death a player
+   can have and the reason outcomes were binary. Heroes are homogeneous, so a
+   single threshold means either the whole guild clears it or none of it does —
+   there is no "one delve in twenty" regime to be had from a wall.
+
+   Ramping the same pressure across Vaults, the Depths and Zot spreads deaths
+   over a range of depths instead. Runs then differ from one another, which is
+   the variance the win rate needs, and a player watching a seeker die on
+   Depths:3 learns something a death on Zot:5 never told them. */
+export const ENDGAME_FROM = 14;   /* Vaults:1 — the pressure starts here */
+export const ENDGAME_PEAK = 26;   /* Zot:5 — and reaches zotScale() here */
+
 export const ZOT_LETHALITY = 3.5;
 export const ZOT_EASE_FLOOR = 0.28;
 export const ZOT_HARD_CEIL = 2.0;
@@ -100,6 +114,11 @@ export const ZOT_HARD_CEIL = 2.0;
    while a titan still faces the full multiple. */
 export const zotScale = s => ZOT_LETHALITY * Math.min(ZOT_HARD_CEIL,
   Math.max(ZOT_EASE_FLOOR, ZOT_EASE_FLOOR + readiness(s) / 55));
+/** endgame pressure at a given depth: 1x until Vaults, rising to zotScale at Zot:5 */
+export const endgamePressure = (s, depth) => {
+  const t = Math.min(1, Math.max(0, (depth - ENDGAME_FROM) / (ENDGAME_PEAK - ENDGAME_FROM)));
+  return 1 + (zotScale(s) - 1) * t;
+};
 
 /* Affix level is capped by NG again.
 

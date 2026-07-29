@@ -198,7 +198,14 @@ describe('Rune Aura curve change is not retroactive punishment', () => {
 
 describe('the Realm of Zot answers to the guild that enters it', () => {
   it('eases for a guild that cannot land its first Orb, hardens for a titan', async () => {
-    const { zotScale, ZOT_EASE_FLOOR, ZOT_HARD_CEIL, ZOT_LETHALITY } = await import('../src/data/eliteAffixes.js');
+    const { zotScale, endgamePressure, ENDGAME_FROM, ENDGAME_PEAK, ZOT_LETHALITY, ZOT_EASE_FLOOR, ZOT_HARD_CEIL } = await import('../src/data/eliteAffixes.js');
+    /* the pressure ramps with depth instead of stepping at the Zot boundary:
+       concentrating it on one floor made every delve die in the same place */
+    const mid = makeState(); mid.stars = { 'a': 12 };
+    expect(endgamePressure(mid, ENDGAME_FROM - 1)).toBeCloseTo(1, 5);
+    expect(endgamePressure(mid, ENDGAME_PEAK)).toBeCloseTo(zotScale(mid), 5);
+    expect(endgamePressure(mid, (ENDGAME_FROM + ENDGAME_PEAK) / 2))
+      .toBeGreaterThan(endgamePressure(mid, ENDGAME_FROM + 1));
     const fresh = makeState();
     const titan = makeState(); titan.stars = { 'human/fighter': 30 };
     titan.pupg = { p_legacy: 150, p_dmg: 20, p_hp: 20 };
@@ -226,9 +233,9 @@ describe('the dungeon explains itself', () => {
     expect(keys(p)).toContain('elite');       // always relevant, always shown
     /* now give it a history and put the hero in Zot */
     s.ng = 5; s.stat.wins = 7; s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
-    h.branch = 'zot';
+    h.branch = 'zot'; h.floor = 5;
     p = dungeonPressure(s, h);
-    expect(keys(p)).toEqual(expect.arrayContaining(['ng', 'cycle', 'zot']));
+    expect(keys(p)).toEqual(expect.arrayContaining(['ng', 'cycle', 'endgame']));
     /* every entry must carry a reason -- a number with no explanation is the
        thing this module exists to remove */
     for (const x of p) expect(x.why && x.why.length).toBeGreaterThan(10);
@@ -237,14 +244,15 @@ describe('the dungeon explains itself', () => {
   it('the number shown matches the multiplier the dungeon actually applies', async () => {
     const { pressureTotal } = await import('../src/core/pressure.js');
     const { ngMonMul, inCycleMul } = await import('../src/core/prestige.js');
-    const { zotScale } = await import('../src/data/eliteAffixes.js');
+    const { endgamePressure } = await import('../src/data/eliteAffixes.js');
     const { todayAffix } = await import('../src/data/affixes.js');
+    const { brDepth } = await import('../src/data/branches.js');
     const s = makeState();
     s.ng = 6; s.stat.wins = 11; s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
-    const h = hero(s); startRun(h, s); h.branch = 'zot';
+    const h = hero(s); startRun(h, s); h.branch = 'zot'; h.floor = 4;
     /* mapgen multiplies monster HP/damage by exactly these terms */
     const afx = todayAffix();
-    const real = ngMonMul(s) * inCycleMul(s) * zotScale(s) * Math.max(afx.monHp, afx.monDmg);
+    const real = ngMonMul(s) * inCycleMul(s) * endgamePressure(s, brDepth(h)) * Math.max(afx.monHp, afx.monDmg);
     expect(pressureTotal(s, h)).toBeCloseTo(real, 5);
   });
 });

@@ -14,8 +14,9 @@
    reason it applies. Sources that are inactive are omitted rather than shown at
    x1.00 — a list of no-ops teaches nothing. */
 import { ngMonMul, inCycleMul, ngLevel, cycleProgress, prestigeReq } from './prestige.js';
-import { affixLevel, eliteChance, zotScale, readiness } from '../data/eliteAffixes.js';
+import { affixLevel, eliteChance, endgamePressure, ENDGAME_FROM, readiness } from '../data/eliteAffixes.js';
 import { todayAffix } from '../data/affixes.js';
+import { brDepth } from '../data/branches.js';
 import { FLOOR_AFFIXES } from '../data/eliteAffixes.js';
 import { memHas } from '../data/memtree.js';
 
@@ -37,13 +38,13 @@ export function dungeonPressure(s, h) {
     detail: cyc + ' / ' + prestigeReq(s),
   });
 
-  if (h && h.branch === 'zot' && !h.inPortal) {
-    const z = zotScale(s);
+  const depth = h && !h.inPortal ? brDepth(h) : 0;
+  if (depth >= ENDGAME_FROM) {
+    const z = endgamePressure(s, depth);
     out.push({
-      key: 'zot', n: 'The Realm of Zot', mul: z, txt: pct(z),
-      why: z < 1
-        ? 'The Realm answers to your guild — it is holding back for a young one.'
-        : 'The Realm answers to your guild, and yours is no longer young.',
+      key: 'endgame', n: 'The deep places', mul: z, txt: pct(z),
+      why: 'Pressure climbs with every floor from the Vaults down to Zot, and it '
+         + 'answers to your guild: gentler on a young one, merciless on a great one.',
     });
   }
 
@@ -73,6 +74,6 @@ export function dungeonPressure(s, h) {
 /** One-line summary: the combined multiplier on monster stats right now. */
 export function pressureTotal(s, h) {
   return dungeonPressure(s, h)
-    .filter(p => p.key === 'ng' || p.key === 'cycle' || p.key === 'zot' || p.key === 'daily')
+    .filter(p => p.key === 'ng' || p.key === 'cycle' || p.key === 'endgame' || p.key === 'daily')
     .reduce((m, p) => m * (p.mul || 1), 1);
 }
