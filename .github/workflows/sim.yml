@@ -7,32 +7,49 @@ on:
         description: 'Game days per session'
         default: '7'
       sessions:
-        description: 'Sessions per tactic per shard'
+        description: 'Sessions per tactic per shard (heavy tactics split 4 ways at half this)'
         default: '6'
 
 permissions:
   contents: read
 
 jobs:
+  # The shard layout is computed rather than hardcoded: a GitHub job dies at 6
+  # hours, and the productive tactics are the expensive ones (measured on a
+  # 90-day sweep: shardwhale 230 min against afk's 53). Heavy tactics split four
+  # ways at half the sessions each -- same total sample, half the wall time --
+  # so a long run cannot lose a whole shard to the ceiling.
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.gen.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: gen
+        run: |
+          echo "matrix=$(python3 tools/sim/shard_plan.py '${{ github.event.inputs.sessions }}')" >> "$GITHUB_OUTPUT"
+      - name: Show the plan
+        run: python3 tools/sim/shard_plan.py '${{ github.event.inputs.sessions }}' | python3 -m json.tool | head -40
+
   simulate:
+    needs: plan
     strategy:
       fail-fast: false
       matrix:
-        tactic: [afk, lazy, active, rush_slots, keystoner, whale, smith, speedrun, shardwhale, treasurer, abyssal, miser, completionist, berserker]
-        shard: [a, b]
+        job: ${{ fromJSON(needs.plan.outputs.matrix) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      - name: Run ${{ matrix.tactic }} shard ${{ matrix.shard }}
+      - name: Run ${{ matrix.job.tactic }} shard ${{ matrix.job.shard }}
         env:
-          SEED_BASE: ${{ matrix.shard == 'a' && '0' || '500' }}
+          SEED_BASE: ${{ matrix.job.seedBase }}
         run: |
-          bun tools/sim/worker.mjs "${{ matrix.tactic }}" "${{ github.event.inputs.sessions }}" "${{ github.event.inputs.days }}" \
-            > "${{ matrix.tactic }}_${{ matrix.shard }}.ndjson"
+          bun tools/sim/worker.mjs "${{ matrix.job.tactic }}" "${{ matrix.job.sessions }}" "${{ github.event.inputs.days }}" \
+            > "${{ matrix.job.tactic }}_${{ matrix.job.shard }}.ndjson"
       - uses: actions/upload-artifact@v4
         with:
-          name: sim-${{ matrix.tactic }}-${{ matrix.shard }}
+          name: sim-${{ matrix.job.tactic }}-${{ matrix.job.shard }}
           path: '*.ndjson'
 
   aggregate:
