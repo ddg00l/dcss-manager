@@ -618,6 +618,7 @@ export const ES = {
   ' claims a rune the guild already holds — it is sold (+': ' reclama una runa que el gremio ya posee — se vende (+',
   ' finds nothing more here and presses on.': ' no encuentra nada más aquí y sigue adelante.',
   'Dungeon pressure': 'Presión de la mazmorra',
+  ' can make no headway here and withdraws.': ' no logra avanzar aquí y se retira.',
   ' farms the Depths.': ' farmea las Profundidades.',
   ' reads ': ' lee ',
   ' floors!': ' pisos!',

@@ -465,13 +465,28 @@ export function simTick(h,s){
     const here=m.items.findIndex(it=>it.x===m.px&&it.y===m.py);
     if(here>=0){pickup(h,m.items[here],s);m.items.splice(here,1);acted=true}
   }
-  /* Escape hatch. Even with target selection fixed, no single floor should ever
-     hold a delver this long; if one does it is a bug, and a bug must not cost
-     the player their account. Descend and let the sim log it. */
+  /* Escape hatch: no floor may detain a delver forever. Which way out matters,
+     though, and descending is only safe where depth grows slowly.
+
+     Inside a portal it is the worst possible answer. A Ziggurat adds two depth
+     levels per floor and monsters scale as 1.4^depth, so a seeker pinned by
+     something it can neither kill nor reach was being pushed DEEPER every 4000
+     turns into strictly worse odds — 998 times over, until the portal hit its
+     own 999-floor limit. Observed at Ziggurat:300, depth 613, the hero still at
+     full health beside a monster with 9.1e89 hit points, having spent 4300 turns
+     on the floor. That is not a delve, it is a stuck loop with a staircase.
+
+     So a trapped delver LEAVES a portal and only presses on in a branch, where
+     the next floor is a normal step down rather than a doubling of the world. */
   h.floorTurns=(h.floorTurns||0)+1;
   if(h.floorTurns>FLOOR_TURN_LIMIT){
-    hlog(h,h.name+t(' finds nothing more here and presses on.'),'sys');
-    nextFloor(h,s);
+    if(h.inPortal){
+      hlog(h,h.name+t(' can make no headway here and withdraws.'),'sys');
+      exitPortal(h,s);
+    }else{
+      hlog(h,h.name+t(' finds nothing more here and presses on.'),'sys');
+      nextFloor(h,s);
+    }
     return;
   }
   if(!acted){

@@ -618,6 +618,7 @@ export const RU = {
   ' claims a rune the guild already holds — it is sold (+': ' добывает руну, которая уже есть у гильдии — её продают (+',
   ' finds nothing more here and presses on.': ' не находит здесь больше ничего и идёт дальше.',
   'Dungeon pressure': 'Давление подземелья',
+  ' can make no headway here and withdraws.': ' не может здесь продвинуться и отступает.',
   ' farms the Depths.': ' фармит Глубины.',
   ' reads ': ' читает ',
   ' floors!': ' эт.!',

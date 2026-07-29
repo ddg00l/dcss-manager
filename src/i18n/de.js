@@ -618,6 +618,7 @@ export const DE = {
   ' claims a rune the guild already holds — it is sold (+': ' findet eine Rune, die die Gilde schon besitzt — sie wird verkauft (+',
   ' finds nothing more here and presses on.': ' findet hier nichts mehr und zieht weiter.',
   'Dungeon pressure': 'Druck des Verlieses',
+  ' can make no headway here and withdraws.': ' kommt hier nicht weiter und zieht sich zurück.',
   ' farms the Depths.': ' farmt die Tiefen.',
   ' reads ': ' liest ',
   ' floors!': ' Ebenen!',

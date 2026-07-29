@@ -618,6 +618,7 @@ export const UK = {
   ' claims a rune the guild already holds — it is sold (+': ' здобуває руну, яку гільдія вже має — її продають (+',
   ' finds nothing more here and presses on.': ' не знаходить тут більше нічого й рушає далі.',
   'Dungeon pressure': 'Тиск підземелля',
+  ' can make no headway here and withdraws.': ' не може тут просунутися й відступає.',
   ' farms the Depths.': ' фармить Глибини.',
   ' reads ': ' читає ',
   ' floors!': ' пов.!',

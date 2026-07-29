@@ -318,3 +318,23 @@ describe('portals are inside the difficulty system', () => {
     expect(endgamePressure(strong, ENDGAME_FROM - 3)).toBeCloseTo(1, 5);
   });
 });
+
+describe('a trapped delver withdraws from a portal, never descends', () => {
+  it('leaves the portal instead of being pushed deeper', async () => {
+    const { startRun, enterPortal, simTick, FLOOR_TURN_LIMIT } = await import('../src/sim/tick.js');
+    const s = makeState();
+    const h = hero(s); startRun(h, s);
+    h.branch = 'dungeon'; h.floor = 5;
+    enterPortal(h, s, 'sewer');
+    expect(h.inPortal).toBeTruthy();
+    const startFloor = h.inPortal.floor;
+    /* pin the delver: pretend it has burned through the limit doing nothing */
+    h.floorTurns = FLOOR_TURN_LIMIT + 1;
+    simTick(h, s);
+    /* Descending was the old behaviour and it was catastrophic in a Ziggurat:
+       two depth levels per floor against monsters scaling as 1.4^depth meant a
+       stuck seeker was pushed into strictly worse odds every 4000 turns, 998
+       times over, until the portal hit its own 999-floor cap. */
+    expect(h.inPortal === null || h.inPortal.floor <= startFloor).toBe(true);
+  });
+});
