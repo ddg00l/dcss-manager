@@ -211,3 +211,40 @@ describe('the Realm of Zot answers to the guild that enters it', () => {
   });
 });
 
+
+describe('the dungeon explains itself', () => {
+  it('lists every pressure acting, and omits the ones that are not', async () => {
+    const { dungeonPressure } = await import('../src/core/pressure.js');
+    const s = makeState();
+    const h = hero(s); startRun(h, s);
+    const keys = p => p.map(x => x.key);
+    /* a fresh account: no ladder, no cycle progress, not in Zot */
+    let p = dungeonPressure(s, h);
+    expect(keys(p)).not.toContain('ng');
+    expect(keys(p)).not.toContain('cycle');
+    expect(keys(p)).not.toContain('zot');
+    expect(keys(p)).toContain('elite');       // always relevant, always shown
+    /* now give it a history and put the hero in Zot */
+    s.ng = 5; s.stat.wins = 7; s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
+    h.branch = 'zot';
+    p = dungeonPressure(s, h);
+    expect(keys(p)).toEqual(expect.arrayContaining(['ng', 'cycle', 'zot']));
+    /* every entry must carry a reason -- a number with no explanation is the
+       thing this module exists to remove */
+    for (const x of p) expect(x.why && x.why.length).toBeGreaterThan(10);
+  });
+
+  it('the number shown matches the multiplier the dungeon actually applies', async () => {
+    const { pressureTotal } = await import('../src/core/pressure.js');
+    const { ngMonMul, inCycleMul } = await import('../src/core/prestige.js');
+    const { zotScale } = await import('../src/data/eliteAffixes.js');
+    const { todayAffix } = await import('../src/data/affixes.js');
+    const s = makeState();
+    s.ng = 6; s.stat.wins = 11; s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
+    const h = hero(s); startRun(h, s); h.branch = 'zot';
+    /* mapgen multiplies monster HP/damage by exactly these terms */
+    const afx = todayAffix();
+    const real = ngMonMul(s) * inCycleMul(s) * zotScale(s) * Math.max(afx.monHp, afx.monDmg);
+    expect(pressureTotal(s, h)).toBeCloseTo(real, 5);
+  });
+});

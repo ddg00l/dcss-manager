@@ -617,6 +617,7 @@ export const UK = {
   'The Gates of Zot are sealed and no rune remains within reach. ': 'Ворота Зота зачинені, і жодної руни поблизу не лишилось. ',
   ' claims a rune the guild already holds — it is sold (+': ' здобуває руну, яку гільдія вже має — її продають (+',
   ' finds nothing more here and presses on.': ' не знаходить тут більше нічого й рушає далі.',
+  'Dungeon pressure': 'Тиск підземелля',
   ' farms the Depths.': ' фармить Глибини.',
   ' reads ': ' читає ',
   ' floors!': ' пов.!',
