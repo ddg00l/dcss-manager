@@ -35,6 +35,7 @@ export function makeState() {
     runesTotal: 0, pendingDeaths: [], pendingWins: [], unrandsOwned: [],
     ng: 0, legends: 0, prestiges: 0, prestigesTotal: 0, pupg: {}, balV: 6,
     runeAuraLegacy: 0, /* frozen grandfathered Rune Aura from the balV 6 curve change */
+    runesSpent: 0, /* runes burned on dark summonings — they no longer feed the aura */
     orbRate: 0, orbsThisWindow: 0, rateWindow: 0, /* smoothed Orbs/day; the prestige bar is quoted against it */
     ascendancy: 0, ascBase: 0, ascensions: 0, ascUpg: {}, /* Ascension meta-layer */
     prestReq: 1, /* Orbs the current cycle needs to prestige; snapshotted at cycle start, never rises mid-cycle */

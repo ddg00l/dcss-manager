@@ -236,7 +236,12 @@ function heroStatsCompute(h,s){
 /** One gacha roll, pure state logic (UI adds sounds/animation on top).
     Returns {kind:'dup',res,sh} | {kind:'hero',res,h} | null when unaffordable. */
 export function rollHero(s,premium,rng){
-  if(premium){if(s.runes<1)return null;s.runes--}
+  if(premium){
+    if(s.runes<1)return null;
+    s.runes--;
+    /* the rune leaves the guild's collection for good: it stops feeding the aura */
+    s.runesSpent=(s.runesSpent||0)+1;
+  }
   else if(freeRollAvailable(s)){/* the guild pays when the party is gone */}
   else{const c=rollCost(s);if(s.gold<c)return null;s.gold-=c;s.rolls++}
   s.pity++;

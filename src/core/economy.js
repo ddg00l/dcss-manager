@@ -47,8 +47,30 @@ export const ghostMul = s => memHas(s, 'k_ghosts') ? 1 + Math.min(0.30, s.stat.d
    It is a frozen constant, so veterans lose nothing they had earned and still
    stop compounding from here on. */
 export const RUNE_AURA_K = 0.09;
+/* Runes the guild has burned on dark summonings. They are gone from the aura:
+   a rune spent is a rune the guild no longer draws power from.
+
+   This is the opportunity cost the dark summoning never had. A premium roll cost
+   one rune, flat, while runes piled up in the thousands and the aura counted the
+   LIFETIME total, so spending them was free — measured, whale builds made 2200
+   and 3400 summons against a normal 411 and took twice the Orbs per day on
+   otherwise identical trees, slots and keystones. Unlimited conversion at a
+   fixed price, the same structural flaw the aura itself had before it went
+   sub-linear.
+
+   Now the trade is real and legible in both directions: burn your trophies for a
+   better seeker today, or keep them and let the guild draw on them forever. */
+/* How much aura a spent rune actually costs. At full weight the trade was
+   ruinous rather than merely expensive: the aura is sqrt-shaped and reaches x5
+   at two thousand runes, so a whale that spent its whole stock lost a fivefold
+   multiplier at once and finished 38% BEHIND a normal build. A dead strategy is
+   a worse outcome than a strong one — this has to price the dark summoning, not
+   forbid it. TUNABLE. */
+export const AURA_SPEND_WEIGHT = 0.5;
+export const runesKept = s =>
+  Math.max(0, (s.runesTotal || 0) - AURA_SPEND_WEIGHT * (s.runesSpent || 0));
 export const runeAura = s => memHas(s, 'k_runeaura')
-  ? 1 + RUNE_AURA_K * Math.sqrt(Math.max(0, s.runesTotal || 0)) + (s.runeAuraLegacy || 0)
+  ? 1 + RUNE_AURA_K * Math.sqrt(runesKept(s)) + (s.runeAuraLegacy || 0)
   : 1;
 import { ngLevel, pupg, ngPlusRewardMul } from './prestige.js';
 import { greatMul } from './chronicle.js';

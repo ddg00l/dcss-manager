@@ -256,3 +256,32 @@ describe('the dungeon explains itself', () => {
     expect(pressureTotal(s, h)).toBeCloseTo(real, 5);
   });
 });
+
+describe('a rune spent is a rune the guild stops drawing on', () => {
+  it('the dark summoning costs aura, not just the rune', async () => {
+    const { runeAura, runesKept, AURA_SPEND_WEIGHT } = await import('../src/core/economy.js');
+    const { rollHero } = await import('../src/sim/hero.js');
+    const s = makeState();
+    s.tree.k_runeaura = 1;
+    s.runesTotal = 100; s.runes = 50;
+    const before = runeAura(s);
+    expect(runesKept(s)).toBe(100);
+    /* burn ten runes on premium summons */
+    for (let i = 0; i < 10; i++) rollHero(s, true);
+    expect(s.runesSpent).toBe(10);
+    expect(runesKept(s)).toBe(100 - 10 * AURA_SPEND_WEIGHT);
+    /* the trade is real: power actually left with them. Before this, a premium
+       roll cost one rune at a flat price while the aura counted the LIFETIME
+       total, so spending was free -- whale builds made 2200-3400 summons against
+       a normal 411 and took twice the Orbs per day on identical trees. */
+    expect(runeAura(s)).toBeLessThan(before);
+  });
+
+  it('an account that never spends keeps everything it earned', async () => {
+    const { runeAura, runesKept } = await import('../src/core/economy.js');
+    const s = makeState();
+    s.tree.k_runeaura = 1; s.runesTotal = 400;
+    expect(runesKept(s)).toBe(400);
+    expect(runeAura(s)).toBeGreaterThan(1);
+  });
+});
