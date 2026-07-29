@@ -82,6 +82,8 @@ export const floorMemory = depth => {
    is the main dial for how long a full run takes, because each rune costs a
    branch descent and a branch boss. */
 export const ZOT_RUNES=3;
+/* no floor should ever detain a delver longer than this (see the escape hatch) */
+export const FLOOR_TURN_LIMIT=4000;
 /** the nearest branch whose rune this hero still lacks, or null if none is left */
 export function runeBranchFor(h){
   let best=null,bestD=1e9;
@@ -103,7 +105,7 @@ export function startRun(h,s){
   h.mp=mpMaxOf(h); /* casters start with a full mana pool */
   if(memHas(s,'k_autoequip')||ascAutoGuild(s))equipBestFromArmory(h,s);
   const route=buildRoute(h.strategy);
-  h.branch=route[0][0];h.floor=1;
+  h.branch=route[0][0];h.floor=1;h.floorTurns=0;
   genFloor(h,s);
   const st=heroStats(h,s);
   h.curHp=st.hpMax;h.maxHpCache=st.hpMax;
@@ -215,6 +217,7 @@ function nextFloor(h,s){
     if(h.branch==='dungeon')h.dFloor=Math.max(h.dFloor||1,h.floor);
   }
   genFloor(h,s);
+  h.floorTurns=0;
   hlog(h,h.name+t(' enters ')+brTag(h),'sys');
   h.maxDepth=brTag(h);h.maxBrDepth=Math.max(h.maxBrDepth||0,brDepth(h));
 }
@@ -426,9 +429,16 @@ export function simTick(h,s){
   for(const mo of m.monsters){
     const d=cheb(mo.x,mo.y,m.px,m.py);
     if(d<=wakeR&&los(m,m.px,m.py,mo.x,mo.y))mo.awake=true;
-    /* only lock onto foes the hero can actually reach or see — chasing a phantom
-       walled off from us used to livelock the hero on its start cell */
-    if(mo.awake&&d<td&&(df[mo.y*MW+mo.x]>=0||los(m,m.px,m.py,mo.x,mo.y))){td=d;tgt=mo}
+    /* Lock on only to foes the hero can REACH, or can hit from here this turn.
+       "Reachable or merely visible" looks equivalent but is not: a monster seen
+       across a chasm and out of weapon range made the hero call stepToward every
+       turn, which cannot path to it, while acted=true suppressed both exploring
+       and the stairs. The delver then stood still forever — measured at 24,675
+       turns on one floor of the Lair, twenty simulated days without a single
+       state change, and it is what produced the "stalled account" mode. */
+    const reachable=df[mo.y*MW+mo.x]>=0;
+    const canHitNow=d<=Math.min(st.rng,sight)&&(d<=1||los(m,m.px,m.py,mo.x,mo.y));
+    if(mo.awake&&d<td&&(reachable||canHitNow)){td=d;tgt=mo}
   }
   /* moving unnoticed trains Stealth */
   if(!m.monsters.some(mo=>mo.awake)&&h.turn%4===0)markUse(h,'stealth',.3);
@@ -454,6 +464,15 @@ export function simTick(h,s){
     /* pickup here? */
     const here=m.items.findIndex(it=>it.x===m.px&&it.y===m.py);
     if(here>=0){pickup(h,m.items[here],s);m.items.splice(here,1);acted=true}
+  }
+  /* Escape hatch. Even with target selection fixed, no single floor should ever
+     hold a delver this long; if one does it is a bug, and a bug must not cost
+     the player their account. Descend and let the sim log it. */
+  h.floorTurns=(h.floorTurns||0)+1;
+  if(h.floorTurns>FLOOR_TURN_LIMIT){
+    hlog(h,h.name+t(' finds nothing more here and presses on.'),'sys');
+    nextFloor(h,s);
+    return;
   }
   if(!acted){
     /* explore: nearest reachable item or unexplored, else stairs */

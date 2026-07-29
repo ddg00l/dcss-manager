@@ -616,6 +616,7 @@ export const ES = {
   ' turns toward ': ' se dirige a ',
   'The Gates of Zot are sealed and no rune remains within reach. ': 'Las Puertas de Zot están selladas y no queda ninguna runa al alcance. ',
   ' claims a rune the guild already holds — it is sold (+': ' reclama una runa que el gremio ya posee — se vende (+',
+  ' finds nothing more here and presses on.': ' no encuentra nada más aquí y sigue adelante.',
   ' farms the Depths.': ' farmea las Profundidades.',
   ' reads ': ' lee ',
   ' floors!': ' pisos!',
