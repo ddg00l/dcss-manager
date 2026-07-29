@@ -72,23 +72,23 @@ export function readiness(s) {
    so the change is not "slower", it is "most expeditions do not come back with
    the Orb" — which is what DCSS actually feels like.
 
-   Calibrated by sim at n=12 (8 days each), with the easing working:
-     x3.0  8.2 +/-2.2 Orbs/day, 20.2% of delves win, 0.76 prestiges/day, 1/12 dead
-     x3.5  6.0 +/-2.0,          13.5%,                0.58,               2/12 dead
-   x3.5 ships: victory is roughly one delve in seven, against 69% before any of
-   this, and Orbs fall from 16 a day to 6 while the prestige cadence stays inside
-   its one-per-1-to-2-days target.
+   Calibrated against a target of 3-4 Orbs a day, on the convex ramp:
+     L=4.5  5.88 Orbs/day, 9.0% win, seeds consistent
+     L=4.9  4.50,          6.9%,     seeds 4.3/3.5/5.9/4.4  <- chosen
+     L=5.3  2.25,          3.0%,     seeds 4.6/0.1/3.4/0.9  BIMODAL
+     L=5.7  2.56,          3.2%,     seeds 5.5/0.1/0.1/4.5  BIMODAL
+     L=6.4  0.13,          0.1%      dead
+   Above ~5.0 the population splits: some accounts never get going at all. The
+   means at 5.3 and 5.7 land closer to the target on paper, but they are means
+   over "half thrive, half die", which is the exact trap this rebalance spent a
+   day escaping. 4.9 overshoots the band slightly and keeps every seed alive,
+   which is the better trade.
 
-   Two cautions for whoever tunes this next, both learned the hard way here.
-   First, n=3 is worthless on this metric: at that size x3.0 measured a 95%
-   interval of [0.1 .. 12.9], which cannot distinguish a healthy loop from a dead
-   one, and it produced two wrong conclusions in a row -- a phantom cliff at x3.0
-   (one unlucky seed) and a 50% overestimate of x3.5. Resolving a 2 Orbs/day
-   difference needs n>=9; 1 Orb/day needs n>=35.
-   Second, raising lethality without lowering the base of the easing curve makes
-   the easing stop easing: it multiplied that base too, so a struggling guild met
-   a Realm ~1.9x harder than baseline and simply died. A fresh guild now meets
-   Zot at x0.98 and a titan at x7.
+   A note on method: extrapolating this constant from an elasticity fitted to two
+   points predicted 6.4 for 3.5 Orbs/day. Measured, 6.4 produces zero. The
+   response is threshold-shaped, not a power law -- heroes die before reaching
+   the content the constant was meant to govern, so it must be swept, never
+   solved.
    */
 /* Where the endgame begins to bite, and where it peaks. Concentrating all the
    lethality on the Realm of Zot made a cliff: every delve died at the same
@@ -110,7 +110,7 @@ export function readiness(s) {
 export const ENDGAME_FROM = 8;    /* mid-Dungeon / Lair — the pressure starts here */
 export const ENDGAME_PEAK = 26;   /* Zot:5 — and reaches zotScale() here */
 
-export const ZOT_LETHALITY = 3.5;
+export const ZOT_LETHALITY = 4.9;
 export const ZOT_EASE_FLOOR = 0.28;
 export const ZOT_HARD_CEIL = 2.0;
 /* The floor had to drop when lethality went up: multiplying it too meant even a
@@ -121,9 +121,18 @@ export const ZOT_HARD_CEIL = 2.0;
 export const zotScale = s => ZOT_LETHALITY * Math.min(ZOT_HARD_CEIL,
   Math.max(ZOT_EASE_FLOOR, ZOT_EASE_FLOOR + readiness(s) / 55));
 /** endgame pressure at a given depth: 1x until Vaults, rising to zotScale at Zot:5 */
+/* The ramp is CONVEX, not linear, and that is the whole reason the peak can be
+   raised at all. A linear climb from depth 8 means the peak also sets mid-game
+   difficulty: at ZOT_LETHALITY 6.4 the Lair alone reached x3.6, heroes died at
+   depth 8-13 in 71% of cases, and the run produced zero Orbs — the guild never
+   reached the endgame to be tested by it. Squaring the progress keeps the middle
+   gentle (Lair ~x1.6 at the same peak) while the last floors carry nearly all of
+   the increase, so raising the ceiling makes Zot harder instead of making the
+   Lair lethal. */
+export const ENDGAME_CURVE = 2;
 export const endgamePressure = (s, depth) => {
   const t = Math.min(1, Math.max(0, (depth - ENDGAME_FROM) / (ENDGAME_PEAK - ENDGAME_FROM)));
-  return 1 + (zotScale(s) - 1) * t;
+  return 1 + (zotScale(s) - 1) * Math.pow(t, ENDGAME_CURVE);
 };
 
 /* Affix level is capped by NG again.
