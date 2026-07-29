@@ -97,11 +97,17 @@ export function readiness(s) {
    single threshold means either the whole guild clears it or none of it does —
    there is no "one delve in twenty" regime to be had from a wall.
 
-   Ramping the same pressure across Vaults, the Depths and Zot spreads deaths
-   over a range of depths instead. Runs then differ from one another, which is
-   the variance the win rate needs, and a player watching a seeker die on
-   Depths:3 learns something a death on Zot:5 never told them. */
-export const ENDGAME_FROM = 14;   /* Vaults:1 — the pressure starts here */
+   Ramping the same pressure across the second half of a run spreads deaths over
+   a range of depths instead. Runs then differ from one another, which is the
+   variance the win rate needs, and a player watching a seeker die on Depths:3
+   learns something a death on Zot:5 never told them.
+
+   It starts well before the Vaults on purpose. Beginning at Vaults:1 left the
+   whole mid-game unpressured and still bunched the deaths late; from depth 8 the
+   climb is longer, so a given late floor is harder and the spread reaches
+   further. Young guilds are not punished by this: the magnitude is readiness-
+   scaled, so a fresh account meets roughly baseline strength anyway. */
+export const ENDGAME_FROM = 8;    /* mid-Dungeon / Lair — the pressure starts here */
 export const ENDGAME_PEAK = 26;   /* Zot:5 — and reaches zotScale() here */
 
 export const ZOT_LETHALITY = 3.5;
