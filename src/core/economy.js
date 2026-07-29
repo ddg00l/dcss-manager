@@ -105,8 +105,13 @@ export const effectiveRollCost = s => freeRollAvailable(s) ? 0 : rollCost(s);
    the Nth summon of a cycle costs 1 + floor(N/DARK_STEP) runes, which caps the
    total conversion a rune stock can buy at roughly sqrt(2*DARK_STEP*runes).
    Resets at prestige like every other in-cycle pressure, so it prices leaning on
-   the mechanic rather than using it. TUNABLE. */
-export const DARK_STEP = 60;
+   the mechanic rather than using it.
+
+   Tightened 60 -> 25 after measuring: the mechanic held at 30 days where the
+   aura link had faded (whales +71/76% before, +44/47% after, summons 2169->1375
+   and 3639->2703) but 60 was too gentle to finish the job. 25 cuts what a
+   two-thousand rune stock can buy from ~450 summons to ~300. TUNABLE. */
+export const DARK_STEP = 25;
 export const darkRollCost = s => 1 + Math.floor((s.darkRolls || 0) / DARK_STEP);
 
 export const PITY_AT = 40;
