@@ -150,7 +150,15 @@ const ROADS={
   /* orc is capped one floor short of the warlord: the Elven Halls lie below the
      Mines, so the arcane road passes THROUGH them without taking the iron rune */
   arcane: [['dungeon',8],['lair',6],['spider',4],['dungeon',15],['orc',3],['elf',3],['vaults',5],['zot',5]],
-  speed:  [['dungeon',15],['lair',6],['orc',4],['elf',3],['depths',5],['zot',5]],
+  /* The Short Road kept the shape the others were fixed out of -- straight to D:15
+     before any branch, so its seekers met the deep Dungeon under-levelled -- and it
+     carried FOUR rune branches, which is slack, which is the opposite of short. It
+     measured as a pure trap on 30 days: more seekers at the Gates (3280 against
+     2622), fewer Orbs (197 against 240), more dead (4150 against 3472), and no faster
+     to the first Orb (6.00 days against 6.17). Now it is honestly short: the same
+     shape as the rest, exactly three rune branches for the three the Gates demand, and
+     the shallowest deep end of any road -- the Elven Halls rather than the Vaults. */
+  speed:  [['dungeon',8],['lair',6],['dungeon',15],['orc',4],['elf',3],['zot',5]],
 };
 export const ROAD_KEYS=['iron','wild','arcane','speed'];
 /* What the player is actually choosing between. A road that cannot be described in

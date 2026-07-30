@@ -159,6 +159,16 @@ def main():
                   f'  -> check seed count before trusting this')
             continue
         spread = hi / lo
+        if key != 'wins':
+            # Judge the axis by the thing it is FOR. The headline used to be the Orb
+            # spread for every axis, which reported the route as "PLACEBO — not worth
+            # a UI control" on the very run where it passed its own criterion at
+            # 2.16x: the roads yield different hauls at the same speed, so a flat Orb
+            # number there is the goal, not the failure. Printing the wrong verdict in
+            # the loudest line is how a correct result gets thrown away.
+            print(f'Orbs {spread:.2f}x apart — for this axis that is the GOAL, not the '
+                  f'verdict; judge it on the own-metric line above')
+            continue
         verdict = ('PLACEBO — not worth a UI control' if spread < PLACEBO
                    else 'weak' if spread < TARGET else 'meaningful')
         print(f'spread {spread:.2f}x  (best: {best})  -> {verdict}')

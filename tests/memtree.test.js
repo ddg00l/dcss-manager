@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { makeState, loadState } from '../src/core/state.js';
 import {
-  NODES, nodeById, treeLvl, memHas, nodeCost, memEff, achMet, canBuy, buyNode, gainMem,
-} from '../src/data/memtree.js';
+  NODES, nodeById, treeLvl, memHas, nodeCost, memEff, achMet, canBuy, buyNode, gainMem, MASTERY_KEY, MASTERY_K, regionMastery, masteredRegion} from '../src/data/memtree.js';
 import { maxSlots, gAtk, ghostMul, runeAura, rollCost } from '../src/core/economy.js';
 import { newHero } from '../src/sim/hero.js';
 import { comboKey } from '../src/data/combos.js';
@@ -225,5 +224,89 @@ describe('tree geometry', () => {
         if (cross([e[0], e[1]], [e[2], e[3]], [f[0], f[1]], [f[2], f[3]])) bad.push(e[4] + ' x ' + f[4]);
       }
     expect(bad).toEqual([]);
+  });
+});
+
+describe('region mastery: the reason to specialise', () => {
+  const fresh = () => ({ tree: { root: 1 } });
+  const spineOf = region => NODES.filter(n => n.region === region && !n.keystone && n.eff && n.eff.atk !== undefined);
+
+  it('mastery multiplies only the region that owns it', () => {
+    const a = fresh(), b = fresh();
+    const combat = NODES.filter(n => n.region === 'combat' && n.eff.atk);
+    for (const n of combat.slice(0, 6)) { a.tree[n.id] = 1; b.tree[n.id] = 1; }
+    const before = memEff(a, 'atk');
+    b.tree[MASTERY_KEY.combat] = 1;
+    const after = memEff(b, 'atk');
+    expect(after).toBeGreaterThan(before);
+    /* six nodes plus the keystone itself: the multiplier reads the region's total */
+    expect(after / before).toBeCloseTo(1 + MASTERY_K * regionMastery(b, 'combat'), 5);
+  });
+
+  it('mastery leaves expedition slots alone', () => {
+    /* A slot multiplies how much delving happens at once, which is a different class
+       of quantity from a percentage inside one delve — it is why the tree measured
+       1.70x in the first place. Scaling it with mastery would deepen exactly the
+       imbalance mastery exists to correct. */
+    const s = fresh();
+    for (const n of NODES.filter(n => n.region === 'heroes')) if (n.eff.slot) s.tree[n.id] = n.max || 1;
+    const before = memEff(s, 'slot');
+    s.tree[MASTERY_KEY.heroes] = 1;
+    expect(memEff(s, 'slot')).toBe(before);
+  });
+
+  it('going deep in one region beats spreading the same nodes over two', () => {
+    const deep = fresh(), thin = fresh();
+    const combat = NODES.filter(n => n.region === 'combat' && n.eff.atk).slice(0, 8);
+    const forge = NODES.filter(n => n.region === 'forge' && n.eff.ac).slice(0, 4);
+    for (const n of combat) deep.tree[n.id] = 1;
+    for (const n of combat.slice(0, 4)) thin.tree[n.id] = 1;
+    for (const n of forge) thin.tree[n.id] = 1;
+    deep.tree[MASTERY_KEY.combat] = 1;
+    thin.tree[MASTERY_KEY.combat] = 1;
+    /* same node count, one region against two: the specialist must come out ahead on
+       the stat it specialised in, or mastery is not doing its job */
+    /* measured 1.62x on equal node counts: the specialist's own stat is worth half
+       again as much, which is the pressure that was missing entirely */
+    expect(memEff(deep, 'atk')).toBeGreaterThan(memEff(thin, 'atk') * 1.5);
+  });
+
+  it('every region has a mastery keystone, and it is the region it names', () => {
+    for (const [region, id] of Object.entries(MASTERY_KEY)) {
+      const n = nodeById(id);
+      expect(n, id).toBeDefined();
+      expect(n.region, id).toBe(region);
+      expect(n.keystone, id).toBe(true);
+    }
+  });
+});
+
+describe('mastery is a commitment, not a purchase', () => {
+  it('only one Way may be sworn', () => {
+    /* Nothing made the choice exclusive at first, so a broad build simply bought all
+       six mastery keystones — a balanced build reaches for keystones first — and
+       collected the multiplier in every region at once. That is a universal
+       multiplier wearing the name of specialisation, and it compounded: on identical
+       seeds the same tactic took 292 Orbs in 30 days without mastery, 2070 with it,
+       and 491 once the oath became exclusive. An eight-day window showed a healthy
+       3.5 Orbs a day and hid the entire effect. */
+    /* achMet reads s.stat, so build a real save rather than a bare object */
+    const s = makeState();
+    s.mem = 1e9;
+    s.stat.kills = 1e6; s.stat.deaths = 1e4; s.stat.uniqKills = 1e3;
+    s.stat.forged = 1e3; s.stat.dismantled = 1e3; s.rolls = 1e3;
+    s.stat.wins = 100; s.runesTotal = 100;
+    for (const n of NODES) if (n.req.length) s.tree[n.req[0]] = 1;   /* satisfy adjacency */
+    const first = nodeById(MASTERY_KEY.combat);
+    expect(canBuy(s, first)).toBe(true);
+    s.tree[first.id] = 1;
+    expect(masteredRegion(s)).toBe('combat');
+    for (const [region, id] of Object.entries(MASTERY_KEY))
+      if (region !== 'combat') expect(canBuy(s, nodeById(id)), id).toBe(false);
+  });
+
+  it('the oath names its own price in the node text', () => {
+    for (const id of Object.values(MASTERY_KEY))
+      expect(nodeById(id).d).toMatch(/only ONE Way/);
   });
 });

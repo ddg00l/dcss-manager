@@ -12,7 +12,7 @@ import { newHero, rollHero } from '../../src/sim/hero.js';
 import { advanceHeroes, startRun, equipBestFromArmory, recallHero, fundZiggurat, resetSimClocks } from '../../src/sim/tick.js';
 import { cofferCost, buyCoffer, PROVISIONS, provCostOf, provStacks, buyProvision, zigFee } from '../../src/core/treasury.js';
 import { canAscend, doAscension, ASC_NODES, ascCanBuy, buyAscNode, ascNodeCost } from '../../src/core/ascension.js';
-import { NODES, canBuy, buyNode, treeLvl, nodeCost, memHas } from '../../src/data/memtree.js';
+import { NODES, canBuy, buyNode, treeLvl, nodeCost, memHas, MASTERY_KEY} from '../../src/data/memtree.js';
 import { rollCost, maxSlots, forgeDisc, freeRollAvailable, ZUPGRADES, zupg, zupgCost, zupgCap } from '../../src/core/economy.js';
 import { canPrestige, doPrestige, PUPGRADES, pupg, pupgCost, cycleProgress, ngLevel, prestigeReq } from '../../src/core/prestige.js';
 import { readiness } from '../../src/data/eliteAffixes.js';
@@ -48,14 +48,50 @@ function buyTree(s, tactic, budgetShare) {
       const ka = affordable.find(n => n.id === 'k_abyss');
       if (ka) { if (!buyNode(s, ka)) return; continue; }
     }
+    /* Expedition slots are the FOUNDATION every build stands on, not one region
+       competing with five others. Measuring them as a competing choice is what made
+       the tree axis look like it had a single answer: the specialist variants were
+       capped at two slots while the `slots` variant took the whole chain, so the axis
+       was comparing slot COUNTS and calling the result a comparison of tree
+       strategies. Slots at 1655 Orbs against every specialist at 497-846 was that
+       artefact, not a verdict on specialisation.
+
+       Every build now takes the chain. What `slots` does is RUSH it: it holds Memory
+       for the next slot instead of spending elsewhere, so it reaches each one at the
+       earliest possible moment, while the others buy a slot when they can afford it
+       without giving up their own priority. The difference is timing, which is what
+       the choice actually is. */
+    const nextSlot = NODES.find(n => n.id.startsWith('hslot') && !treeLvl(s, n.id) &&
+      n.req.some(r => treeLvl(s, r) > 0));
+    if (nextSlot) {
+      if (canBuy(s, nextSlot)) { if (!buyNode(s, nextSlot)) return; continue; }
+      /* the rusher, and only the rusher, sits on its Memory until the slot is paid for */
+      if (tactic.tree === 'slots' && achMetSafe(s, nextSlot)) return;
+    }
+    /* The control belongs in the harness, not in a side script: a build that refuses
+       the oath measures what mastery is actually worth, on the same seeds as the
+       builds that swear it. Without it, "mastery adds nothing" is an assertion. */
+    const affordableHere = tactic.noOath
+      ? affordable.filter(n => !Object.values(MASTERY_KEY).includes(n.id))
+      : affordable;
     let pick = null;
     if (tactic.tree === 'keystones') {
-      pick = affordable.find(n => n.keystone) ||
-        affordable.sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0];
+      /* A keystone hunter, and it has to actually hunt. This branch used to be
+         byte-identical to `balanced` below -- keystone if one is affordable, else the
+         cheapest node -- so the tree axis has been measuring five variants while
+         reporting six, and the two always returned the same number. It now buys only
+         what carries it toward the next keystone: the cheapest node that unlocks one,
+         never cheap filler elsewhere. */
+      const wanted = NODES.filter(n => n.keystone && !treeLvl(s, n.id));
+      const needed = new Set();
+      for (const k of wanted) for (const r of k.req) if (!treeLvl(s, r)) needed.add(r);
+      pick = affordableHere.find(n => n.keystone) ||
+        affordableHere.filter(n => needed.has(n.id)).sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0] ||
+        affordableHere.sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0];
     } else if (tactic.tree === 'slots') {
-      pick = affordable.find(n => n.id.startsWith('hslot')) ||
-        affordable.find(n => n.region === 'heroes') ||
-        affordable.sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0];
+      pick = affordableHere.find(n => n.id.startsWith('hslot')) ||
+        affordableHere.find(n => n.region === 'heroes') ||
+        affordableHere.sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0];
     } else if (tactic.tree === 'combat_fair') {
       /* A combat-LEANING player, not a hermit. The plain 'combat' strategy below
          only ever buys from the combat and dungeon regions, and expedition slots
@@ -64,19 +100,30 @@ function buyTree(s, tactic, budgetShare) {
          mechanic, not a flaw in combat nodes. This variant takes the seekers any
          real player would take, then spends the rest on fighting, which is the
          comparison that actually asks whether combat investment is worth it. */
-      pick = affordable.find(n => n.id.startsWith('hslot')) ||
-        affordable.find(n => n.keystone && (n.region === 'combat' || n.region === 'dungeon')) ||
-        affordable.filter(n => n.region === 'combat' || n.region === 'dungeon')
+      pick = affordableHere.find(n => n.id.startsWith('hslot')) ||
+        affordableHere.find(n => n.keystone && (n.region === 'combat' || n.region === 'dungeon')) ||
+        affordableHere.filter(n => n.region === 'combat' || n.region === 'dungeon')
           .sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0] ||
-        affordable.sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0];
+        affordableHere.sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0];
+    } else if (tactic.tree && tactic.tree.startsWith('master_')) {
+      /* A specialist: two seekers so it is not playing the game one-handed, then
+         everything into a single region, taking that region's mastery keystone the
+         moment it can. This variant exists because the tree axis had no strategy that
+         actually specialised -- balanced, slots and combat_fair all bought slots and
+         then diverged on noise, which is why the axis measured 1.70x. */
+      const region = tactic.tree.slice(7);
+      pick = affordableHere.find(n => n.id === MASTERY_KEY[region]) ||
+        affordableHere.filter(n => n.region === region)
+          .sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0] ||
+        affordableHere.sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0];
     } else if (tactic.tree === 'combat') {
-      pick = affordable.find(n => n.keystone && (n.region === 'combat' || n.region === 'dungeon')) ||
-        affordable.filter(n => n.region === 'combat' || n.region === 'dungeon')
+      pick = affordableHere.find(n => n.keystone && (n.region === 'combat' || n.region === 'dungeon')) ||
+        affordableHere.filter(n => n.region === 'combat' || n.region === 'dungeon')
           .sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0] ||
-        affordable.sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0];
+        affordableHere.sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0];
     } else { /* balanced: cheapest first, keystones when seen */
-      pick = affordable.find(n => n.keystone) ||
-        affordable.sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0];
+      pick = affordableHere.find(n => n.keystone) ||
+        affordableHere.sort((a, b) => nodeCost(s, a) - nodeCost(s, b))[0];
     }
     if (!pick) return;
     if (nodeCost(s, pick) > s.mem * budgetShare && !pick.keystone) return;

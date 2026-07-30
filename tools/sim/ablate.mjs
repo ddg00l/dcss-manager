@@ -38,9 +38,18 @@ export const AXES = {
   route:     [['iron', { route: 'iron' }], ['wild', { route: 'wild' }], ['arcane', { route: 'arcane' }]],
   /* the speedrun is openly a tempo choice, so it is measured as one */
   tempo:     [['full road', { route: 'iron' }], ['short road', { route: 'speed', caution: 'bold' }]],
-  tree:      [['balanced', { tree: 'balanced' }], ['combat', { tree: 'combat' }],
-              ['combat_fair', { tree: 'combat_fair' }],
-              ['slots', { tree: 'slots' }], ['keystones', { tree: 'keystones' }]],
+  /* Specialists against generalists. The old variant list could not answer the
+     question the tree poses -- balanced, slots and combat_fair all bought expedition
+     slots first and then differed on stat noise, so the axis measured 1.70x where it
+     needs 3x. These variants commit to one region and take its mastery keystone. */
+  tree:      [['spread', { tree: 'balanced' }], ['slots', { tree: 'slots' }],
+              ['keystones', { tree: 'keystones' }],
+              ['m:combat', { tree: 'master_combat' }],
+              ['m:dungeon', { tree: 'master_dungeon' }],
+              ['m:economy', { tree: 'master_economy' }],
+              /* the control: same builds, oath refused */
+              ['spread-noM', { tree: 'balanced', noOath: true }],
+              ['m:econ-noM', { tree: 'master_economy', noOath: true }]],
   /* is the Ascension layer worth taking at all? tactic.ascend===false opts out */
   ascend:    [['ascend ON', {}], ['ascend OFF', { ascend: false }]],
 };
