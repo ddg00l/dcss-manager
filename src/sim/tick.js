@@ -84,12 +84,29 @@ export const floorMemory = depth => {
 export const ZOT_RUNES=3;
 /* no floor should ever detain a delver longer than this (see the escape hatch) */
 export const FLOOR_TURN_LIMIT=4000;
-/** the nearest branch whose rune this hero still lacks, or null if none is left */
+/* Chance a seeker skips what remains of a floor and heads for the stairs.
+   Cowardly clears everything; reckless dives. TUNABLE — validated against the
+   average level of the fallen, which is what caution is for. */
+export const DIVE_CHANCE={cautious:0,normal:0.35,bold:0.9};
+/** The nearest branch ON THIS HERO'S ROUTE whose rune it still lacks, or null.
+
+    Restricted to the route on purpose. Searching every branch made the Gates of
+    Zot override the player's routing entirely: wherever a guild was sent, the
+    detour walked it to whatever rune happened to be missing, so both routes came
+    home with the same six kinds of rune and the choice moved nothing but tempo
+    (measured: runeKinds 6.3 against 6.0, a 1.05x spread, while Orbs differed
+    1.75x — exactly backwards from what a route is supposed to decide).
+
+    Now the classic route offers five rune branches and the speedrun exactly
+    three, which means a speedrunner that fails a single branch boss cannot enter
+    Zot at all. That fragility IS the trade: speed against reliability. */
 export function runeBranchFor(h){
+  const onRoute=new Set(buildRoute(h.strategy).map(seg=>seg[0]));
   let best=null,bestD=1e9;
   for(const k of BR_ORDER){
     const br=BRANCHES[k];
     if(!br.rune||h.runes.includes(br.rune))continue;
+    if(!onRoute.has(k))continue;
     const d=Math.abs((BR_OFFSET[k]||0)-brDepth(h));
     if(d<bestD){bestD=d;best=k}
   }
@@ -200,8 +217,10 @@ function nextFloor(h,s){
         genFloor(h,s);return;
       }
       /* every rune branch already stripped: nothing left but to grind the Depths */
-      hlog(h,t('The Gates of Zot are sealed and no rune remains within reach. ')+
-        h.name+t(' farms the Depths.'),'sys');
+      /* the chosen path holds no more runes: this route has failed, and the
+         seeker delves on until something finishes it */
+      hlog(h,t('The Gates of Zot are sealed and this path holds no more runes. ')+
+        h.name+t(' delves on regardless.'),'sys');
       h.branch='depths';h.floor=Math.max(1,Math.min(5,h.floor));
       genFloor(h,s);return;
     }
@@ -276,6 +295,21 @@ export function heroDie(h,killer,s){
   if(h.gold>0){s.gold+=h.gold;hlog(h,t('Hero\'s wallet (')+fmt(h.gold)+t(' 🜚) returns to the treasury'),'sys')}
   const ck0=comboKey(h.race,h.cls);
   s.stat.bestXL[ck0]=Math.max(s.stat.bestXL[ck0]||0,h.xl);
+  /* Per-axis telemetry. Every player control was measured only by Orbs per day,
+     which is why balancing them made them converge: four different decisions
+     competing in one number can only be equalised. These record what each
+     decision is actually FOR — how far a seeker got before falling (caution),
+     and what the delve brought home (route, spend). */
+  const tel=s.tel=s.tel||{fallenXL:0,fallenDepth:0,fallenN:0,gearHome:0,artefacts:0,runeKinds:{},godWins:{}};
+  tel.fallenXL+=h.xl; tel.fallenN++;
+  /* Depth at death, not level at death. Level turned out to be pinned by the
+     difficulty curve: a seeker falls when monsters outclass it, which happens at
+     a fairly fixed power, and a diver earns richer experience per kill on deeper
+     floors so its level catches up. Measured, the three caution settings left
+     corpses at 14.94, 14.65 and 14.76 — a metric the system holds flat no matter
+     what the control does. How FAR it got is the thing caution can actually
+     move. */
+  tel.fallenDepth+=(h.maxBrDepth||0);
   /* Death pays for how FAR the seeker got, not merely that they died. A flat
      payout made dying strictly profitable (Memory, shards and ghost stacks with
      the gear and wallet handed back), so throwing bodies at D:3 beat delving.
@@ -302,7 +336,10 @@ export function heroDie(h,killer,s){
   /* gear back to armory (90%) */
   for(const slot of Object.keys(h.gear)){
     const it=h.gear[slot];
-    if(it&&!it.id.startsWith('st')&&rnd(h)<.9)storeItem(s,it);
+    if(it&&!it.id.startsWith('st')&&rnd(h)<.9){
+      storeItem(s,it);
+      s.tel.gearHome++; if(it.unrandId)s.tel.artefacts++;
+    }
   }
   s.fame.unshift({name:h.name,race:h.race,cls:h.cls,rarity:h.rarity,xl:h.xl,
     depth:h.maxDepth||brTag(h),by:killer,won:false,runes:h.runes.length});
@@ -318,7 +355,9 @@ export function heroWin(h,s){
   s.orbsThisWindow=(s.orbsThisWindow||0)+1; /* feeds the smoothed Orbs-per-day rate */
   s.progress.Zot=Math.max(s.progress.Zot||0,5);
   /* eternal Pantheon: an Orb carried out while pledged deepens that god's favor */
-  if(h.god)s.pantheon[h.god]=(s.pantheon[h.god]||0)+1;
+  if(h.god){s.pantheon[h.god]=(s.pantheon[h.god]||0)+1;
+    s.tel=s.tel||{fallenXL:0,fallenDepth:0,fallenN:0,gearHome:0,artefacts:0,runeKinds:{},godWins:{}};
+    s.tel.godWins[h.god]=(s.tel.godWins[h.god]||0)+1;}
   recordVictory(s,h);
   recordRunnerWin(s,h);
   const cReward=checkContract(s,h);
@@ -798,6 +837,8 @@ export function giveRune(h,name,s){
   }
   if(!generic)s.cycRunes.push(name);
   if(generic)h.runes.push(name);
+  s.tel=s.tel||{fallenXL:0,fallenDepth:0,fallenN:0,gearHome:0,artefacts:0,runeKinds:{},godWins:{}};
+  s.tel.runeKinds[name]=(s.tel.runeKinds[name]||0)+1;
   s.runes++;s.runesTotal++;
   hlog(h,'ᚱ '+h.name+t(' collects a rune: ')+t(name)+'!','rune');
   h.rep.notable.push(t('ᚱ obtained: ')+t(name));
@@ -957,15 +998,24 @@ function exploreGoal(h,df){
     if(d<bd){bd=d;best=[it.x,it.y]}
   }
   if(best)return best;
-  /* unexplored (classic/cautious only) */
-  if(h.caution!=='bold'||h.strategy!=='speed'){
+  /* Clear the floor, or dive? This is what CAUTION decides, and until now it
+     decided nothing: exploration was gated on the ROUTE, so only a bold
+     speedrunner ever skipped anything and cowardly/normal were identical. The
+     three settings left corpses at indistinguishable levels — 14.36, 14.09 and
+     14.16 — which is a dead control, not a cautious one.
+
+     A seeker that clears floors gathers the experience to survive deeper ones and
+     falls further in; a diver reaches depth it has not earned. The trade is
+     levels against pace, and it is measured as the average level of the fallen,
+     never as Orbs per day. */
+  const dive=DIVE_CHANCE[h.caution]??DIVE_CHANCE.normal;
+  if(dive<1&&rnd(h)>=dive){
     for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
       if(m.g[y][x]===0&&!m.explored[y][x]&&reach(x,y)){
         const d=Math.abs(x-m.px)+Math.abs(y-m.py);
         if(d<bd){bd=d;best=[x,y]}
       }
     }
-    if(best&&h.strategy==='speed'&&rnd(h)<.7)best=null;
   }
   return best;
 }

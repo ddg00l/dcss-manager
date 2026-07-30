@@ -85,6 +85,16 @@ export function ablate(axis, sessions, days) {
       gold: Math.round(avg('gold')), winsLast10d: tail === null ? null : +tail.toFixed(2),
       winsPerSeed: perSeed, median: at(0.5), lo: perSeed[0], hi: perSeed[perSeed.length - 1],
       stalledSeeds: perSeed.filter(w => w === 0).length,
+      /* Per-axis metrics. Judging every control by Orbs per day is what flattened
+         them: four different decisions competing in one number can only be
+         equalised, and balancing them was therefore guaranteed to converge them.
+         Each control is now scored on what it is FOR. */
+      fallenXL: +avg('fallenXL').toFixed(2),
+      fallenDepth: +avg('fallenDepth').toFixed(2), /* caution: how FAR a seeker got */
+      gearHome: Math.round(avg('gearHome')),   /* spend/route: what came home */
+      artefacts: Math.round(avg('artefacts')),
+      runeKinds: +avg('runeKinds').toFixed(1), /* route: what the path yields */
+      godKinds: +avg('godKinds').toFixed(1),
     });
   }
   return rows;

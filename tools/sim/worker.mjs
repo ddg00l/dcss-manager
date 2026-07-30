@@ -296,6 +296,14 @@ function session(tactic, days = 1, seed = 0) {
     plv: Object.values(s.pupg||{}).reduce((a,b)=>a+b,0),
     ng: ngLevel(s), byDay, debug: m.debug,
     orbRate: +(s.orbRate || 0).toFixed(2), prestReq: prestigeReq(s),
+    /* per-axis metrics: each player control is judged in ITS OWN terms, because
+       judging all four by Orbs per day is what made them converge */
+    fallenXL: s.tel ? +(s.tel.fallenXL / Math.max(1, s.tel.fallenN)).toFixed(2) : 0,
+    fallenDepth: s.tel ? +(s.tel.fallenDepth / Math.max(1, s.tel.fallenN)).toFixed(2) : 0,
+    gearHome: s.tel ? s.tel.gearHome : 0,
+    artefacts: s.tel ? s.tel.artefacts : 0,
+    runeKinds: s.tel ? Object.keys(s.tel.runeKinds).length : 0,
+    godKinds: s.tel ? Object.keys(s.tel.godWins).length : 0,
     greats: greatRaces(s).length + greatClasses(s).length,
     zig: s.stat.zigBest || 0, contracts: s.stat.contracts || 0,
     gold: Math.round(s.gold), spentLegends: m.spentLegends,

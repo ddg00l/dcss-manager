@@ -19,6 +19,20 @@ TARGET = 1.5     # a decision worth presenting should move outcomes at least thi
 
 SPLIT_GAP = 0.45   # one gap holding this share of the range reads as two modes
 
+# What each control is FOR, and the spread its own metric must show. Judging all
+# of them by Orbs per day is what flattened the game: four different decisions
+# competing in one number can only be equalised. The Orb spread is now an
+# anti-goal for these axes -- different paths, not different speeds.
+AXIS_METRIC = {
+    'caution': ('fallenDepth', 'avg depth at death', 2.0),
+    'route':   ('runeKinds', 'kinds of rune brought home', 2.0),
+    'spend':   ('gearHome', 'gear delivered to the armoury', 2.0),
+    'tree':    ('wins', 'Orbs (the tree IS about tempo)', 3.0),
+    'attention': ('wins', 'Orbs (attention IS about tempo)', 2.0),
+    'ascend':  ('wins', 'Orbs', 1.5),
+}
+ORB_DIVERGENCE_CAP = 1.3   # non-tempo axes should not differ much in Orbs
+
 
 def bimodality_report(rows):
     """Do accounts cluster around the mean, or split into fast and stalled modes?
@@ -90,8 +104,22 @@ def main():
                   (label, wavg('wins'), wavg('prestiges'), wavg('depth'), wavg('deaths'),
                    '-' if tail is None else ('%.2f%s' % (tail, '  STALLED' if tail == 0 else ''))))
         bimodality_report(rows[axis])
+        # judge the axis in its own metric first
+        key, label, want = AXIS_METRIC.get(axis, ('wins', 'Orbs', 1.5))
+        own = {}
+        for lbl, rs in by_label.items():
+            tot = sum(r.get('sessions', 1) for r in rs) or 1
+            own[lbl] = sum(r.get(key, 0) * r.get('sessions', 1) for r in rs) / tot
+        if own and min(own.values()) > 0:
+            sp = max(own.values()) / min(own.values())
+            verdict = 'MEANINGFUL' if sp >= want else 'too flat'
+            print('  own metric (%s): %s  spread %.2fx  (need %.1fx) -> %s'
+                  % (label, '/'.join('%s %.2f' % (k, v) for k, v in own.items()), sp, want, verdict))
         lo, hi = min(means.values()), max(means.values())
         best = max(means, key=means.get)
+        if key != 'wins' and lo > 0 and hi / lo > ORB_DIVERGENCE_CAP:
+            print('  NOTE: %.2fx spread in Orbs too -- this control should change WHAT you get, '
+                  'not how fast' % (hi / lo))
         if lo <= 0:
             # a variant scored zero: the spread is unbounded, but with few seeds
             # this is usually noise rather than a real cliff -- say so plainly

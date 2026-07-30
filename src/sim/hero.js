@@ -21,6 +21,16 @@ export function ringSlotKeys(h,s){
 }
 import {memEff,memHas,treeSig} from '../data/memtree.js';
 
+/** The guild's standing orders: what the newest seeker should inherit. */
+export function guildDoctrine(s){
+  const last=[...(s.heroes||[])].reverse().find(h=>h.strategy);
+  return {
+    strategy:last?last.strategy:'classic',
+    caution:last?last.caution:'normal',
+    spend:last?last.spend:'balanced',
+  };
+}
+
 export function newHero(race,cls,rarity,s){
   const rd=RACES[race],cd=CLASSES[cls];
   const stars=s.stars[comboKey(race,cls)]||0;
@@ -33,8 +43,16 @@ export function newHero(race,cls,rarity,s){
       spellcasting:0,conjurations:0,necromancy:0,fire:0,ice:0,summonings:0},
     god:null,piety:0,gear:{weapon:null,armour:null,shield:null,ring1:null,ring2:null,ring3:null,ring4:null,ring5:null,ring6:null,ring7:null,ring8:null,amulet:null},
     inv:{curing:2+memEff(s,'pots')},known:[],muts:[],status:{},gold:0,keys:0,
-    spend:'balanced',lives:rd.lives||1,
-    strategy:'classic',caution:'normal',
+    lives:rd.lives||1,
+    /* A new seeker follows the guild's standing orders, not the factory default.
+       The automation keystones dispatch fresh heroes straight into the dungeon
+       without touching their settings, so every auto-summoned seeker used to run
+       'classic'/'normal'/'balanced' no matter what the player had chosen — a
+       speedrunning guild was measured bringing home crystal and silver runes
+       from branches its route never visits, because a slice of the fleet was
+       quietly on a different route. That also means route, caution and spend
+       were partly inert for any account with automation, which is most of them. */
+    ...guildDoctrine(s),
     state:'camp', // camp | run | dead | victor
     segIdx:0,branch:null,floor:0,turn:0,
     map:null,seed:hashSeed(s.masterSeed,'map',hid)>>>0,

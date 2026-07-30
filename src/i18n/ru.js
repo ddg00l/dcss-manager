@@ -619,6 +619,8 @@ export const RU = {
   ' finds nothing more here and presses on.': ' не находит здесь больше ничего и идёт дальше.',
   'Dungeon pressure': 'Давление подземелья',
   ' can make no headway here and withdraws.': ' не может здесь продвинуться и отступает.',
+  'The Gates of Zot are sealed and this path holds no more runes. ': 'Врата Зота закрыты, и на этом пути рун больше нет. ',
+  ' delves on regardless.': ' продолжает спуск, невзирая на это.',
   ' farms the Depths.': ' фармит Глубины.',
   ' reads ': ' читает ',
   ' floors!': ' эт.!',

@@ -619,6 +619,8 @@ export const DE = {
   ' finds nothing more here and presses on.': ' findet hier nichts mehr und zieht weiter.',
   'Dungeon pressure': 'Druck des Verlieses',
   ' can make no headway here and withdraws.': ' kommt hier nicht weiter und zieht sich zurück.',
+  'The Gates of Zot are sealed and this path holds no more runes. ': 'Die Tore von Zot sind versiegelt, und dieser Weg birgt keine Rune mehr. ',
+  ' delves on regardless.': ' zieht dennoch weiter hinab.',
   ' farms the Depths.': ' farmt die Tiefen.',
   ' reads ': ' liest ',
   ' floors!': ' Ebenen!',

@@ -619,6 +619,8 @@ export const UK = {
   ' finds nothing more here and presses on.': ' не знаходить тут більше нічого й рушає далі.',
   'Dungeon pressure': 'Тиск підземелля',
   ' can make no headway here and withdraws.': ' не може тут просунутися й відступає.',
+  'The Gates of Zot are sealed and this path holds no more runes. ': 'Ворота Зота зачинені, і на цьому шляху рун більше немає. ',
+  ' delves on regardless.': ' продовжує спуск, незважаючи на це.',
   ' farms the Depths.': ' фармить Глибини.',
   ' reads ': ' читає ',
   ' floors!': ' пов.!',
