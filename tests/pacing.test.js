@@ -173,7 +173,7 @@ describe('Rune Aura curve change is not retroactive punishment', () => {
     /* a pre-migration save: the old aura was a flat +2% per lifetime rune */
     const old = { balV: 5, runesTotal: RUNES, tree: { root: 1, k_runeaura: 1 }, stat: {}, fame: [] };
     const s = loadState(fakeStore(old));
-    expect(s.balV).toBe(6);
+    expect(s.balV).toBe(7);
     /* nothing is taken away: the migrated aura equals the old one */
     expect(runeAura(s)).toBeCloseTo(1 + 0.02 * RUNES, 5);
     /* but it no longer runs away — 400 further runes add far less than the old

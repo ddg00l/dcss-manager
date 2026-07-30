@@ -4,7 +4,7 @@ import {ngMonMul,inCycleMul,ngLevel} from '../core/prestige.js';
 import {nemesisLevel} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
 import {FLOOR_KEYS,floorAffixChance,eliteChance,rollEliteAffixes,affixLevel,endgamePressure} from '../data/eliteAffixes.js';
-import {BRANCHES,brDepth,BR_OFFSET,BR_ORDER} from '../data/branches.js';
+import {BRANCHES,brDepth,BR_OFFSET,BR_ORDER,BR_CORE} from '../data/branches.js';
 import {MONS,UNIQUES} from '../data/monsters.js';
 import {GODKEYS} from '../data/gods.js';
 import {gDrop} from '../core/economy.js';
@@ -98,19 +98,28 @@ export function genFloor(h,s){
     monsters.push(m);
   }
   const items=[];
-  const goldMul=P?P.goldMul:1;
+  /* A branch's loot character is what makes a road a choice about WHAT you get
+     rather than how fast you get it: the Mines drop weapons, the Vaults plate,
+     the Elven Halls enchanted jewellery, the Lair and the Swamp reagents, the
+     Tomb grave goods. Portals keep their own economy. */
+  const lc=(P?null:br.loot)||{};
+  const goldMul=(P?P.goldMul:1)*(lc.gold||1);
   const ng=(P?3:2)+Math.floor(rng()*3);
   for(let i=0;i<ng&&free.length>2;i++){const c=take();
     items.push({x:c[0],y:c[1],kind:'gold',amt:Math.floor((8+rng()*20)*Math.pow(GOLD_DEPTH_BASE,depth)*goldMul)})}
-  const consN=P?P.lootN:(rng()<.6?1:2);
+  const consN=P?P.lootN:Math.round((rng()<.6?1:2)*(lc.cons||1));
   for(let i=0;i<consN&&free.length>2;i++){const c=take();
     items.push({x:c[0],y:c[1],kind:'cons',c:randConsumable(rng)})}
   /* gear drop — ziggurats are gear vaults: near-guaranteed, luck-biased toward
      rarer/randart gear, and the deeper the zig the better the luck */
   const isZig=P&&h.inPortal.type==='zig';
-  const gearLuck=isZig?Math.min(.85,.35+.03*(h.inPortal.floor||1)):0;
-  if(rng()<(isZig?.9:(P?.5:.10)*gDrop(s))&&free.length>2){const c=take();
-    items.push({x:c[0],y:c[1],kind:'item',it:randomItem(null,Math.min(2,Math.floor(depth/8)),rng,gearLuck)})}
+  /* A branch that hands over little gear hands over better gear: one fine thing in a
+     hydra's den beats ten poor ones, and it is what keeps the reagent road from being
+     merely the poor road. */
+  const gearLuck=isZig?Math.min(.85,.35+.03*(h.inPortal.floor||1)):(lc.luck||0);
+  const brSlot=()=>lc.slots?lc.slots[Math.floor(rng()*lc.slots.length)]:null;
+  if(rng()<(isZig?.9:(P?.5:.10*(lc.gear||1))*gDrop(s))&&free.length>2){const c=take();
+    items.push({x:c[0],y:c[1],kind:'item',it:randomItem(brSlot(),Math.min(2,Math.floor(depth/8)),rng,gearLuck)})}
   if(isZig&&rng()<.5&&free.length>2){const c=take(); /* a second, luck-boosted drop */
     items.push({x:c[0],y:c[1],kind:'item',it:randomItem(null,Math.min(2,Math.floor(depth/8)),rng,gearLuck)})}
   if(!P&&rng()<.16&&!h.god&&free.length>2){const c=take();
@@ -205,7 +214,9 @@ const KIND_AVG={};
 function avgKind(kind){
   if(KIND_AVG[kind]!==undefined)return KIND_AVG[kind];
   let lo=99,hi=0;
-  for(const bk of BR_ORDER){const br=BRANCHES[bk];
+  /* BR_CORE, not BR_ORDER: see the note there. A new branch must not rescale
+     the monsters every other branch already uses. */
+  for(const bk of BR_CORE){const br=BRANCHES[bk];
     for(const m of br.mobs)if(m[0]===kind){
       const off=BR_OFFSET[bk];
       lo=Math.min(lo,off+m[1]);hi=Math.max(hi,off+m[2]);}}

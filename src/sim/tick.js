@@ -22,6 +22,19 @@ import {todayAffix} from '../data/affixes.js';
 import {ELITE_AFFIXES,FLOOR_AFFIXES} from '../data/eliteAffixes.js';
 import { hashSeed } from '../core/rng.js';
 import { t } from '../i18n/index.js';
+/** Per-axis telemetry. Every player control was measured only by Orbs per day,
+    which is why balancing them made them converge: four decisions competing in one
+    number can only be equalised. Each field records what one decision is FOR. */
+export const newTel=()=>({fallenXL:0,fallenDepth:0,fallenN:0,gearHome:0,artefacts:0,
+  runeKinds:{},godWins:{},martialHome:0,jewelHome:0,consFound:0,
+  /* where a road loses its seekers, and how often it loses them to the gate rather
+     than to a monster: a hero turned away from Zot for want of a rune is a failure
+     of the ROAD, and it is invisible in any count of deaths */
+  deathBr:{},sealed:0,gateOk:0,
+  /* How strong a road delivers its seekers to the Gates. This turned out to be the
+     thing that decides a road, far more than its loot: two roads with the same
+     destinations differed 13x in Orbs while their hauls were interchangeable. */
+  zotXL:0,zotHp:0});
 
 export const simHooks={onDeath:null,onWin:null};
 /* DCSS: movement and adjacency are 8-directional (Chebyshev metric) */
@@ -97,9 +110,9 @@ export const DIVE_CHANCE={cautious:0,normal:0.35,bold:0.9};
     (measured: runeKinds 6.3 against 6.0, a 1.05x spread, while Orbs differed
     1.75x — exactly backwards from what a route is supposed to decide).
 
-    Now the classic route offers five rune branches and the speedrun exactly
-    three, which means a speedrunner that fails a single branch boss cannot enter
-    Zot at all. That fragility IS the trade: speed against reliability. */
+    Each road now carries four rune branches for the three the Gates demand, so a
+    missed boss costs a detour rather than the run -- and the detour stays on the
+    road, which is what lets the roads keep their own characters. */
 export function runeBranchFor(h){
   const onRoute=new Set(buildRoute(h.strategy).map(seg=>seg[0]));
   let best=null,bestD=1e9;
@@ -203,12 +216,31 @@ function nextFloor(h,s){
     /* segment done → next segment */
     h.segIdx++;
     if(h.segIdx>=route.length){h.segIdx=route.length-1}
-    const ns=route[h.segIdx];
+    let ns=route[h.segIdx];
+    /* The fourth rune branch is SLACK, not homework. Every road carries four
+       because the Gates demand three and a road with exactly three fails outright
+       on one missed boss -- but a hero who already carries three was still being
+       marched through the last one, which on the Iron Road means walking into the
+       Tomb for nothing. Measured, that made the road a meat grinder: 880 deaths
+       and 1.3 Orbs against the Wild Road's 568 and 16.7. Skip what the Gates no
+       longer need; a rune branch is a means, not a waypoint. */
+    let ns2=ns;
+    while(ns2[0]!=='zot'&&BRANCHES[ns2[0]]&&BRANCHES[ns2[0]].rune&&h.runes.length>=ZOT_RUNES
+          &&h.segIdx<route.length-1){
+      hlog(h,h.name+t(' carries the runes the Gates demand and passes by ')+t(BRANCHES[ns2[0]].n),'sys');
+      h.segIdx++;ns2=route[h.segIdx];
+    }
+    ns=ns2;
     /* Gates of Zot: THIS delver must carry 3 runes, as in DCSS. The old check
        read s.runesTotal, so the gate opened forever after any account banked 3
        and every later hero walked in empty-handed — the single biggest reason a
        full run took under an hour and the Orb showed up 14 times a day. */
+    if(ns[0]==='zot'&&h.runes.length>=ZOT_RUNES){
+      const tl=s.tel=s.tel||newTel();
+      tl.gateOk++;tl.zotXL+=h.xl;tl.zotHp+=(h.maxHpCache||0);
+    }
     if(ns[0]==='zot'&&h.runes.length<ZOT_RUNES){
+      (s.tel=s.tel||newTel()).sealed++;
       const want=runeBranchFor(h);
       if(want){
         hlog(h,t('The Gates of Zot are sealed — ')+ZOT_RUNES+t(' runes required (')+h.runes.length+
@@ -300,7 +332,7 @@ export function heroDie(h,killer,s){
      competing in one number can only be equalised. These record what each
      decision is actually FOR — how far a seeker got before falling (caution),
      and what the delve brought home (route, spend). */
-  const tel=s.tel=s.tel||{fallenXL:0,fallenDepth:0,fallenN:0,gearHome:0,artefacts:0,runeKinds:{},godWins:{}};
+  const tel=s.tel=s.tel||newTel();
   tel.fallenXL+=h.xl; tel.fallenN++;
   /* Depth at death, not level at death. Level turned out to be pinned by the
      difficulty curve: a seeker falls when monsters outclass it, which happens at
@@ -310,6 +342,8 @@ export function heroDie(h,killer,s){
      what the control does. How FAR it got is the thing caution can actually
      move. */
   tel.fallenDepth+=(h.maxBrDepth||0);
+  const dbr=h.inPortal?h.inPortal.type:(h.branch||'?');
+  tel.deathBr[dbr]=(tel.deathBr[dbr]||0)+1;
   /* Death pays for how FAR the seeker got, not merely that they died. A flat
      payout made dying strictly profitable (Memory, shards and ghost stacks with
      the gear and wallet handed back), so throwing bodies at D:3 beat delving.
@@ -356,7 +390,7 @@ export function heroWin(h,s){
   s.progress.Zot=Math.max(s.progress.Zot||0,5);
   /* eternal Pantheon: an Orb carried out while pledged deepens that god's favor */
   if(h.god){s.pantheon[h.god]=(s.pantheon[h.god]||0)+1;
-    s.tel=s.tel||{fallenXL:0,fallenDepth:0,fallenN:0,gearHome:0,artefacts:0,runeKinds:{},godWins:{}};
+    s.tel=s.tel||newTel();
     s.tel.godWins[h.god]=(s.tel.godWins[h.god]||0)+1;}
   recordVictory(s,h);
   recordRunnerWin(s,h);
@@ -837,7 +871,7 @@ export function giveRune(h,name,s){
   }
   if(!generic)s.cycRunes.push(name);
   if(generic)h.runes.push(name);
-  s.tel=s.tel||{fallenXL:0,fallenDepth:0,fallenN:0,gearHome:0,artefacts:0,runeKinds:{},godWins:{}};
+  s.tel=s.tel||newTel();
   s.tel.runeKinds[name]=(s.tel.runeKinds[name]||0)+1;
   s.runes++;s.runesTotal++;
   hlog(h,'ᚱ '+h.name+t(' collects a rune: ')+t(name)+'!','rune');
@@ -1026,6 +1060,7 @@ function pickup(h,it,s){
     rnd(h);hlog(h,h.name+t(' picks up ')+g+t(' gold'),'loot'); /* keep the draw; log every pickup */
   }else if(it.kind==='cons'){
     h.inv[it.c.type]=(h.inv[it.c.type]||0)+1;
+    (s.tel=s.tel||newTel()).consFound++;
     hlog(h,h.name+t(' picks up: ')+consName(it.c,h.known.includes(it.c.type)),'loot');
   }else if(it.kind==='key'){
     h.keys++;hlog(h,'🗝 '+h.name+t(' finds a golden key!'),'rune');
@@ -1060,6 +1095,7 @@ export function dropForgeItem(h,s){
   acquireItem(h,s,randomItem(null,Math.min(2,Math.floor(depth/8)),()=>rnd(h)));
 }
 export function acquireItem(h,s,it){
+  telGear(s,it);
   /* auto-equip if better for this hero, else armory */
   const better=tryAutoEquip(h,it,s);
   hlog(h,t('✦ found: ')+itemName(it)+(better?t(' (equipped)'):t(' (to armory)')),'loot');
@@ -1174,6 +1210,20 @@ export function computeOffline(s,nowMs){
 }
 
 /** item goes to the armory; the "Auto-dismantle" keystone grinds grey items into scrap */
+const MARTIAL=new Set(['weapon','armour','shield']);
+/** Composition of what the dungeon YIELDS -- counted at acquisition, once per item.
+
+   It was first counted inside storeItem, on the reasoning that every path funnels
+   through it. That was wrong, and wrong in a way that hid the whole effect: a fallen
+   hero's kit is stored again on every death, so the count was dominated by gear
+   cycling through the guild, and the composition of THAT is fixed by the slot layout
+   (three martial slots against three of jewellery). Every road was therefore dragged
+   toward one half, and three roads with entirely different destinations measured
+   1.33x apart. Count what the dungeon hands over, not what the guild reshelves. */
+export function telGear(s,it){
+  const tel=s.tel=s.tel||newTel();
+  if(MARTIAL.has(it.slot))tel.martialHome++; else tel.jewelHome++;
+}
 export function storeItem(s,it){
   if((memHas(s,'k_autodismantle')||ascAutoGuild(s))&&it.rar===0){
     s.scrap+=2;s.stat.dismantled++;

@@ -188,7 +188,7 @@ export function doPrestige(s) {
   s.scrap = 0; s.runes = 0; s.rolls = 0; s.forges = 0; s.pity = 0;
   s.mem = pupg(s, 'p_mem') * 600;
   s.pendingDeaths = []; s.pendingWins = [];
-  s.progress = { D: 0, Lair: 0, Orc: 0, Elf: 0, Vaults: 0, Depths: 0, Zot: 0, Abyss: 0 };
+  s.progress = { D: 0, Lair: 0, Swamp: 0, Spider: 0, Orc: 0, Elf: 0, Vaults: 0, Depths: 0, Tomb: 0, Zot: 0, Abyss: 0 };
 
   /* the tree burns down to its engraved keystones — unless Ascension "Living
      Memory" preserves the whole tree. Keystones are the one thing prestige does

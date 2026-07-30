@@ -7,7 +7,7 @@ import {RACES} from '../data/races.js';
 import {CLASSES} from '../data/classes.js';
 import {comboKey,comboRarity,RARN,SHARDS_PER,starStr} from '../data/combos.js';
 import {GODS} from '../data/gods.js';
-import {BRANCHES,brTag} from '../data/branches.js';
+import {BRANCHES,brTag,ROAD_KEYS,ROAD_INFO,roadOf,roadRunes} from '../data/branches.js';
 import {itemName,itemTile,randomItem,itemInfo} from '../data/items.js';
 import {maxSlots} from '../core/economy.js';
 import {memHas} from '../data/memtree.js';
@@ -46,11 +46,15 @@ export function renderHeroes(){
     el.appendChild(gearRow);
     /* strategy selects */
     const selS=document.createElement('select');
-    const routes=[['classic',t('Route: classic (all branches)')],['speed',t('Route: speedrun (to Zot)')]];
-    if(memHas(save,'k_abyss'))routes.push(['abyss',t('Route: Abyss (endless farming)')]);
+    /* The roads differ in what they YIELD, not in how fast they run, so the option
+       has to say what it yields — otherwise the player is picking a word. */
+    const routes=ROAD_KEYS.map(k=>[k,t('Route: ')+t(ROAD_INFO[k].n)+' — '+t(ROAD_INFO[k].yield)]);
+    if(memHas(save,'k_abyss'))routes.push(['abyss',t('Route: the Abyss — endless farming, no Orb')]);
     for(const [v,n] of routes){
-      const o=document.createElement('option');o.value=v;o.textContent=n;selS.appendChild(o)}
-    selS.value=h.strategy;
+      const o=document.createElement('option');o.value=v;o.textContent=n;
+      if(ROAD_INFO[v])o.title=t('Runes on this road: ')+roadRunes(v).map(r=>t(r)).join(' · ');
+      selS.appendChild(o)}
+    selS.value=roadOf(h.strategy);
     selS.onchange=()=>{h.strategy=selS.value;persist()};
     selS.dataset.ftue='strategy';
     el.appendChild(selS);

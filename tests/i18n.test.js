@@ -1,3 +1,4 @@
+import { BRANCHES, ROAD_INFO } from '../src/data/branches.js';
 import { describe, it, expect, afterEach } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -93,6 +94,11 @@ describe('dictionary coverage', () => {
     for (const c of Object.values(POTIONS)) keys.push(c.n, c.un);
     for (const c of Object.values(SCROLLS)) keys.push(c.n, c.un);
     for (const p of Object.values(PORTALS)) keys.push(p.n);
+    /* Branch names, their bosses and their runes reach the player as text, and so
+       do the road descriptions. They were translated by hand and nothing checked
+       them, which is how a new branch ships untranslated. */
+    for (const b of Object.values(BRANCHES)) keys.push(b.n, b.rune, b.bossN);
+    for (const r of Object.values(ROAD_INFO)) keys.push(r.n, r.yield);
     for (const n of NODES) { keys.push(n.n, n.d); if (n.ach) keys.push(n.ach.t); }
     for (const u of ZUPGRADES) keys.push(u.n, u.d);
     for (const u of PUPGRADES) keys.push(u.n, u.d);

@@ -1,3 +1,4 @@
+import { roadOf } from '../data/branches.js';
 import { defaultFtue, completedFtue, isVeteranSave } from './ftue.js';
 import { ASCEND_GATE } from './ascension.js';
 import { RUNE_AURA_K } from './economy.js';
@@ -33,7 +34,7 @@ export function makeState() {
     mem: 0, tree: { root: 1 },
     stat: { kills: 0, deaths: 0, uniqKills: 0, forged: 0, dismantled: 0, memEarned: 0, wins: 0, bestXL: {} },
     runesTotal: 0, pendingDeaths: [], pendingWins: [], unrandsOwned: [],
-    ng: 0, legends: 0, prestiges: 0, prestigesTotal: 0, pupg: {}, balV: 6,
+    ng: 0, legends: 0, prestiges: 0, prestigesTotal: 0, pupg: {}, balV: 7,
     runeAuraLegacy: 0, /* frozen grandfathered Rune Aura from the balV 6 curve change */
     runesSpent: 0, /* runes burned on dark summonings — they no longer feed the aura */
     darkRolls: 0, /* dark summonings this cycle; each one makes the next dearer */
@@ -46,7 +47,7 @@ export function makeState() {
     cycBase: { wins: 0, runes: 0, uniq: 0, mem: 0 }, cycRunes: [],
     cofferBuys: 0, zigFunded: 0, provisions: {}, /* per-cycle gold sinks; reset at prestige */
     ftue: null,
-    progress: { D: 0, Lair: 0, Orc: 0, Elf: 0, Vaults: 0, Depths: 0, Zot: 0, Abyss: 0 },
+    progress: { D: 0, Lair: 0, Swamp: 0, Spider: 0, Orc: 0, Elf: 0, Vaults: 0, Depths: 0, Tomb: 0, Zot: 0, Abyss: 0 },
     last: Date.now(), muted: false, lang: 'en',
     /* master seed: every gameplay random derives from this via domain streams;
        synced forever, identical on all of the player's devices */
@@ -164,7 +165,16 @@ export function loadState(storage) {
         const now = RUNE_AURA_K * Math.sqrt(runes);     /* what the curve now grants */
         state.runeAuraLegacy = (s.tree && s.tree.k_runeaura) ? Math.max(0, old - now) : 0;
       }
-      state.balV = 6;
+      /* balV 7: the themed roads. "classic" and "speedrun" were a difference of
+         length, i.e. a second tempo control; the roads now differ in what they
+         yield. A hero mid-delve keeps walking whatever segment list they are on, so
+         the only thing to migrate is the NAME each hero and the guild's standing
+         orders are stored under. classic maps to the Iron Road, the closest thing
+         to the old grand tour; speedrun keeps its own road and its own price. */
+      if ((s.balV || 0) < 7) {
+        for (const h of (state.heroes || [])) if (h.strategy) h.strategy = roadOf(h.strategy);
+      }
+      state.balV = 7;
       pruneSave(state); /* shrink pre-existing bloated saves (accumulated dead heroes) */
       if (s.masterSeed === undefined) {
         /* derive a stable seed from immutable account facts so it never shifts */

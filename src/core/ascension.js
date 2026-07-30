@@ -109,7 +109,7 @@ export function doAscension(s) {
   s.gold = 200; s.scrap = 0; s.runes = 0; s.rolls = 0; s.forges = 0; s.pity = 0;
   s.mem = 0; s.tree = { root: 1 }; /* the whole Memory tree burns down, keystones included */
   s.pendingDeaths = []; s.pendingWins = [];
-  s.progress = { D: 0, Lair: 0, Orc: 0, Elf: 0, Vaults: 0, Depths: 0, Zot: 0, Abyss: 0 };
+  s.progress = { D: 0, Lair: 0, Swamp: 0, Spider: 0, Orc: 0, Elf: 0, Vaults: 0, Depths: 0, Tomb: 0, Zot: 0, Abyss: 0 };
   s.cofferBuys = 0; s.zigFunded = 0; s.provisions = {};
   s.cycRunes = []; s.cycRunnerBest = 0; s.cycContractDone = 0;
   s.prestReq = 1;
