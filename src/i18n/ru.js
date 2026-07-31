@@ -1166,4 +1166,9 @@ export const RU = {
   'Mastery: every node you own in the economy region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend.': 'Мастерство: каждый узел, которым ты владеешь в регионе экономики, усиливает все его эффекты на 5%. Поклясться можно лишь ОДНОМУ Пути; клятва держится до Восхождения.',
   'Mastery: every node you own in the forge region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend.': 'Мастерство: каждый узел, которым ты владеешь в регионе кузни, усиливает все его эффекты на 5%. Поклясться можно лишь ОДНОМУ Пути; клятва держится до Восхождения.',
   'Mastery: every node you own in the heroes region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend. Expedition slots are not affected — they are already the strongest thing this tree sells.': 'Мастерство: каждый узел, которым ты владеешь в регионе героев, усиливает все его эффекты на 5%. Поклясться можно лишь ОДНОМУ Пути; клятва держится до Восхождения. Слоты экспедиции не затрагиваются — они и без того самое сильное, что продаёт это дерево.',
+  'The guild spends its own treasury: a free slot and gold ≥ 2× the cost, and a seeker is summoned unprompted. Sending out the seekers you already have needs no keystone.': 'Гильдия тратит собственную казну: свободный слот и золота вдвое больше цены — и герой призывается сам. Отправлять тех, кто уже есть, кистона не требует.',
+  '⟐ Quartermaster': '⟐ Каптенармус',
+  'The kit of the fallen always comes home. No piece is ever lost in the dark.': 'Снаряжение павших всегда возвращается в гильдию. Ни один предмет не теряется во тьме.',
+  '⟐ The Long Roster': '⟐ Долгий список',
+  'The guild remembers its own: every summons costs a third less, forever.': 'Гильдия помнит своих: каждый призыв дешевле на треть, навсегда.',
 };

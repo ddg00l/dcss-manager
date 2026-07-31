@@ -1166,4 +1166,9 @@ export const DE = {
   'Mastery: every node you own in the economy region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend.': 'Meisterschaft: jeder Knoten, den du in der Wirtschaftsregion besitzt, verstärkt all ihre Effekte um 5%. Du kannst nur EINEN Weg schwören; der Eid hält bis zum Aufstieg.',
   'Mastery: every node you own in the forge region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend.': 'Meisterschaft: jeder Knoten, den du in der Schmiederegion besitzt, verstärkt all ihre Effekte um 5%. Du kannst nur EINEN Weg schwören; der Eid hält bis zum Aufstieg.',
   'Mastery: every node you own in the heroes region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend. Expedition slots are not affected — they are already the strongest thing this tree sells.': 'Meisterschaft: jeder Knoten, den du in der Heldenregion besitzt, verstärkt all ihre Effekte um 5%. Du kannst nur EINEN Weg schwören; der Eid hält bis zum Aufstieg. Expeditionsplätze bleiben unberührt -- sie sind ohnehin das Stärkste, was dieser Baum verkauft.',
+  'The guild spends its own treasury: a free slot and gold ≥ 2× the cost, and a seeker is summoned unprompted. Sending out the seekers you already have needs no keystone.': 'Die Gilde greift in die eigene Kasse: ein freier Platz und Gold ≥ 2× die Kosten, und ein Sucher wird ungefragt beschworen. Wer schon da ist, zieht auch ohne Schlussstein los.',
+  '⟐ Quartermaster': '⟐ Quartiermeister',
+  'The kit of the fallen always comes home. No piece is ever lost in the dark.': 'Die Ausrüstung der Gefallenen kehrt stets heim. Kein Stück geht im Dunkeln verloren.',
+  '⟐ The Long Roster': '⟐ Die lange Liste',
+  'The guild remembers its own: every summons costs a third less, forever.': 'Die Gilde erinnert sich an die Ihren: jede Beschwörung kostet ein Drittel weniger, für immer.',
 };

@@ -193,9 +193,14 @@ keystone('k_elite', 'dungeon', -26, 7, {
   n: '⟐ Hunter of the Marked', d: 'Elite monsters are half again as common; their spoils ×2.',
   icon:'m_two_headed_ogre',base: 600, req: ['dungeon_b0_3'], ach: { uniq: 3, t: 'kill 3 uniques' },
 });
+/* Was Auto-Summon, which is now a standing order the player sets. A keystone that
+   sells PERMISSION to keep the hall staffed is what left an absent guild standing
+   empty, and once the order exists the keystone would sell nothing at all. Keystones
+   sell power. */
 keystone('k_autosummon', 'gacha', 0, 9, {
-  n: '⟐ Auto-Summon', d: 'A free slot and gold ≥ 2× the cost — summoning happens on its own.',
+  n: '⟐ The Long Roster', d: 'The guild remembers its own: every summons costs a third less, forever.',
   icon:'sk_summonings',base: 800, req: ['gacha_s8'], ach: { rolls: 20, t: '20 summons' },
+  eff: { gdisc: 0.33 },
 });
 keystone('k_herald', 'gacha', -26, 2, {
   n: '⟐ Guild Herald', d: 'When the whole party has fallen, the guild sends a free seeker who sets out on his own — even offline.',
@@ -221,8 +226,13 @@ keystone('k_autodismantle', 'forge', -26, 7, {
   n: '⟐ Auto-Dismantle', d: 'Common (grey) items are dismantled into scrap automatically.',
   icon:'w_hand_axe',base: 500, req: ['forge_b0_3'], ach: { dismantled: 10, t: 'dismantle 10 items' },
 });
+/* Was Auto-Equip, which the guild now does unpaid: a seeker always takes the best the
+   armoury holds, because leaving good armour in a chest while your fighter goes down
+   naked is not a decision anyone would make. That left a keystone charging 800 Memory
+   for nothing, which is the worst kind of placebo, so it sells something the forge
+   would actually sell -- nothing is ever lost from a body. */
 keystone('k_autoequip', 'forge', 0, 9, {
-  n: '⟐ Auto-Equip', d: 'Before departing, the hero equips the best gear from the armory automatically.',
+  n: '⟐ Quartermaster', d: 'The kit of the fallen always comes home. No piece is ever lost in the dark.',
   icon:'a_chain_mail',base: 800, req: ['forge_s8'], ach: { forged: 10, t: 'forge 10 items' },
 });
 keystone('k_ring3', 'forge', 26, 8, {

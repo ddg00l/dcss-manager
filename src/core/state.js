@@ -35,6 +35,8 @@ export function makeState() {
     stat: { kills: 0, deaths: 0, uniqKills: 0, forged: 0, dismantled: 0, memEarned: 0, wins: 0, bestXL: {} },
     runesTotal: 0, pendingDeaths: [], pendingWins: [], unrandsOwned: [],
     ng: 0, legends: 0, prestiges: 0, prestigesTotal: 0, pupg: {}, balV: 7,
+    /* standing orders: policy the guild follows without the player present */
+    auto: { prestige: false, memory: '', summon: 0 },
     runeAuraLegacy: 0, /* frozen grandfathered Rune Aura from the balV 6 curve change */
     runesSpent: 0, /* runes burned on dark summonings — they no longer feed the aura */
     darkRolls: 0, /* dark summonings this cycle; each one makes the next dearer */

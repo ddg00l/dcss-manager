@@ -94,7 +94,12 @@ describe('full run lifecycle', () => {
     expect(h.state).toBe('dead'); // a common should not survive 8h without upgrades
     expect(s.fame.length).toBe(1);
     expect(s.fame[0].by).toBeTruthy();
-    expect(s.shards[comboKey(h.race, h.cls)]).toBeGreaterThan(0);
+    /* A death pays the guild in that combo's currency. It used to be checked as
+       shards on hand, but promoting a duplicate into a star is mechanical -- the
+       shards are there, the threshold is fixed, nobody declines -- so it now happens
+       without the player, and the shards may already have become a star. */
+    const ck = comboKey(h.race, h.cls);
+    expect((s.shards[ck] || 0) + (s.stars[ck] || 0)).toBeGreaterThan(0);
   });
   it('late-game account can win the Orb within 24h', { timeout: 30000 }, () => {
     const s = makeState();

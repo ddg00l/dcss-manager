@@ -1166,4 +1166,9 @@ export const UK = {
   'Mastery: every node you own in the economy region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend.': 'Майстерність: кожен вузол, яким ти володієш у регіоні економіки, підсилює всі його ефекти на 5%. Присягнути можна лише ОДНОМУ Шляху; присяга тримається до Сходження.',
   'Mastery: every node you own in the forge region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend.': 'Майстерність: кожен вузол, яким ти володієш у регіоні кузні, підсилює всі його ефекти на 5%. Присягнути можна лише ОДНОМУ Шляху; присяга тримається до Сходження.',
   'Mastery: every node you own in the heroes region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend. Expedition slots are not affected — they are already the strongest thing this tree sells.': 'Майстерність: кожен вузол, яким ти володієш у регіоні героїв, підсилює всі його ефекти на 5%. Присягнути можна лише ОДНОМУ Шляху; присяга тримається до Сходження. Слоти експедиції не зачіпаються — вони й без того найсильніше, що продає це дерево.',
+  'The guild spends its own treasury: a free slot and gold ≥ 2× the cost, and a seeker is summoned unprompted. Sending out the seekers you already have needs no keystone.': 'Гільдія витрачає власну скарбницю: вільний слот і золота вдвічі більше за ціну — і герой призивається сам. Відправляти тих, хто вже є, кістона не потребує.',
+  '⟐ Quartermaster': '⟐ Каптенармус',
+  'The kit of the fallen always comes home. No piece is ever lost in the dark.': 'Спорядження полеглих завжди повертається до гільдії. Жодна річ не губиться в темряві.',
+  '⟐ The Long Roster': '⟐ Довгий список',
+  'The guild remembers its own: every summons costs a third less, forever.': 'Гільдія пам’ятає своїх: кожен призов дешевший на третину, назавжди.',
 };

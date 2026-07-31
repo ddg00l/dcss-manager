@@ -1,5 +1,5 @@
 import {gXp,gGold,gDrop,gSpd,gAtk,gHp,shardMul as shardMulF,maxSlots,rollCost,freeRollAvailable,GOLD_DEPTH_BASE} from '../core/economy.js';
-import {gainMem,memEff,memHas} from '../data/memtree.js';
+import {gainMem,memEff,memHas,NODES,canBuy,buyNode,nodeCost} from '../data/memtree.js';
 import {clamp,fmt} from '../core/fmt.js';
 import {heroStats,rollHero,ringSlotKeys} from './hero.js';
 import {genFloor,reveal,los,MW,MH} from './mapgen.js';
@@ -8,7 +8,7 @@ import {RACES,aptMul} from '../data/races.js';
 import {crossBoost} from '../data/skills.js';
 import {CLASSES} from '../data/classes.js';
 import {GODS,godField} from '../data/gods.js';
-import {comboKey,SHARDS_PER} from '../data/combos.js';
+import {comboKey,SHARDS_PER,starNeed} from '../data/combos.js';
 import {randomItem,itemName,itemInfo,scoreItem,WEP_BASES,UNRANDS,makeUnrand} from '../data/items.js';
 import {POTIONS,SCROLLS,consName,randConsumable} from '../data/consumables.js';
 import {MUTS,randomMut} from '../data/mutations.js';
@@ -16,6 +16,7 @@ import {PORTALS} from '../data/portals.js';
 import {bestDamageSpell,bestSummonSpell,learnBook,mpMaxOf,spellById} from '../data/spells.js';
 import {zigFee,zigStartDepth} from '../core/treasury.js';
 import {ascAutoGuild} from '../core/ascension.js';
+import {canPrestige,doPrestige} from '../core/prestige.js';
 import {MONS,FAMILY_OF,familyDmgBonus} from '../data/monsters.js';
 import {recordVictory,recordRunnerWin,checkContract,recordNemesisKill,avengeNemesis} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
@@ -133,7 +134,16 @@ export function startRun(h,s){
   h.inPortal=null;h.banished=null;h.fundedZig=false;h.detour=null;
   h.maxDepth=null;h.maxBrDepth=0; /* per-run reach: the death payout reads it */
   h.mp=mpMaxOf(h); /* casters start with a full mana pool */
-  if(memHas(s,'k_autoequip')||ascAutoGuild(s))equipBestFromArmory(h,s);
+  /* A seeker always takes the best the guild holds. This used to be sold as a
+     keystone, which meant an automatically dispatched hero walked into the dungeon
+     empty-handed past a full armoury -- and once dispatch became unconditional that
+     turned from an inconvenience into the whole problem. Measured over 20 days at one
+     check-in a day: seekers reached the Gates of Zot at the same level as an
+     attentive account's (13.7 against 14.4) with 424 hit points against 4640, and the
+     account took zero Orbs. Leaving good armour in a chest while your fighter goes
+     down naked is not a decision any guild would make, so it is not a decision the
+     game should charge for. */
+  equipBestFromArmory(h,s);
   const route=buildRoute(h.strategy);
   h.branch=route[0][0];h.floor=1;h.floorTurns=0;
   genFloor(h,s);
@@ -370,7 +380,8 @@ export function heroDie(h,killer,s){
   /* gear back to armory (90%) */
   for(const slot of Object.keys(h.gear)){
     const it=h.gear[slot];
-    if(it&&!it.id.startsWith('st')&&rnd(h)<.9){
+    /* the Quartermaster keystone: nothing is lost in the dark */
+    if(it&&!it.id.startsWith('st')&&(memHas(s,'k_autoequip')||rnd(h)<.9)){
       storeItem(s,it);
       s.tel.gearHome++; if(it.unrandId)s.tel.artefacts++;
     }
@@ -1141,12 +1152,96 @@ export function resetSimClocks(){simAcc={}}
 /* the "Auto-summon" keystone: fills a free slot with an idle hero, or buys a
    summon when the treasury holds at least twice the price; runs inside the sim
    so it works identically online, in background tabs and in offline catch-up */
-function autoSummonStep(s){
-  if(s.heroes.filter(x=>x.state==='run').length>=maxSlots(s))return;
+/** A seeker standing in the hall walks back into the dungeon. Always on.
+
+    The guild used to stand still whenever the player did: dispatching happened only
+    when a keystone deep in the gacha spine had been bought, so until then a seeker who
+    survived a delve -- or a fresh recruit -- simply waited in camp. That is what made
+    attention worth 122x over 30 days: checking in every five minutes returned 594
+    Orbs and checking in once a day returned 4.9, because the whole day in between the
+    guild was idle. And the escape was circular: reaching the keystone needs tree
+    purchases, tree purchases need Memory, Memory needs delving, delving needs the
+    keystone.
+
+    Standing orders already exist -- a new seeker inherits the guild's route, caution
+    and spending (see guildDoctrine) -- so the guild knows perfectly well what to do
+    without being told again. A seeker deliberately recalled sets `rest` and is left
+    alone; that is the player's word and it still holds.
+
+    What the keystone sells is now what a keystone should sell: spending the treasury
+    on a summons unprompted. Attention should buy BETTER decisions -- when to prestige,
+    where the Memory goes, who to replace -- not the difference between a guild that
+    works and a guild that does not. */
+function autoDispatchStep(s){
+  if(s.heroes.filter(x=>x.state==='run').length>=maxSlots(s))return false;
   const idle=s.heroes.find(x=>x.state==='camp'&&!x.rest);
-  if(idle){startRun(idle,s);return}
+  if(idle){startRun(idle,s);return true}
+  return false;
+}
+/** Standing orders: the policy the player sets once and the guild follows.
+
+    Dispatching seekers was not what made attention worth 122x -- an account checking
+    in once a day still brings home 44% of the gear and 64% of the reagents of one
+    checking in every five minutes, so the guild delves nearly all the time. What it
+    never does is GROW: 1.1 prestiges against 14.9. Prestige, the tree, the summons --
+    every decision waited for the player to be present, and a decision that cannot be
+    delegated is not a policy, it is a chore with a timer on it.
+
+    So the player states the policy and the guild executes it. Attention then buys
+    better judgement -- when to break the standing order, where the Memory really ought
+    to go, who to replace -- rather than the difference between a guild that grows and
+    one that does not. Off by default: a prestige resets the tree, and no automation
+    should do that to a player who has not asked for it. */
+function standingOrders(s){
+  /* Promoting a duplicate into a star is not a decision -- the shards are there, the
+     threshold is fixed, and no player has ever declined. It was nonetheless gated on
+     the player being present, which is how an absent account ends up with three
+     thousand unpromoted duplicates. Mechanical things happen on their own. */
+  for(const ck in s.shards){
+    let guard=0;
+    while(guard++<20){
+      const stars=s.stars[ck]||0,need=starNeed(stars);
+      if((s.shards[ck]||0)<need)break;
+      s.shards[ck]-=need;s.stars[ck]=stars+1;
+    }
+  }
+  const o=s.auto;
+  if(!o)return;
+  if(o.prestige&&canPrestige(s))doPrestige(s);
+  /* Memory left in the treasury buys nothing. An account checking in once a day has
+     twenty chances to spend in twenty days against an attentive account's five
+     thousand, and it showed: 730,088 Memory sitting idle against 892, and seekers
+     reaching the Gates with 429 hit points against 5174. The guild spends to policy. */
+  /* Keeping the hall staffed is policy, not permission. It was the last thing still
+     locked behind a keystone, and it is what left an absent guild standing empty: when
+     the party falls there is nobody to dispatch, and a guild that may not hire cannot
+     start again until the player returns. The player says how much of the treasury may
+     go to summoning; the guild obeys that and nothing more. */
+  if(o.summon){
+    let guard=0;
+    while(guard++<8){
+      const running=s.heroes.filter(h=>h.state==='run').length;
+      const camp=s.heroes.filter(h=>h.state==='camp'&&!h.rest).length;
+      if(running+camp>=maxSlots(s))break;
+      if(!freeRollAvailable(s)&&s.gold<o.summon*rollCost(s))break;
+      if(!rollHero(s,false))break;
+    }
+  }
+  if(o.memory){
+    let guard=0;
+    while(guard++<12){
+      const pool=NODES.filter(n=>canBuy(s,n)&&(o.memory==='cheapest'||n.region===o.memory));
+      if(!pool.length)break;
+      pool.sort((a,b)=>nodeCost(s,a)-nodeCost(s,b));
+      if(!buyNode(s,pool[0]))break;
+    }
+  }
+}
+function autoSummonStep(s){
+  if(autoDispatchStep(s))return;
+  if(s.heroes.filter(x=>x.state==='run').length>=maxSlots(s))return;
   if(!freeRollAvailable(s)&&s.gold<2*rollCost(s))return;
-  rollHero(s,false); /* the fresh hero is dispatched on the next step */
+  rollHero(s,false); /* the fresh seeker is dispatched on the next step */
 }
 /* Smoothed Orbs per day. The prestige bar is quoted in days of the guild's own
    output, so it needs to know that output; a raw instantaneous count would make
@@ -1176,16 +1271,18 @@ export function advanceHeroes(s,dtSec,silent){
       if(silent)n=Math.min(n,200000);
       while(n-->0&&h.state==='run')simTick(h,s);
     }
-    if(auto||herald){
+    {
       s.autoT=(s.autoT||0)+step;
       if(s.autoT>=3){
         s.autoT=0;
+        standingOrders(s);
         if(auto)autoSummonStep(s);
-        else if(freeRollAvailable(s)){
+        else if(herald&&freeRollAvailable(s)){
           /* Guild Herald keystone: a fallen party is replaced by a free seeker */
           const r=rollHero(s,false);
           if(r&&r.kind==='hero')startRun(r.h,s);
         }
+        else autoDispatchStep(s); /* the guild always sends out who it already has */
       }
     }
     left-=step;

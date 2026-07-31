@@ -1166,4 +1166,9 @@ export const ES = {
   'Mastery: every node you own in the economy region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend.': 'Maestría: cada nodo que posees en la región de economía fortalece todos sus efectos un 5%. Solo puedes jurar UNA Vía; el juramento dura hasta la Ascensión.',
   'Mastery: every node you own in the forge region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend.': 'Maestría: cada nodo que posees en la región de la forja fortalece todos sus efectos un 5%. Solo puedes jurar UNA Vía; el juramento dura hasta la Ascensión.',
   'Mastery: every node you own in the heroes region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend. Expedition slots are not affected — they are already the strongest thing this tree sells.': 'Maestría: cada nodo que posees en la región de héroes fortalece todos sus efectos un 5%. Solo puedes jurar UNA Vía; el juramento dura hasta la Ascensión. Las plazas de expedición no se ven afectadas: ya son lo más fuerte que vende este árbol.',
+  'The guild spends its own treasury: a free slot and gold ≥ 2× the cost, and a seeker is summoned unprompted. Sending out the seekers you already have needs no keystone.': 'El gremio gasta su propio tesoro: una plaza libre y oro ≥ 2× el coste, y un buscador es invocado sin que se lo pidan. Enviar a los que ya tienes no requiere piedra angular.',
+  '⟐ Quartermaster': '⟐ Intendente',
+  'The kit of the fallen always comes home. No piece is ever lost in the dark.': 'El equipo de los caídos siempre vuelve a casa. Ninguna pieza se pierde en la oscuridad.',
+  '⟐ The Long Roster': '⟐ el Registro Largo',
+  'The guild remembers its own: every summons costs a third less, forever.': 'El gremio recuerda a los suyos: cada invocación cuesta un tercio menos, para siempre.',
 };

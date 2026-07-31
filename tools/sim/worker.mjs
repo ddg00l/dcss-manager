@@ -300,6 +300,11 @@ function session(tactic, days = 1, seed = 0) {
   GAMEPLAY_SEED = (0x1234567 ^ seed) >>> 0; /* gameplay determinism via the account master seed */
   resetSimClocks(); /* sessions share a process: never inherit the last account's clocks */
   const s = makeState(); s.masterSeed = GAMEPLAY_SEED; s.seq = {};
+  /* A player who checks in once a day sets the standing order and goes to work.
+     Leaving it off would measure the old design under a new name. */
+  if (tactic.prestige !== false) s.auto.prestige = true;
+  s.auto.memory = 'cheapest';
+  s.auto.summon = tactic.rollFactor || 1;
   const m = { summons: 0, prestiges: 0, spentLegends: 0, cofferGold: 0, cofferMem: 0, provGold: 0, zigGold: 0, zigRuns: 0, ascensions: 0 };
   const step = tactic.checkin;
   const byDay = [];
@@ -334,7 +339,16 @@ function session(tactic, days = 1, seed = 0) {
   const d = depthScore(s);
   return {
     wins: s.stat.wins, deaths: s.stat.deaths, kills: s.stat.kills,
-    summons: m.summons, prestiges: m.prestiges, legends: s.legends || 0,
+    summons: m.summons,
+    /* the account's own lifetime count: standing orders prestige without the bot,
+       so the bot's tally went to zero the moment policy was delegated */
+    prestiges: (s.prestigesTotal || 0), botPrestiges: m.prestiges, legends: s.legends || 0,
+    /* what a check-in is actually FOR: unspent Memory, roster size, star power.
+       Attention survived two wrong fixes because nobody measured the state the
+       absent player leaves behind. */
+    memIdle: Math.round(s.mem || 0), treeNodes: Object.keys(s.tree || {}).length,
+    roster: (s.heroes || []).length,
+    starPower: Object.values(s.stars || {}).reduce((a, b) => a + b, 0),
     runes: s.runesTotal, mem: s.stat.memEarned, nodes: Object.keys(s.tree).length - 1,
     keystones: NODES.filter(n => n.keystone && treeLvl(s, n.id) > 0).length,
     slots: maxSlots(s), depth: d.score, depthTag: d.tag,
