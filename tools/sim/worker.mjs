@@ -303,7 +303,16 @@ function session(tactic, days = 1, seed = 0) {
   /* A player who checks in once a day sets the standing order and goes to work.
      Leaving it off would measure the old design under a new name. */
   if (tactic.prestige !== false) s.auto.prestige = true;
-  s.auto.memory = 'cheapest';
+  /* The standing order must express the SAME policy the tactic plays, or it silently
+     replaces it: the order runs continuously and buyTree only at check-in, so whatever
+     the order says wins. Mapping them keeps the axis measuring what it names. */
+  const T = tactic.tree || 'balanced';
+  s.auto.memory = T.startsWith('master_') ? T.slice(7)
+    : T === 'slots' ? 'heroes'
+    : T === 'keystones' ? 'keystones'
+    : T === 'combat' || T === 'combat_fair' ? 'combat'
+    : 'cheapest';
+  s.auto.noOath = !!tactic.noOath;
   s.auto.summon = tactic.rollFactor || 1;
   const m = { summons: 0, prestiges: 0, spentLegends: 0, cofferGold: 0, cofferMem: 0, provGold: 0, zigGold: 0, zigRuns: 0, ascensions: 0 };
   const step = tactic.checkin;

@@ -1,5 +1,6 @@
 import {gXp,gGold,gDrop,gSpd,gAtk,gHp,shardMul as shardMulF,maxSlots,rollCost,freeRollAvailable,GOLD_DEPTH_BASE} from '../core/economy.js';
-import {gainMem,memEff,memHas,NODES,canBuy,buyNode,nodeCost} from '../data/memtree.js';
+import {gainMem,memEff,memHas,NODES,canBuy,buyNode,nodeCost,treeLvl,MASTERY_KEY} from '../data/memtree.js';
+const MASTERY_IDS=new Set(Object.values(MASTERY_KEY));
 import {clamp,fmt} from '../core/fmt.js';
 import {heroStats,rollHero,ringSlotKeys} from './hero.js';
 import {genFloor,reveal,los,MW,MH} from './mapgen.js';
@@ -1230,7 +1231,26 @@ function standingOrders(s){
   if(o.memory){
     let guard=0;
     while(guard++<12){
-      const pool=NODES.filter(n=>canBuy(s,n)&&(o.memory==='cheapest'||n.region===o.memory));
+      let pool=NODES.filter(n=>canBuy(s,n));
+      /* The order is a POLICY, and a policy that only ever buys the cheapest node is a
+         policy with no content. It also silently overrode every richer plan: this ran
+         every three seconds while a considered purchase happened only when the player
+         checked in, so the cheapest-first order won every time and eight different tree
+         strategies converged to one. Measured, the whole tree axis collapsed to 1.11x
+         and the no-oath control returned byte-identical numbers to the oath it was
+         meant to be compared against. Say what the policy IS and follow that. */
+      if(o.memory==='keystones'){
+        const k=pool.filter(n=>n.keystone);
+        /* saving for a keystone means SAVING: do not fritter the treasury meanwhile */
+        if(!k.length){
+          const reachable=NODES.some(n=>n.keystone&&!treeLvl(s,n.id)&&
+            n.req.some(r=>treeLvl(s,r)>0));
+          if(reachable)break;
+        } else pool=k;
+      }else if(o.memory!=='cheapest'){
+        pool=pool.filter(n=>n.region===o.memory);
+      }
+      if(o.noOath)pool=pool.filter(n=>!MASTERY_IDS.has(n.id));
       if(!pool.length)break;
       pool.sort((a,b)=>nodeCost(s,a)-nodeCost(s,b));
       if(!buyNode(s,pool[0]))break;

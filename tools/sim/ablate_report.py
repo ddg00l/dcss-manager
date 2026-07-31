@@ -79,6 +79,42 @@ def bimodality_report(rows):
         print(f'  unimodal (largest gap holds {share * 100:.0f}% of the range)')
 
 
+def duplicate_report(by_label):
+    """Two variants that return identical numbers are not two variants.
+
+    This axis has now shipped three measurements that were decided by the harness
+    rather than by the game, and each was caught only because the numbers looked too
+    tidy to be true: `keystones` was byte-identical to `balanced`, the specialist
+    builds were capped at two expedition slots while the slots build took the whole
+    chain, and a standing order that ran continuously quietly overrode every considered
+    tree strategy so all eight converged. Noticing that is not a skill worth relying
+    on. The tool should say it.
+    """
+    seen = {}
+    for label, rs in by_label.items():
+        key = tuple(sorted(w for r in rs for w in (r.get('winsPerSeed') or [])))
+        if not key:
+            continue
+        if key in seen:
+            print(f'  IDENTICAL: {seen[key]!r} and {label!r} returned the same numbers on '
+                  f'every seed — they are one variant under two names, not a comparison')
+        else:
+            seen[key] = label
+
+
+def volatility_report(by_label):
+    """A variant whose own seeds disagree more than the variants disagree with each
+    other is not measuring a strategy, it is measuring luck."""
+    for label, rs in by_label.items():
+        per = sorted(w for r in rs for w in (r.get('winsPerSeed') or []))
+        if len(per) < 3 or per[0] <= 0:
+            continue
+        swing = per[-1] / per[0]
+        if swing >= 4:
+            print(f'  VOLATILE: {label} ranges {int(per[0])}..{int(per[-1])} ({swing:.1f}x) '
+                  f'across its own seeds — its mean is not a property of the strategy')
+
+
 def main():
     pattern = sys.argv[1] if len(sys.argv) > 1 else 'results/*.ndjson'
     rows = collections.defaultdict(list)
@@ -117,6 +153,8 @@ def main():
                   (label, wavg('wins'), wavg('prestiges'), wavg('depth'), wavg('deaths'),
                    '-' if tail is None else ('%.2f%s' % (tail, '  STALLED' if tail == 0 else '')),
                    wavg('martialHome'), wavg('jewelHome'), wavg('consFound')))
+        duplicate_report(by_label)
+        volatility_report(by_label)
         bimodality_report(rows[axis])
         # judge the axis in its own metric first
         key, label, want = AXIS_METRIC.get(axis, ('wins', 'Orbs', 1.5))

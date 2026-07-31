@@ -408,3 +408,11 @@
     background:var(--panel2);border:1px solid var(--gold);color:var(--text);
     font-size:12px;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Standing orders: policy rows in the Heroes pane. The label carries a one-line
+   explanation because every one of these hands a decision to the guild, and a player
+   who cannot see what they are delegating will not delegate it. */
+#standingOrders{margin:10px 0 14px;padding:10px 12px;border:1px solid var(--line);border-radius:8px}
+#standingOrders .orderRow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px}
+#standingOrders .orderRow .ds{opacity:.7;font-size:.85em}
+#standingOrders select{max-width:46%}

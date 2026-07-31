@@ -17,7 +17,62 @@ import {zigFee} from '../core/treasury.js';
 import {stackHTML} from './portrait.js';
 import { t } from '../i18n/index.js';
 /* ===================== heroes pane ===================== */
+/* Standing orders: the policy the guild follows while the player is away.
+
+   The guild used to stop whenever the player did -- not from idleness, its seekers
+   kept delving, but because every DECISION waited for someone to be present. Over 30
+   days that made checking in every five minutes worth 122x checking in once a day. A
+   decision that cannot be delegated is not a policy, it is a chore with a timer on it.
+
+   Mechanical things (dispatching, equipping from the armoury, promoting duplicates)
+   now happen unprompted and need no switch here -- nobody has ever declined them. What
+   this panel holds is the three real choices, and every one is off by default:
+   prestige wipes the tree, and no automation should do that to someone who did not
+   ask for it. */
+function renderStandingOrders(){
+  const box=$('standingOrders');
+  if(!box)return;
+  save.auto=save.auto||{prestige:false,memory:'',summon:0};
+  const o=save.auto;
+  box.innerHTML='<div class="label">'+t('Standing orders')+'</div>'+
+    '<div class="hint">'+t('What the guild does while you are away. Off by default.')+'</div>';
+
+  const row=(label,hint,el)=>{
+    const d=document.createElement('div');
+    d.className='orderRow';
+    const l=document.createElement('div');
+    l.innerHTML='<div>'+label+'</div><div class="ds">'+hint+'</div>';
+    d.appendChild(l);d.appendChild(el);box.appendChild(d);
+  };
+
+  const cb=document.createElement('input');
+  cb.type='checkbox';cb.checked=!!o.prestige;
+  cb.onchange=()=>{o.prestige=cb.checked;persist()};
+  row(t('Prestige when the bar fills'),
+      t('Resets the Memory tree and deepens the ladder. Keystones survive.'),cb);
+
+  const mem=document.createElement('select');
+  for(const [v,n] of [['',t('hold it')],['cheapest',t('cheapest node first')],
+      ['combat',t('combat')],['dungeon',t('dungeon')],['gacha',t('summoning')],
+      ['economy',t('economy')],['forge',t('forge')],['heroes',t('heroes')]]){
+    const op=document.createElement('option');op.value=v;op.textContent=n;mem.appendChild(op);
+  }
+  mem.value=o.memory||'';
+  mem.onchange=()=>{o.memory=mem.value;persist()};
+  row(t('Spend Memory on'),t('Memory left in the treasury buys nothing.'),mem);
+
+  const sum=document.createElement('select');
+  for(const [v,n] of [[0,t('never')],[1,t('whenever affordable')],[2,t('at twice the cost')],
+      [4,t('at four times the cost')]]){
+    const op=document.createElement('option');op.value=v;op.textContent=n;sum.appendChild(op);
+  }
+  sum.value=String(o.summon||0);
+  sum.onchange=()=>{o.summon=parseInt(sum.value,10);persist()};
+  row(t('Summon a replacement'),t('How much of the treasury the guild may spend to refill the hall.'),sum);
+}
+
 export function renderHeroes(){
+  renderStandingOrders();
   const box=$('heroList');box.innerHTML='';
   const heroes=save.heroes.filter(h=>h.state!=='dead'&&h.state!=='victor')
     .sort((a,b)=>(b.state==='run')-(a.state==='run')); /* delving heroes first, then camp */
