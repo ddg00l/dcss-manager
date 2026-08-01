@@ -228,14 +228,25 @@ function playerActions(s, tactic, m) {
       if (!doForge(s, slot)) break;
     }
   }
-  /* a real player replaces a weak hero when the treasury allows a far better
-     roll: recall the weakest runeless delver and free the slot (this was the
-     blind spot that dead-locked "stalled" bot sessions on one free seeker) */
-  if (s.gold >= rollCost(s) * 10) {
+  /* A player replaces a hopeless seeker when the treasury clearly affords better.
+
+     The guard used to be "no one is standing in camp", which meant "there is no spare
+     to send instead" -- and auto-dispatch made that true by construction, so the rule
+     fired on EVERY check-in. recallHero resets a hero to level one, so an account
+     checking in every five minutes was quietly wiping its own delvers 288 times a day
+     while one checking in daily did it once. That inverted the attention axis outright:
+     24h returned 132 Orbs against 5min's 97, i.e. the harness was paying accounts to
+     stop paying attention.
+
+     Rate-limited by GAME time rather than by check-in, so how often the player looks
+     cannot change how often the guild fires anybody. That is the property the axis
+     needs in order to measure attention at all. */
+  m.t = (m.t || 0) + (tactic.checkin || 0);
+  if (s.gold >= rollCost(s) * 10 && m.t - (m.lastRecall || 0) >= 3600) {
     const weakest = s.heroes
       .filter(h => h.state === 'run' && h.runes.length === 0 && h.rarity <= 1)
       .sort((a, b) => a.xl - b.xl)[0];
-    if (weakest && s.heroes.filter(h => h.state === 'camp').length === 0) recallHero(weakest, s);
+    if (weakest) { recallHero(weakest, s); m.lastRecall = m.t; m.recalls = (m.recalls || 0) + 1; }
   }
   /* shard whale: burn the treasury on rolls purely for duplicate shards */
   if (tactic.shardFarm) {
@@ -348,7 +359,7 @@ function session(tactic, days = 1, seed = 0) {
   const d = depthScore(s);
   return {
     wins: s.stat.wins, deaths: s.stat.deaths, kills: s.stat.kills,
-    summons: m.summons,
+    summons: m.summons, recalls: m.recalls || 0,
     /* the account's own lifetime count: standing orders prestige without the bot,
        so the bot's tally went to zero the moment policy was delegated */
     prestiges: (s.prestigesTotal || 0), botPrestiges: m.prestiges, legends: s.legends || 0,

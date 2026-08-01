@@ -135,6 +135,7 @@ export function ablate(axis, sessions, days) {
          roster and no unspent Memory, which is impossible. Pass them through. */
       memIdle: Math.round(avg('memIdle')), treeNodes: +avg('treeNodes').toFixed(1),
       roster: Math.round(avg('roster')), starPower: Math.round(avg('starPower')),
+      recalls: Math.round(avg('recalls')),
       sealed: Math.round(avg('sealed')), gateOk: Math.round(avg('gateOk')),
       zotXL: +avg('zotXL').toFixed(2), zotHp: Math.round(avg('zotHp')),
     });
