@@ -17,6 +17,9 @@ on:
       tactics:
         description: 'Tactics to trace (JSON array)'
         default: '["active","afk","lazy"]'
+      tunes:
+        description: 'NG_TUNE overrides to sweep (JSON array of JSON strings)'
+        default: '["{}"]'
 
 permissions:
   contents: read
@@ -27,6 +30,7 @@ jobs:
       fail-fast: false
       matrix:
         tactic: ${{ fromJSON(github.event.inputs.tactics) }}
+        tune: ${{ fromJSON(github.event.inputs.tunes) }}
         shard: [a, b]
     runs-on: ubuntu-latest
     steps:
@@ -35,13 +39,15 @@ jobs:
       - name: Trace ${{ matrix.tactic }} shard ${{ matrix.shard }}
         env:
           SEED_BASE: ${{ matrix.shard == 'a' && '0' || '500' }}
+          NG_TUNE: ${{ matrix.tune }}
         run: |
+          slug=$(echo '${{ matrix.tune }}' | tr -cd '[:alnum:]')
           bun tools/sim/trace.mjs "${{ matrix.tactic }}" \
             "${{ github.event.inputs.sessions }}" "${{ github.event.inputs.days }}" \
-            > "trace_${{ matrix.tactic }}_${{ matrix.shard }}.ndjson"
+            > "trace_${{ matrix.tactic }}_${slug:-stock}_${{ matrix.shard }}.ndjson"
       - uses: actions/upload-artifact@v4
         with:
-          name: trace-${{ matrix.tactic }}-${{ matrix.shard }}
+          name: trace-${{ matrix.tactic }}-${{ strategy.job-index }}-${{ matrix.shard }}
           path: '*.ndjson'
 
   report:
