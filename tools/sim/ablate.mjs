@@ -128,6 +128,13 @@ export function ablate(axis, sessions, days) {
       jewelShare: +(avg('jewelHome') / Math.max(1, avg('martialHome') + avg('jewelHome'))).toFixed(3),
       consFound: Math.round(avg('consFound')),
       firstOrbDay: +(firstOrb.reduce((a, b) => a + b, 0) / firstOrb.length).toFixed(2),
+      /* The state an absent account is left in. These were added to the session
+         summary and never reached here: this file builds its row from a fixed list, so
+         a field the session reports but the row omits reads as zero downstream and
+         looks like a finding. It briefly looked like every account ended with an empty
+         roster and no unspent Memory, which is impossible. Pass them through. */
+      memIdle: Math.round(avg('memIdle')), treeNodes: +avg('treeNodes').toFixed(1),
+      roster: Math.round(avg('roster')), starPower: Math.round(avg('starPower')),
       sealed: Math.round(avg('sealed')), gateOk: Math.round(avg('gateOk')),
       zotXL: +avg('zotXL').toFixed(2), zotHp: Math.round(avg('zotHp')),
     });
