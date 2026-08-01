@@ -102,11 +102,18 @@ def main():
                      'too generously' if growth <= 1.5 else 'mixed')
             print(f'  first third {early:.1f}/day, last third {late:.1f}/day '
                   f'({growth:.1f}x) -> {shape}')
-        # what the game itself believed the rate was, and what bar it set
-        if rows[0].get('rate'):
-            r0 = rows[0]
-            print(f'  the account\'s own smoothed rate ended at {r0["rate"][-1]}, '
-                  f'prestige bar at {r0["bar"][-1]}, NG+{r0["ng"][-1]}')
+        # What the game itself believed the rate was, averaged over seeds. Printing a
+        # single seed here made it look as though the game read its own output as zero
+        # while delivering three to four Orbs a day: one account happened to end on a
+        # quiet day, and the EMA halves each day, so that one seed read 0 against a
+        # six-seed mean of 3. A one-seed line next to a six-seed table invites exactly
+        # that misreading.
+        have = [r for r in rows if r.get('rate')]
+        if have:
+            m = lambda k: sum(r[k][-1] for r in have) / len(have)
+            print(f'  the account\'s own smoothed rate ended at {m("rate"):.2f} '
+                  f'(seeds {" ".join(f"{r["rate"][-1]:g}" for r in have)}), '
+                  f'prestige bar {m("bar"):.0f}, NG+{m("ng"):.1f}')
     return 0
 
 

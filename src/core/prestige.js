@@ -40,12 +40,33 @@ export const ngPlusRewardMul = s => hasNgPlus(s) ? 2.5 : 1;
    for a lethality constant analytically, predicted 6.4, and measured zero. Constants
    of this kind are swept, not derived. */
 export const NG_TUNE = {
-  monSlope: 0.1,   /* monster strength added per NG level (linear form) */
-  monCap: 1,       /* ...and the most that term may add */
-  monBase: 1,      /* >1 switches to a geometric form: monsters x monBase^ng */
+  monSlope: 0.1,   /* linear form, kept for reference; unused while monBase > 1 */
+  monCap: 1,
+  monBase: 1.5,    /* geometric: monsters x monBase^ng -- see the sweep below */
   rewardSlope: 1.5,/* gold added per NG level */
   rewardCap: 10,   /* ...counted over at most this many levels */
 };
+/* 1.5 was swept, not chosen. Traced over 60 days, Orbs per day:
+
+     stock (linear 0.1)   leaves the 3-4 band on day 8    ends at 84.6/day
+     linear 1.4           leaves on day 42                 5.9/day
+     geometric 1.3        leaves on day 24                20.9/day
+     geometric 1.5        holds all 60 days                2.8/day
+     geometric 1.6        holds -- because the account is dead: 0.0/day
+
+   Confirmed across four play styles at 1.5, all inside the band, tails 2.8 to 4.0 a
+   day and growth 1.9x to 2.1x on every one of them -- the consistency is what says
+   this is a systemic parameter rather than a fit to one build.
+
+   Note what the sweep says about the shape of this problem. Between a working 1.55 and
+   a dead 1.6 lies five hundredths: a 6% change in one constant takes the game from
+   playable to permanently stalled, because a geometric difficulty racing a geometric
+   power is unstable by construction -- whichever grows faster wins outright. This
+   constant holds only while nothing else moves player power, and a future keystone or
+   a stronger route will move it. The durable answer is difficulty derived from the
+   guild's measured strength, as the prestige bar already derives from its measured
+   output and endgame pressure from readiness. That is a change of mechanism and is not
+   attempted here. */
 /* Linear scaling cannot hold a flat Orb rate, and the sweep showed why rather than
    argued it. Raising the linear slope from 0.1 to 1.4 cut the day-60 rate from 74 Orbs
    a day to 6.8 -- an elevenfold improvement -- and still lost the target band on day

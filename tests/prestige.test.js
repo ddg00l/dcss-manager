@@ -358,13 +358,31 @@ describe('prestige requirement is a fixed snapshot with a forward-only ratchet',
     s2.orbRate = 200;
     expect(s2.prestReq).toBe(locked);
   });
-  it('NG+ is a light capped seasoning; in-cycle wins are the real valve', async () => {
-    const { ngMonMul } = await import('../src/core/prestige.js');
+  it('NG+ scales geometrically, because what it answers to does', async () => {
+    /* This used to pin the opposite: a light capped seasoning, on the reasoning that
+       the in-cycle hardening was the real difficulty valve. Inside a cycle it is -- but
+       it resets at every prestige, so between cycles nothing rose at all while Legends,
+       Ascendancy, the tree and star power accumulated permanently. Traced over 60 days
+       the Orb rate left its 3-4 band on day 8 and reached 84 a day.
+
+       A term linear in NG cannot answer a quantity that compounds; raising the linear
+       slope fourteenfold only moved the exit from day 8 to day 42. The monster term now
+       has the same shape as the power it chases. */
+    const { ngMonMul, NG_TUNE } = await import('../src/core/prestige.js');
     const at = (ng) => { const s = makeState(); s.ng = ng; return ngMonMul(s); };
     expect(at(0)).toBe(1);
-    expect(at(1)).toBeCloseTo(1.1);   // the first win of a cycle stays reachable
-    expect(at(10)).toBeCloseTo(2);    // hybrid cap: numbers stop at x2, affixes carry the depth
-    expect(at(50)).toBeCloseTo(2);    // never grows past it
+    expect(at(1)).toBeCloseTo(NG_TUNE.monBase);
+    expect(at(4)).toBeCloseTo(Math.pow(NG_TUNE.monBase, 4));
+    /* and it must never stop growing: a ceiling here is what let power run away */
+    expect(at(50)).toBeGreaterThan(at(20));
+  });
+  it('the swept NG base stays clear of the cliff', async () => {
+    /* Between a working 1.55 and a dead 1.6 lies five hundredths -- at 1.6 the traced
+       account takes zero Orbs over its last ten days and never recovers. Whatever this
+       constant becomes, it must keep its distance from that edge. */
+    const { NG_TUNE } = await import('../src/core/prestige.js');
+    expect(NG_TUNE.monBase).toBeGreaterThan(1);
+    expect(NG_TUNE.monBase).toBeLessThanOrEqual(1.55);
   });
   it('star promotions never cap and keep raising hero power', async () => {
     const { starNeed, starStr } = await import('../src/data/combos.js');
