@@ -72,11 +72,13 @@ export const runesKept = s =>
 export const runeAura = s => memHas(s, 'k_runeaura')
   ? 1 + RUNE_AURA_K * Math.sqrt(runesKept(s)) + (s.runeAuraLegacy || 0)
   : 1;
-import { ngLevel, pupg, ngPlusRewardMul } from './prestige.js';
+import { ngLevel, pupg, ngPlusRewardMul, NG_TUNE } from './prestige.js';
 import { greatMul } from './chronicle.js';
 import { provMul } from './treasury.js';
 import { ascDmgMul, ascHpMul, ascGoldMul, ascSlots } from './ascension.js';
-export const ngMul = s => (1 + 1.5 * Math.min(10, ngLevel(s))) * ngPlusRewardMul(s); /* gold reward caps with the rest of the scalars; the New Depth keystone multiplies on top */
+/* see NG_TUNE in prestige.js: the reward slope is half of the loop that made the game
+   run six times its target, so it is swept from there rather than written twice */
+export const ngMul = s => (1 + NG_TUNE.rewardSlope * Math.min(NG_TUNE.rewardCap, ngLevel(s))) * ngPlusRewardMul(s);
 
 export const gAtk  = s => (1 + memEff(s, 'atk')) * (1 + 0.1 * zupg(s, 'zatk')) * fameMul(s) * ghostMul(s) * runeAura(s) * (1 + .08 * pupg(s, 'p_dmg')) * (1 + .01 * pupg(s, 'p_legacy')) * greatMul(s) * provMul(s, 'dmg') * ascDmgMul(s);
 export const gHp   = s => (1 + memEff(s, 'hp'))  * (1 + 0.1 * zupg(s, 'zhp'))  * fameMul(s) * (1 + .08 * pupg(s, 'p_hp')) * (1 + .01 * pupg(s, 'p_legacy')) * greatMul(s) * provMul(s, 'hp') * ascHpMul(s);

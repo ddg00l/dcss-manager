@@ -20,7 +20,32 @@ export const ngPlusRewardMul = s => hasNgPlus(s) ? 2.5 : 1;
    carried out, measuring the build's actual success instead of account age.
    The first win of a fresh cycle is always within reach — no stalls, and a
    runaway build stops itself: each win makes the next one x1.3 harder */
-export const ngMonMul = s => (1 + Math.min(1, .1 * ngLevel(s))) * ngPlusMonMul(s); /* hybrid: numbers cap at x2, affixes carry the depth */
+/* The two NG slopes, in one place and adjustable, because they are the loop.
+
+   Traced day by day, the game leaves its 3-4 Orbs/day band on day 5-6 and reaches
+   40-60 a day by day 30 -- a 7x growth from the first third of a run to the last,
+   identical across three different play styles, which is the signature of a loop
+   rather than of a generous constant. Days 1-5 are correctly paced; everything after
+   is the loop outrunning itself.
+
+   Here is why. Per NG level, rewards rise by 1.5 and monsters by 0.1 -- a fifteenfold
+   difference in slope -- and the monster term is capped at +100% while the reward term
+   runs to +1500%. At NG+6, where a thirty-day account sits, that is x25 rewards
+   against x3.2 monsters. The in-cycle hardening was meant to be the difficulty valve,
+   but it resets at every prestige, so within a cycle there is a valve and between
+   cycles there is none: power accumulates permanently and difficulty does not.
+
+   These are exposed as a tunable object rather than inlined because the response to
+   them is threshold-shaped, not smooth -- an earlier attempt in this project solved
+   for a lethality constant analytically, predicted 6.4, and measured zero. Constants
+   of this kind are swept, not derived. */
+export const NG_TUNE = {
+  monSlope: 0.1,   /* monster strength added per NG level */
+  monCap: 1,       /* ...and the most that term may add */
+  rewardSlope: 1.5,/* gold added per NG level */
+  rewardCap: 10,   /* ...counted over at most this many levels */
+};
+export const ngMonMul = s => (1 + Math.min(NG_TUNE.monCap, NG_TUNE.monSlope * ngLevel(s))) * ngPlusMonMul(s);
 
 /* In-cycle hardening: a gentle step PER ORB, hard-capped.
 

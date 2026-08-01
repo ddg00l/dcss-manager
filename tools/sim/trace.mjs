@@ -12,9 +12,17 @@
    Usage:  node tools/sim/trace.mjs <tactic> [sessions] [days]
    Output: NDJSON, one line per session.  */
 import { session, TACTICS } from './worker.mjs';
+import { NG_TUNE } from '../../src/core/prestige.js';
 import { pathToFileURL } from 'node:url';
 
 const SEED_BASE = parseInt(process.env.SEED_BASE || '0', 10);
+
+/* Sweep the loop's two slopes from the environment. They are swept rather than solved
+   because the response is threshold-shaped: this project already once solved a
+   lethality constant analytically, predicted 6.4 and measured zero. NG_TUNE='{"monSlope":0.3}' */
+const TUNE = process.env.NG_TUNE ? JSON.parse(process.env.NG_TUNE) : null;
+if (TUNE) Object.assign(NG_TUNE, TUNE);
+export const tuneLabel = TUNE ? JSON.stringify(TUNE) : 'stock';
 
 /** Run `sessions` accounts of one tactic and return their per-day series. */
 export function trace(name, sessions, days) {
@@ -32,7 +40,7 @@ export function trace(name, sessions, days) {
       prestPerDay.push(d.prest - pp); pp = d.prest;
     }
     rows.push({
-      tactic: name, seed: SEED_BASE + i, days,
+      tactic: name + (TUNE ? ' ' + tuneLabel : ''), seed: SEED_BASE + i, days,
       wins: r.wins, prestiges: r.prestiges,
       perDay, prestPerDay,
       ng: r.byDay.map(d => d.ng),
