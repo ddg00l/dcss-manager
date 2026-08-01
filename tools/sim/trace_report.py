@@ -41,6 +41,22 @@ def main():
                 continue
             if 'perDay' in r:
                 by_tactic[r['tactic']].append(r)
+            elif 'byDay' in r and r.get('byDay'):
+                # Rows straight from the balance sim. Its artifacts already carry the
+                # per-day series, so the trajectory needs no new workflow on the default
+                # branch -- and a workflow file on master would trip the Pages deploy
+                # that watches it. byDay counts are cumulative; deltas here.
+                pw = pp = 0
+                per, pre = [], []
+                for d in r['byDay']:
+                    per.append(d['wins'] - pw); pw = d['wins']
+                    pre.append(d.get('prest', 0) - pp); pp = d.get('prest', 0)
+                by_tactic[r.get('tactic', '?')].append({
+                    'tactic': r.get('tactic', '?'), 'perDay': per, 'prestPerDay': pre,
+                    'ng': [d.get('ng', 0) for d in r['byDay']],
+                    'bar': [d.get('bar', 0) for d in r['byDay']],
+                    'rate': [d.get('rate', 0) for d in r['byDay']],
+                })
     if not by_tactic:
         print(f'no trace rows matched {pattern!r}')
         return 1
