@@ -69,19 +69,28 @@ def main():
         mean = [sum(r['perDay'][d] for r in rows) / len(rows) for d in range(days)]
         print(f'\n=== {tactic} ===  {len(rows)} seeds, {days} days')
         print('  ' + ''.join(band(v) for v in mean))
-        # where the band is left for good
+        # Where the band is left for good. This used to require EVERY later day to sit
+        # above the band, which one quiet day anywhere in the tail defeats: a run
+        # averaging 6.8 Orbs a day over its last ten days was reported as staying
+        # inside a 3-4 band because day 60 happened to yield one. Judge a smoothed
+        # rate, since a single day is noise and the band is a statement about pace.
+        win = max(3, days // 10)
+        roll = [sum(mean[max(0, d - win + 1):d + 1]) / len(mean[max(0, d - win + 1):d + 1])
+                for d in range(days)]
         left = None
         for d in range(days):
-            if mean[d] > TARGET_HI and all(mean[k] > TARGET_HI for k in range(d, days)):
+            if all(roll[k] > TARGET_HI for k in range(d, days)):
                 left = d + 1
                 break
         print('  day 1-10 : ' + ' '.join(f'{v:.0f}' for v in mean[:10]))
         if days > 10:
             print('  last  10 : ' + ' '.join(f'{v:.0f}' for v in mean[-10:]))
+        tail = sum(mean[-max(3, days // 10):]) / max(3, days // 10)
         if left:
-            print(f'  leaves the target band for good on day {left}')
+            print(f'  leaves the target band for good on day {left}  '
+                  f'(tail {tail:.1f}/day)')
         else:
-            print('  stays within the target band')
+            print(f'  stays within the target band  (tail {tail:.1f}/day)')
         third = max(1, days // 3)
         early = sum(mean[:third]) / third
         late = sum(mean[-third:]) / third
