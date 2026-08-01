@@ -1,0 +1,64 @@
+name: Orb rate trace
+
+# Answers "how fast is the game, and why" rather than "does this decision matter".
+# The ablation compares variants; this one follows a single account day by day, because
+# a 30-day total cannot tell a steady oversupply apart from a curve that compounds --
+# and those two want opposite fixes.
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Game days per session'
+        default: '30'
+      sessions:
+        description: 'Accounts per tactic per shard'
+        default: '3'
+      tactics:
+        description: 'Tactics to trace (JSON array)'
+        default: '["active","afk","lazy"]'
+
+permissions:
+  contents: read
+
+jobs:
+  trace:
+    strategy:
+      fail-fast: false
+      matrix:
+        tactic: ${{ fromJSON(github.event.inputs.tactics) }}
+        shard: [a, b]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Trace ${{ matrix.tactic }} shard ${{ matrix.shard }}
+        env:
+          SEED_BASE: ${{ matrix.shard == 'a' && '0' || '500' }}
+        run: |
+          bun tools/sim/trace.mjs "${{ matrix.tactic }}" \
+            "${{ github.event.inputs.sessions }}" "${{ github.event.inputs.days }}" \
+            > "trace_${{ matrix.tactic }}_${{ matrix.shard }}.ndjson"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: trace-${{ matrix.tactic }}-${{ matrix.shard }}
+          path: '*.ndjson'
+
+  report:
+    needs: trace
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: results
+          merge-multiple: true
+      - name: Shape of the curve
+        run: |
+          python3 tools/sim/trace_report.py 'results/*.ndjson' | tee trace.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: trace-summary
+          path: |
+            trace.txt
+            results/*.ndjson
