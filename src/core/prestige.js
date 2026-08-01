@@ -40,12 +40,27 @@ export const ngPlusRewardMul = s => hasNgPlus(s) ? 2.5 : 1;
    for a lethality constant analytically, predicted 6.4, and measured zero. Constants
    of this kind are swept, not derived. */
 export const NG_TUNE = {
-  monSlope: 0.1,   /* monster strength added per NG level */
+  monSlope: 0.1,   /* monster strength added per NG level (linear form) */
   monCap: 1,       /* ...and the most that term may add */
+  monBase: 1,      /* >1 switches to a geometric form: monsters x monBase^ng */
   rewardSlope: 1.5,/* gold added per NG level */
   rewardCap: 10,   /* ...counted over at most this many levels */
 };
-export const ngMonMul = s => (1 + Math.min(NG_TUNE.monCap, NG_TUNE.monSlope * ngLevel(s))) * ngPlusMonMul(s);
+/* Linear scaling cannot hold a flat Orb rate, and the sweep showed why rather than
+   argued it. Raising the linear slope from 0.1 to 1.4 cut the day-60 rate from 74 Orbs
+   a day to 6.8 -- an elevenfold improvement -- and still lost the target band on day
+   42 instead of day 8, because the curve kept climbing 5.9x across the run. The cap
+   turned out to be a phantom knob entirely: 1.4/14 and 1.4/30 returned byte-identical
+   numbers, since at NG+8 the slope reaches 11.2 and never meets either ceiling.
+
+   The reason is structural. What the monsters are chasing -- Legends, Ascendancy, the
+   tree, star power -- accumulates permanently and multiplies together, so it grows
+   geometrically. A term linear in NG falls behind any geometric quantity eventually;
+   the only question is which day. So the monster term is given the same shape as the
+   thing it exists to answer. */
+export const ngMonMul = s => (NG_TUNE.monBase > 1
+  ? Math.pow(NG_TUNE.monBase, ngLevel(s))
+  : 1 + Math.min(NG_TUNE.monCap, NG_TUNE.monSlope * ngLevel(s))) * ngPlusMonMul(s);
 
 /* In-cycle hardening: a gentle step PER ORB, hard-capped.
 
