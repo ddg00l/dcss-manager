@@ -1,5 +1,12 @@
 name: Decision ablation
 
+# A GitHub job dies at six hours, and shards split SEEDS, so more shards means less
+# wall-clock per job at the same total sample. Cost is measured in simulated ACTIONS
+# rather than in game days, and the two moved in opposite directions when the Orb rate
+# was corrected: ten times fewer Orbs, but seekers that no longer die quickly at the
+# Gates and instead live long lives underground. A 60-day sweep that was expected to
+# get cheaper took the tree axis past five hours on two shards. Heavy axes want four.
+#
 # Prices a SINGLE player decision by varying one axis on identical seeds (CRN)
 # while holding everything else fixed. The named tactics in the balance sim differ
 # along several axes at once, so they can show which archetype wins but never
@@ -18,6 +25,9 @@ on:
       axes:
         description: 'Axes to run (JSON array)'
         default: '["attention","caution","spend","route","tree","ascend"]'
+      shards:
+        description: 'Seed shards (JSON array). Use 4 for heavy axes -- see the note below.'
+        default: '["a","b"]'
 
 permissions:
   contents: read
@@ -28,14 +38,15 @@ jobs:
       fail-fast: false
       matrix:
         axis: ${{ fromJSON(github.event.inputs.axes) }}
-        shard: [a, b]
+        shard: ${{ fromJSON(github.event.inputs.shards) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - name: Ablate ${{ matrix.axis }} shard ${{ matrix.shard }}
         env:
-          SEED_BASE: ${{ matrix.shard == 'a' && '0' || '500' }}
+          SEED_BASE: ${{ matrix.shard == 'a' && '0' || matrix.shard == 'b' && '500'
+                      || matrix.shard == 'c' && '1000' || '1500' }}
         run: |
           bun tools/sim/ablate.mjs "${{ matrix.axis }}" \
             "${{ github.event.inputs.sessions }}" "${{ github.event.inputs.days }}" \
