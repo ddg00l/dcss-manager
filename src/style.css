@@ -6,6 +6,25 @@
     --text:#c5ccd6; --dim:#6b7688;
     --mono:ui-monospace,'SF Mono','Cascadia Mono',Menlo,Consolas,monospace;
   }
+  /* Scrollbars.
+
+     Six containers scroll -- the main pane, the dungeon log, the memory tree, the chip
+     strip, the sheet overlay and the death panel -- and every one of them wore the
+     platform default: a wide grey trough with a raised thumb, sitting inside a UI whose
+     entire language is 1px lines, small caps and flat dark panels. On a phone it never
+     showed, because mobile scrollbars are overlays; on a desktop window it was the
+     loudest element on the screen.
+
+     A thin rule instead, transparent until the container actually overflows. The thumb
+     borrows --line at rest and --stone under the cursor, so it reads as part of the
+     same drawing rather than as a control borrowed from the operating system. */
+  *{scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+  ::-webkit-scrollbar{width:5px;height:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--stone)}
+  ::-webkit-scrollbar-corner{background:transparent}
+
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
   body{background:var(--ink);color:var(--text);font-family:var(--mono);overflow:hidden;

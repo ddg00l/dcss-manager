@@ -1032,6 +1032,7 @@ function monStep(h,mo,df){
   }
   if(bestX>=0){mo.x=bestX;mo.y=bestY}
 }
+export function exploreGoalForTest(h,df){return exploreGoal(h,df)}
 function exploreGoal(h,df){
   const m=h.map;
   const reach=(x,y)=>!df||df[y*MW+x]>=0; /* only pursue goals the hero can path to */
@@ -1054,8 +1055,20 @@ function exploreGoal(h,df){
      falls further in; a diver reaches depth it has not earned. The trade is
      levels against pace, and it is measured as the average level of the fallen,
      never as Orbs per day. */
-  const dive=DIVE_CHANCE[h.caution]??DIVE_CHANCE.normal;
-  if(dive<1&&rnd(h)>=dive){
+  /* The roll is per FLOOR, not per step. It used to be thrown on every turn, so a
+     seeker with normal caution asked itself "clear this floor or dive?" afresh at each
+     footfall -- 65% explore, 35% stairs -- and when the unexplored corner and the
+     stairs lay in opposite directions it walked west, east, west, pacing on the spot
+     until the coin happened to land the same way often enough to make progress. That
+     is what "on some levels" meant: it depended entirely on whether the two goals
+     pointed the same way.
+     The question is about the floor. Ask it once, when the floor is first considered,
+     and abide by the answer. */
+  if(m.dive===undefined){
+    const p=DIVE_CHANCE[h.caution]??DIVE_CHANCE.normal;
+    m.dive=p>=1||rnd(h)<p;
+  }
+  if(!m.dive){
     for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
       if(m.g[y][x]===0&&!m.explored[y][x]&&reach(x,y)){
         const d=Math.abs(x-m.px)+Math.abs(y-m.py);

@@ -153,3 +153,33 @@ describe('offline', () => {
     expect(computeOffline(s, Date.now())).toBeNull();
   });
 });
+
+describe('a seeker does not pace on the spot', () => {
+  it('the clear-or-dive question is asked once per floor, not once per step', async () => {
+    /* It used to be thrown on every turn: at normal caution, 65% "explore" and 35%
+       "head for the stairs", re-rolled at each footfall. When the unexplored corner and
+       the stairs lay in opposite directions the seeker walked west, east, west, pacing
+       in place until the coin landed the same way often enough to make progress. The
+       question is about the floor, so it gets one answer per floor. */
+    const { genFloor } = await import('../src/sim/mapgen.js');
+    const { startRun } = await import('../src/sim/tick.js');
+    const s = makeState();
+    const h = newHero('minotaur', 'fighter', 2, s);
+    s.heroes.push(h);
+    h.caution = 'normal';                 /* the setting that used to flip 35/65 */
+    startRun(h, s);
+    genFloor(h, s);
+    const first = h.map.dive;
+    /* whatever it decided, a hundred further turns of deciding must not change it */
+    for (let i = 0; i < 100; i++) {
+      const { exploreGoalForTest } = await import('../src/sim/tick.js');
+      if (exploreGoalForTest) exploreGoalForTest(h, null);
+    }
+    if (first !== undefined) expect(h.map.dive).toBe(first);
+    /* and a fresh floor is entitled to a fresh answer */
+    const before = h.map;
+    genFloor(h, s);
+    expect(h.map).not.toBe(before);
+    expect(h.map.dive).toBeUndefined();
+  });
+});
