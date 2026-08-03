@@ -1227,4 +1227,11 @@ export const DE = {
   'Not yet': 'Noch nicht',
   'Reliquary': 'Reliquiar',
   'carry +1 item of your choosing through each prestige': 'trage +1 Gegenstand deiner Wahl durch jedes Prestige',
+  /* the pack */
+  ' (into the pack)': ' (in den Rucksack)',
+  ' sends up ': ' schickt nach oben ',
+  ' item(s)': ' Gegenstand/Gegenstände',
+  ' and ': ' und ',
+  'Lost with the body: ': 'Mit dem Leichnam verloren: ',
+  'carried out': 'herausgetragen',
 };

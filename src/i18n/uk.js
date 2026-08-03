@@ -1227,4 +1227,11 @@ export const UK = {
   'Not yet': 'Ще не зараз',
   'Reliquary': 'Реліквіарій',
   'carry +1 item of your choosing through each prestige': 'проносити +1 предмет за власним вибором крізь кожен престиж',
+  /* the pack */
+  ' (into the pack)': ' (у торбу)',
+  ' sends up ': ' відправляє нагору ',
+  ' item(s)': ' предм.',
+  ' and ': ' і ',
+  'Lost with the body: ': 'Зникло разом із тілом: ',
+  'carried out': 'винесено',
 };

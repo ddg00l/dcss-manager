@@ -132,7 +132,7 @@ export function startRun(h,s){
   h.curHp=null;h.uniqSeen=[];h.runes=[];
   h.inv={curing:2+memEff(s,'pots')};
   h.known=[];h.status={};h.gold=0;h.keys=0;
-  h.inPortal=null;h.banished=null;h.fundedZig=false;h.detour=null;
+  h.inPortal=null;h.banished=null;h.fundedZig=false;h.detour=null;h.pack=[];
   h.maxDepth=null;h.maxBrDepth=0; /* per-run reach: the death payout reads it */
   h.mp=mpMaxOf(h); /* casters start with a full mana pool */
   /* A seeker always takes the best the guild holds. This used to be sold as a
@@ -173,6 +173,9 @@ export function fundZiggurat(h,s){
   return true;
 }
 function nextFloor(h,s){
+  /* the staircase is the checkpoint: what the seeker carries goes up before they go
+     down. Caution decides how much is riding on the next floor. */
+  shipPack(h,s);
   if(h.inPortal){
     const P=PORTALS[h.inPortal.type];
     if(h.inPortal.type==='zig'){
@@ -334,8 +337,15 @@ export function heroDie(h,killer,s){
   hlog(h,'☠ '+h.name+t(' dies to ')+killer+t(' on ')+brTag(h),'death');
   /* legacy */
   s.stat.deaths++;
-  const walletBack=h.gold;
-  if(h.gold>0){s.gold+=h.gold;hlog(h,t('Hero\'s wallet (')+fmt(h.gold)+t(' 🜚) returns to the treasury'),'sys')}
+  /* What the seeker was carrying dies with them. It used to come home regardless --
+     the purse returned to the treasury and every find had already been banked -- so
+     dying cost the guild nothing and caution had nothing to weigh. */
+  const lostGold=h.gold||0,lostPack=(h.pack||[]).length;
+  if(lostGold||lostPack)
+    hlog(h,'\u2620 '+t('Lost with the body: ')+(lostPack?lostPack+t(' item(s)'):'')+
+      (lostPack&&lostGold?t(' and '):'')+(lostGold?fmt(lostGold)+' 🜚':''),'death');
+  h.pack=[];h.gold=0;
+  const walletBack=0;
   const ck0=comboKey(h.race,h.cls);
   s.stat.bestXL[ck0]=Math.max(s.stat.bestXL[ck0]||0,h.xl);
   /* Per-axis telemetry. Every player control was measured only by Orbs per day,
@@ -372,7 +382,7 @@ export function heroDie(h,killer,s){
   s.pendingDeaths.push({
     name:h.name,race:h.race,cls:h.cls,rarity:h.rarity,xl:h.xl,
     by:killer,at:brTag(h),turns:h.turn,kills:h.kills,
-    gold:h.rep.gold,wallet:walletBack,runes:[...h.runes],
+    gold:h.rep.gold,wallet:walletBack,lostGold,lostPack,runes:[...h.runes],
     muts:[...h.muts],god:h.god,shards:sh,
     notable:h.rep.notable.slice(-10),
     log:h.log.slice(-14),
@@ -410,8 +420,9 @@ export function heroWin(h,s){
   if(cReward)hlog(h,'📜 '+h.name+t(' fulfils the guild contract (+')+cReward+' ⚜)','rune');
   simHooks.onWin&&simHooks.onWin(h);
   hlog(h,'🏆 '+h.name+t(' TAKES THE ORB OF ZOT! A legend forever.'),'rune');
+  /* a seeker who walks out with the Orb walks out with everything they carried */
   const walletBack=h.gold;
-  if(h.gold>0)s.gold+=h.gold;
+  shipPack(h,s,t('carried out'));
   let ess=firstWin?Math.max(6,(Math.floor(h.xl/3)+h.runes.length*2)*2):0;
   if(firstWin&&memHas(s,'k_zotplus'))ess=Math.floor(ess*1.5);
   s.zot+=ess;
@@ -813,7 +824,7 @@ function killMon(h,mo,s){
      hit tens of millions against 100k prices and gold stopped being a decision.
      The depth curve is now gentle; the sinks scale with income (see treasury.js). */
   const g=Math.floor((2+rnd(h)*4)*Math.pow(GOLD_DEPTH_BASE,depth)*goldMul);
-  if(h.fundedZig){h.rep.gold+=g;}else{s.gold+=Math.ceil(g*.5);h.gold+=Math.floor(g*.5);h.rep.gold+=g;}
+  if(h.fundedZig){h.rep.gold+=g;}else{h.gold+=g;h.rep.gold+=g;}
   gainXp(h,mo.xp,s);
   if(rnd(h)<.06*gDrop(s))s.scrap++;
   if(h.god){h.piety=Math.min(200,h.piety+1);
@@ -1081,7 +1092,7 @@ function exploreGoal(h,df){
 function pickup(h,it,s){
   if(it.kind==='gold'){
     const g=Math.floor(it.amt*(RACES[h.race].gold||1)*gGold(s));
-    if(h.fundedZig){h.rep.gold+=g;}else{s.gold+=Math.ceil(g*.5);h.gold+=Math.floor(g*.5);h.rep.gold+=g;}
+    if(h.fundedZig){h.rep.gold+=g;}else{h.gold+=g;h.rep.gold+=g;}
     rnd(h);hlog(h,h.name+t(' picks up ')+g+t(' gold'),'loot'); /* keep the draw; log every pickup */
   }else if(it.kind==='cons'){
     h.inv[it.c.type]=(h.inv[it.c.type]||0)+1;
@@ -1121,11 +1132,25 @@ export function dropForgeItem(h,s){
 }
 export function acquireItem(h,s,it){
   telGear(s,it);
-  /* auto-equip if better for this hero, else armory */
+  /* Worn now, or carried in the pack until the next staircase. Nothing used to be at
+     risk: gold was half-banked the instant it was picked up and the rest came back from
+     the corpse, and gear reached the armoury the moment it was found. A seeker's death
+     cost the guild nothing but the seeker, which is why the caution setting measured
+     1.02x -- there was nothing to be cautious ABOUT. */
   const better=tryAutoEquip(h,it,s);
-  hlog(h,t('✦ found: ')+itemName(it)+(better?t(' (equipped)'):t(' (to armory)')),'loot');
+  hlog(h,t('✦ found: ')+itemName(it)+(better?t(' (equipped)'):t(' (into the pack)')),'loot');
   h.rep.notable.push('✦ '+itemName(it));
-  if(!better)storeItem(s,it);
+  if(!better)(h.pack=h.pack||[]).push(it);
+}
+/** A cleared floor is a shipment: the pack goes up, and the seeker walks on light. */
+export function shipPack(h,s,why){
+  const items=h.pack||[],gold=h.gold||0;
+  if(!items.length&&!gold)return;
+  for(const it of items)storeItem(s,it);
+  s.gold+=gold;
+  h.pack=[];h.gold=0;
+  hlog(h,'\u21e7 '+h.name+t(' sends up ')+(items.length?items.length+t(' item(s)'):'')+
+    (items.length&&gold?t(' and '):'')+(gold?fmt(gold)+' 🜚':'')+(why?' ('+why+')':''),'loot');
 }
 export function tryAutoEquip(h,it,s){
   /* rings fill the first free slot the race allows (octopode has up to 8); when

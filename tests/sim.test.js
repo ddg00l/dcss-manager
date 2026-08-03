@@ -183,3 +183,44 @@ describe('a seeker does not pace on the spot', () => {
     expect(h.map.dive).toBeUndefined();
   });
 });
+
+describe('the pack: what a seeker carries is at risk', () => {
+  it('found gear rides in the pack and reaches the armoury on the stairs', async () => {
+    const { acquireItem, shipPack } = await import('../src/sim/tick.js');
+    const { randomItem } = await import('../src/data/items.js');
+    const s = makeState();
+    const h = newHero('minotaur', 'fighter', 2, s);
+    s.heroes.push(h);
+    h.gear = {};                       /* nothing worn: the find cannot be auto-equipped away */
+    const before = s.armory.length;
+    for (let i = 0; i < 3; i++) acquireItem(h, s, randomItem('ring', 0, () => 0.5));
+    expect(s.armory.length, 'banked too early').toBe(before);
+    expect(h.pack.length).toBeGreaterThan(0);
+    const carried = h.pack.length;
+    shipPack(h, s);
+    expect(s.armory.length).toBe(before + carried);
+    expect(h.pack.length).toBe(0);
+  });
+
+  it('a death takes the pack and the purse with it', async () => {
+    /* This is the whole point. Gold used to be half-banked on pickup with the rest
+       returning from the corpse, and gear reached the armoury the moment it was found,
+       so a seeker's death cost the guild nothing but the seeker -- and caution measured
+       1.02x because there was nothing to be cautious about. */
+    const { acquireItem, heroDie, startRun } = await import('../src/sim/tick.js');
+    const { randomItem } = await import('../src/data/items.js');
+    const s = makeState();
+    const h = newHero('minotaur', 'fighter', 2, s);
+    s.heroes.push(h);
+    startRun(h, s);                    /* heroDie reads run state (map, rep, log) */
+    /* straight into the pack: a find that fits an empty slot is worn instead, and worn
+       gear is meant to come home from the body -- that part is unchanged */
+    h.gear = {};
+    h.pack = [randomItem('ring', 0, () => 0.5), randomItem('ring', 0, () => 0.5)];
+    h.gold = 500;
+    const goldBefore = s.gold, armoryBefore = s.armory.length;
+    heroDie(h, 'a rat', s);   /* (hero, killer, state) */
+    expect(s.gold, 'the purse came home anyway').toBe(goldBefore);
+    expect(s.armory.length, 'the pack came home anyway').toBe(armoryBefore);
+  });
+});

@@ -1227,4 +1227,11 @@ export const ES = {
   'Not yet': 'Todavía no',
   'Reliquary': 'Relicario',
   'carry +1 item of your choosing through each prestige': 'lleva +1 objeto a tu elección a través de cada prestigio',
+  /* the pack */
+  ' (into the pack)': ' (a la mochila)',
+  ' sends up ': ' envía arriba ',
+  ' item(s)': ' objeto(s)',
+  ' and ': ' y ',
+  'Lost with the body: ': 'Perdido con el cuerpo: ',
+  'carried out': 'sacado',
 };

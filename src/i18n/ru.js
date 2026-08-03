@@ -1227,4 +1227,11 @@ export const RU = {
   'Not yet': 'Ещё не сейчас',
   'Reliquary': 'Реликварий',
   'carry +1 item of your choosing through each prestige': 'проносить +1 предмет по своему выбору через каждый престиж',
+  /* the pack */
+  ' (into the pack)': ' (в котомку)',
+  ' sends up ': ' отправляет наверх ',
+  ' item(s)': ' предм.',
+  ' and ': ' и ',
+  'Lost with the body: ': 'Пропало вместе с телом: ',
+  'carried out': 'вынесено',
 };
