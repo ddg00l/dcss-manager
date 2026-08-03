@@ -17,6 +17,7 @@ import {comboKey,RARN} from '../data/combos.js';
 import { t } from '../i18n/index.js';
 import {PUPGRADES,pupg,pupgCost,ngLevel,legendsReward,canPrestige,doPrestige,cycleProgress,prestigeReq} from '../core/prestige.js';
 import {ascKeepGear} from '../core/ascension.js';
+import {openReliquary} from './reliquary.js';
 import {chronicleGoals,greatRaces,greatClasses,greatMul,cycleContract} from '../core/chronicle.js';
 import {FAME_SUBTABS,fameSubUnlocked} from '../core/ftue.js';
 import {renderAscension} from './ascension.js';
@@ -109,20 +110,9 @@ export function renderFame(){
       t('Prestige needs {n} victories this cycle ({w} so far)',{n:prestigeReq(save),w:cyc.wins});
     pb.disabled=!canPrestige(save);
     pb.onclick=()=>{
-      /* An irreversible action states its price as a number. "the collection remains"
-         means the race+class roster, not the gear -- and a player reading quickly hears
-         that their hard-won legendaries are safe. They are not: only named artefacts
-         survive, and the rest of the armoury burns. Count it out loud. */
-      const worn=save.heroes.flatMap(x=>Object.values(x.gear||{})).filter(Boolean);
-      const all=[...save.armory,...worn];
-      const burn=all.filter(it=>!it.unrandId&&!ascKeepGear(save));
-      const rare=burn.filter(it=>it.rar>=2||it.rand).length;
-      if(!confirm(t('Prestige now: +')+reward+' ⚜?\n\n'+
-        t('This burns {n} items, {r} of them rare or artefact. Only named artefacts survive.')
-          .replace('{n}',burn.length).replace('{r}',rare)+'\n\n'+
-        t('Prestige resets heroes, armory, currencies and the small nodes of the Memory tree. Keystones, the Hall of Fame, the collection, unrands and zot upgrades remain. Each prestige raises NG+: monsters and rewards grow.')))return;
-      doPrestige(save);
-      sfx.win();persist();window.__renderAll();updTop();
+      /* The reliquary IS the confirmation now: it shows what survives and what burns in
+         one list, and the choice is made there rather than guessed at from a number. */
+      openReliquary(()=>{window.__renderAll();updTop()});
     };
     card.appendChild(pb);
     pr.appendChild(card);

@@ -115,9 +115,17 @@ export const PUPGRADES = [
   { k: 'p_mem', n: 'Engraved paths', d: 'start each cycle with +600 Memory per lvl', max: 10, base: 5, g: 1.7 },
   { k: 'p_gold', n: 'Old treasury', d: 'start each cycle with +750 gold per lvl', max: 10, base: 3, g: 1.6 },
   { k: 'p_roll', n: 'Famous guild', d: '−5% summon cost per lvl', max: 8, base: 6, g: 1.9 },
+  /* The reliquary turns the cost of a prestige from a loss into a decision. Only named
+     artefacts used to survive, so a randart won in cycle two burned with everything
+     else and the player had no way to see it coming. Now the question is which pieces
+     are worth carrying, and the answer is limited on purpose -- an unlimited reliquary
+     would simply delete the cost. */
+  { k: 'p_relic', n: 'Reliquary', d: 'carry +1 item of your choosing through each prestige', max: 6, base: 4, g: 1.8 },
   { k: 'p_legacy', n: 'Legacy engraving', d: '+1% damage and health per lvl, without limit', max: 9999, base: 50, g: 1.22 },
 ];
 export const pupg = (s, k) => (s.pupg && s.pupg[k]) || 0;
+/** How many pieces the guild may carry through a prestige, over and above artefacts. */
+export const reliquaryCap = s => pupg(s, 'p_relic');
 export const pupgCost = (s, u) => Math.ceil(u.base * Math.pow(u.g, pupg(s, u.k)));
 
 /** progress earned within the current cycle (lifetime stats minus the snapshot) */
@@ -225,7 +233,7 @@ export const nextPrestigeReq = s =>
 export const canPrestige = s => cycleProgress(s).wins >= prestigeReq(s);
 
 /** the reset itself; returns the Legends earned or 0 when not allowed */
-export function doPrestige(s) {
+export function doPrestige(s, keepIds) {
   if (!canPrestige(s)) return 0;
   const reward = legendsReward(s);
   if (reward <= 0) return 0;
@@ -238,10 +246,14 @@ export function doPrestige(s) {
   /* unrand items survive — collect them from the armory and from worn gear.
      Ascension "Engraved Armoury" lets ALL gear survive, not just artefacts. */
   const keepAll = ascKeepGear(s);
-  const keep = s.armory.filter(it => keepAll || it.unrandId);
+  /* the reliquary: named pieces the player chose to carry, capped by the upgrade so the
+     choice stays a choice */
+  const chosen = new Set((keepIds || []).slice(0, reliquaryCap(s)));
+  const survives = it => keepAll || it.unrandId || chosen.has(it.id);
+  const keep = s.armory.filter(survives);
   for (const h of s.heroes)
     for (const slot of Object.keys(h.gear || {}))
-      if (h.gear[slot] && (keepAll || h.gear[slot].unrandId)) keep.push(h.gear[slot]);
+      if (h.gear[slot] && survives(h.gear[slot])) keep.push(h.gear[slot]);
 
   s.heroes = [];
   s.armory = keep;

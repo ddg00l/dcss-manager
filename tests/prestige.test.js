@@ -414,3 +414,52 @@ describe('Legacy engraving: the infinite Legends sink', () => {
     expect(pupgCost(s, u)).toBeGreaterThan(u.base * 100); // steep late levels
   });
 });
+
+describe('the reliquary', () => {
+  it('carries the chosen pieces and burns the rest', async () => {
+    const { doPrestige, reliquaryCap } = await import('../src/core/prestige.js');
+    const { randomItem } = await import('../src/data/items.js');
+    const s = makeState();
+    s.pupg = { p_relic: 2 };
+    expect(reliquaryCap(s)).toBe(2);
+    const rng = () => 0.5;
+    const items = [0, 1, 2, 3, 4].map(() => randomItem('weapon', 2, rng));
+    s.armory = [...items];
+    /* enough wins to be allowed to prestige at all */
+    s.stat.wins = 99; s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 }; s.prestReq = 1;
+    doPrestige(s, [items[0].id, items[3].id]);
+    const left = s.armory.map(i => i.id);
+    expect(left).toContain(items[0].id);
+    expect(left).toContain(items[3].id);
+    expect(left).not.toContain(items[1].id);
+    expect(left.length).toBe(2);
+  });
+
+  it('the reliquary cannot be overfilled by asking for more', async () => {
+    /* The cap is the whole point: an unlimited reliquary deletes the cost of a prestige
+       rather than turning it into a decision. The UI enforces it, and so does this. */
+    const { doPrestige } = await import('../src/core/prestige.js');
+    const { randomItem } = await import('../src/data/items.js');
+    const s = makeState();
+    s.pupg = { p_relic: 1 };
+    const rng = () => 0.5;
+    const items = [0, 1, 2].map(() => randomItem('weapon', 2, rng));
+    s.armory = [...items];
+    s.stat.wins = 99; s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 }; s.prestReq = 1;
+    doPrestige(s, items.map(i => i.id));
+    expect(s.armory.length).toBe(1);
+  });
+
+  it('without the upgrade only named artefacts survive, as before', async () => {
+    const { doPrestige } = await import('../src/core/prestige.js');
+    const { randomItem } = await import('../src/data/items.js');
+    const s = makeState();
+    const rng = () => 0.5;
+    const plain = randomItem('weapon', 2, rng);
+    const named = randomItem('weapon', 2, rng); named.unrandId = 'singing';
+    s.armory = [plain, named];
+    s.stat.wins = 99; s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 }; s.prestReq = 1;
+    doPrestige(s, [plain.id]);          /* asking without the upgrade buys nothing */
+    expect(s.armory.map(i => i.id)).toEqual([named.id]);
+  });
+});
