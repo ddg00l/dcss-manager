@@ -1452,7 +1452,10 @@ function readScroll(h,s,type){
   const m=h.map;
   switch(type){
     case 'teleport':trapTeleport(h,t('scroll of teleportation'));break;
-    case t('blink'):trapTeleport(h,t('blink'));break;
+    /* This read `case t('blink')`, comparing the scroll's type key against its own
+       translation -- so it matched only in English, where t() passes the key through.
+       In every other language the scroll was read, spent, and did nothing. */
+    case 'blink':trapTeleport(h,t('blink'));break;
     case 'ench_w':if(h.gear.weapon&&h.gear.weapon.plus<9){h.gear.weapon.plus++;
       hlog(h,t('✨ weapon enchanted: ')+itemName(h.gear.weapon),'rune')}break;
     case 'ench_a':if(h.gear.armour&&h.gear.armour.plus<9){h.gear.armour.plus++;
@@ -1473,8 +1476,10 @@ function readScroll(h,s,type){
     case 'acquire':{
       const it=randomItem(null,Math.min(2,Math.floor(brDepth(h)/7)+1),()=>rnd(h));
       const eq=tryAutoEquip(h,it,s);
-      hlog(h,t('🎁 acquirement: ')+itemName(it)+(eq?t(' (equipped)'):t(' (to armory)')),'rune');
-      if(!eq)storeItem(s,it);break}
+      hlog(h,t('🎁 acquirement: ')+itemName(it)+(eq?t(' (equipped)'):t(' (into the pack)')),'rune');
+      /* into the pack, like anything else found: a gift carried out of the dungeon is
+         carried, not teleported to the armoury */
+      if(!eq)(h.pack=h.pack||[]).push(it);break}
     case 'identify':{
       const unk=[...Object.keys(h.inv)].filter(k=>h.inv[k]>0&&!h.known.includes(k));
       if(unk.length){const k=unk[Math.floor(rnd(h)*unk.length)];
@@ -1496,6 +1501,10 @@ function consumableAI(h,s,st,hpFrac,cautLim){
     const unkPot=Object.keys(POTIONS).find(t=>hasC(h,t)&&!h.known.includes(t));
     if(unkPot)return drinkPotion(h,s,unkPot,true);
     if(hasC(h,'teleport')&&h.known.includes('teleport')&&threats>=2)return readScroll(h,s,'teleport');
+    /* Blink is the short escape and had no rule at all -- never chosen in combat, absent
+       from the leisurely list, reachable only by reading an unidentified one. It is what
+       you use when the teleport is gone and something is standing next to you. */
+    if(hasC(h,'blink')&&h.known.includes('blink')&&threats>=1)return readScroll(h,s,'blink');
   }
   /* normal healing at the caution threshold */
   if(hpFrac<cautLim){
@@ -1510,7 +1519,19 @@ function consumableAI(h,s,st,hpFrac,cautLim){
     if(hasC(h,'haste')&&h.known.includes('haste')&&!h.status.haste)return drinkPotion(h,s,'haste');
     if(hasC(h,'berserk')&&h.known.includes('berserk')&&!h.status.berserk&&
        CLASSES[h.cls].style==='melee')return drinkPotion(h,s,'berserk');
+    /* Brilliance is the caster's Might and was never offered, so a mage walked into
+       every boss with no buff of its own while a fighter had three. Resistance goes
+       down before a boss for the same reason it exists: bosses and uniques are where
+       the elemental damage is. Both had real effects and no path to being drunk --
+       once identified they sat in the pack as cargo. */
+    if(hasC(h,'brill')&&h.known.includes('brill')&&!h.status.brill&&
+       CLASSES[h.cls].style==='magic')return drinkPotion(h,s,'brill');
+    if(hasC(h,'resist')&&h.known.includes('resist')&&!h.status.resist)return drinkPotion(h,s,'resist');
   }
+  /* Agility is defence, so it is drunk when defence is the problem: outnumbered and
+     already hurt, where +5 evasion is worth more than any single attack. */
+  if(threats>=2&&hpFrac<.6&&hasC(h,'agility')&&h.known.includes('agility')&&!h.status.agility)
+    return drinkPotion(h,s,'agility');
   if(threats>=3&&hpFrac<.5&&hasC(h,'fear')&&h.known.includes('fear'))return readScroll(h,s,'fear');
   /* leisurely identification and utility scrolls */
   if(threats===0&&h.turn%30===0){

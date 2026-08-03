@@ -1,3 +1,7 @@
+import { readFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 import { describe, it, expect, vi } from 'vitest';
 import { makeState } from '../src/core/state.js';
 import { newHero, heroStats } from '../src/sim/hero.js';
@@ -222,5 +226,33 @@ describe('the pack: what a seeker carries is at risk', () => {
     heroDie(h, 'a rat', s);   /* (hero, killer, state) */
     expect(s.gold, 'the purse came home anyway').toBe(goldBefore);
     expect(s.armory.length, 'the pack came home anyway').toBe(armoryBefore);
+  });
+});
+
+describe('consumables are implemented and actually used', () => {
+  it('every potion and scroll has an effect the sim can apply', async () => {
+    /* A switch that silently falls through spends the item and does nothing, which is
+       indistinguishable from bad luck. The scroll of blinking did exactly that in every
+       language but English: its case compared the type key against its own translation. */
+    const src = readFileSync(join(ROOT, 'src/sim/tick.js'), 'utf8');
+    const { POTIONS, SCROLLS } = await import('../src/data/consumables.js');
+    for (const k of Object.keys(POTIONS)) expect(src, 'potion ' + k).toContain("case '" + k + "'");
+    for (const k of Object.keys(SCROLLS)) expect(src, 'scroll ' + k).toContain("case '" + k + "'");
+  });
+
+  it('every consumable has a path to being used on purpose', async () => {
+    /* Having an effect is not enough: resistance, brilliance and agility all worked and
+       none was ever drunk deliberately, and blink was never read at all. Identified and
+       unused, they are cargo. */
+    const src = readFileSync(join(ROOT, 'src/sim/tick.js'), 'utf8');
+    const ai = src.slice(src.indexOf('function consumableAI'));
+    const { POTIONS, SCROLLS } = await import('../src/data/consumables.js');
+    const deliberate = k => ai.includes("'" + k + "'");
+    /* mutation is the one exception, and on purpose: drinking it is a gamble, so it is
+       reached only by the desperate identification path */
+    for (const k of Object.keys(POTIONS)) if (k !== 'mutation')
+      expect(deliberate(k), 'potion ' + k + ' is never chosen').toBe(true);
+    for (const k of Object.keys(SCROLLS))
+      expect(deliberate(k), 'scroll ' + k + ' is never chosen').toBe(true);
   });
 });
