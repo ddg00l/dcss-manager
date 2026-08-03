@@ -1241,4 +1241,6 @@ export const ES = {
   'Mastery: every node you own in the forge region makes all of its effects 5% stronger. You may swear only ONE Way, and the oath is released when you prestige — the next cycle is a fresh choice.': 'Maestría: cada nodo que posees en la región de la forja fortalece todos sus efectos un 5%. Solo puedes jurar UNA Vía, y el juramento se libera al prestigiar: el siguiente ciclo elige de nuevo.',
   'Mastery: every node you own in the heroes region makes all of its effects 5% stronger. You may swear only ONE Way, and the oath is released when you prestige — the next cycle is a fresh choice. Expedition slots are not affected — they are already the strongest thing this tree sells.': 'Maestría: cada nodo que posees en la región de héroes fortalece todos sus efectos un 5%. Solo puedes jurar UNA Vía, y el juramento se libera al prestigiar: el siguiente ciclo elige de nuevo. Las plazas de expedición no se ven afectadas: ya son lo más fuerte que vende este árbol.',
   ' — it is released when you prestige': ' — se libera al prestigiar',
+  'Recovered from the body: ': 'Recuperado del cuerpo: ',
+  ' relic(s)': ' reliquia(s)',
 };

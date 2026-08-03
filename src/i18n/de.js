@@ -1241,4 +1241,6 @@ export const DE = {
   'Mastery: every node you own in the forge region makes all of its effects 5% stronger. You may swear only ONE Way, and the oath is released when you prestige — the next cycle is a fresh choice.': 'Meisterschaft: jeder Knoten, den du in der Schmiederegion besitzt, verstärkt all ihre Effekte um 5%. Du kannst nur EINEN Weg schwören, und der Eid wird beim Prestige gelöst — der nächste Zyklus wählt neu.',
   'Mastery: every node you own in the heroes region makes all of its effects 5% stronger. You may swear only ONE Way, and the oath is released when you prestige — the next cycle is a fresh choice. Expedition slots are not affected — they are already the strongest thing this tree sells.': 'Meisterschaft: jeder Knoten, den du in der Heldenregion besitzt, verstärkt all ihre Effekte um 5%. Du kannst nur EINEN Weg schwören, und der Eid wird beim Prestige gelöst — der nächste Zyklus wählt neu. Expeditionsplätze bleiben unberührt -- sie sind ohnehin das Stärkste, was dieser Baum verkauft.',
   ' — it is released when you prestige': ' — er wird beim Prestige gelöst',
+  'Recovered from the body: ': 'Vom Leichnam geborgen: ',
+  ' relic(s)': ' Relikt(e)',
 };

@@ -256,3 +256,45 @@ describe('consumables are implemented and actually used', () => {
       expect(deliberate(k), 'scroll ' + k + ' is never chosen').toBe(true);
   });
 });
+
+describe('a legendary is never lost to one bad floor', () => {
+  it('relics survive the pack; ordinary gear does not', async () => {
+    const { acquireItem, heroDie, startRun } = await import('../src/sim/tick.js');
+    const { randomItem } = await import('../src/data/items.js');
+    const s = makeState();
+    const h = newHero('minotaur', 'fighter', 2, s);
+    s.heroes.push(h);
+    startRun(h, s);
+    h.gear = {};
+    const plain = randomItem('ring', 0, () => 0.5); plain.rar = 1;
+    const relic = randomItem('ring', 0, () => 0.5); relic.rar = 3; relic.rand = 'Wrath';
+    h.pack = [plain, relic];
+    const before = s.armory.length;
+    heroDie(h, 'a hydra', s);
+    const home = s.armory.slice(before).map(i => i.id);
+    expect(home, 'the legendary was lost').toContain(relic.id);
+    expect(home, 'ordinary gear came home free').not.toContain(plain.id);
+  });
+
+  it('a worn relic bypasses the ninety-percent roll entirely', async () => {
+    /* One death in ten used to take a worn legendary, which is a catastrophe the player
+       can neither foresee nor prevent -- not the price of a decision. */
+    const { heroDie, startRun } = await import('../src/sim/tick.js');
+    const { randomItem, isRelic } = await import('../src/data/items.js');
+    const s = makeState();
+    let recovered = 0;
+    for (let i = 0; i < 40; i++) {
+      const h = newHero('minotaur', 'fighter', 2, s);
+      s.heroes.push(h);
+      startRun(h, s);
+      const relic = randomItem('amulet', 0, () => 0.5);
+      relic.rar = 3; relic.unrandId = 'singing';
+      expect(isRelic(relic)).toBe(true);
+      h.gear = { amulet: relic };
+      const before = s.armory.length;
+      heroDie(h, 'a hydra', s);
+      if (s.armory.length > before) recovered++;
+    }
+    expect(recovered, 'a worn relic was lost at least once in forty deaths').toBe(40);
+  });
+});

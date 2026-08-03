@@ -136,6 +136,19 @@ export function itemTile(it){
 /* random item generator (forge + drops) */
 let itemSeq=1;
 
+/** A piece the guild will not lose to a single bad floor.
+
+    The pack made a death cost something, which is what gives caution a price -- but it
+    made a legendary found and not yet worn vanish outright, and a worn one vanish one
+    death in ten. That is not the price of a decision, it is a catastrophe the player
+    could neither foresee nor prevent, and the game already treats these pieces as
+    special: named artefacts are the one thing a prestige does not burn.
+
+    So the rule is one sentence in both places. A Legendary or an artefact always comes
+    home. Everything else -- common, rare, epic, the gold, the consumables -- is exactly
+    as much at risk as it was, and that is the bulk of any pack. */
+export const isRelic = it => !!(it && (it.unrandId || it.rand || it.rar >= 3));
+
 export function randomItem(slotChoice,tier,rng,luck=0){
   const slots=['weapon','armour','shield','ring','amulet'];
   const slot=slotChoice||slots[Math.floor(rng()*slots.length)];

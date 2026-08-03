@@ -1241,4 +1241,6 @@ export const UK = {
   'Mastery: every node you own in the forge region makes all of its effects 5% stronger. You may swear only ONE Way, and the oath is released when you prestige — the next cycle is a fresh choice.': 'Майстерність: кожен вузол, яким ти володієш у регіоні кузні, підсилює всі його ефекти на 5%. Присягнути можна лише ОДНОМУ Шляху, і присяга знімається при престижі — наступний цикл обирає заново.',
   'Mastery: every node you own in the heroes region makes all of its effects 5% stronger. You may swear only ONE Way, and the oath is released when you prestige — the next cycle is a fresh choice. Expedition slots are not affected — they are already the strongest thing this tree sells.': 'Майстерність: кожен вузол, яким ти володієш у регіоні героїв, підсилює всі його ефекти на 5%. Присягнути можна лише ОДНОМУ Шляху, і присяга знімається при престижі — наступний цикл обирає заново. Слоти експедиції не зачіпаються — вони й без того найсильніше, що продає це дерево.',
   ' — it is released when you prestige': ' — вона знімається при престижі',
+  'Recovered from the body: ': 'Знято з тіла: ',
+  ' relic(s)': ' реліквій',
 };

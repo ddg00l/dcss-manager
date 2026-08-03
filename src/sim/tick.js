@@ -10,7 +10,7 @@ import {crossBoost} from '../data/skills.js';
 import {CLASSES} from '../data/classes.js';
 import {GODS,godField} from '../data/gods.js';
 import {comboKey,SHARDS_PER,starNeed} from '../data/combos.js';
-import {randomItem,itemName,itemInfo,scoreItem,WEP_BASES,UNRANDS,makeUnrand} from '../data/items.js';
+import {randomItem,itemName,itemInfo,scoreItem,WEP_BASES,UNRANDS,makeUnrand,isRelic} from '../data/items.js';
 import {POTIONS,SCROLLS,consName,randConsumable} from '../data/consumables.js';
 import {MUTS,randomMut} from '../data/mutations.js';
 import {PORTALS} from '../data/portals.js';
@@ -340,7 +340,11 @@ export function heroDie(h,killer,s){
   /* What the seeker was carrying dies with them. It used to come home regardless --
      the purse returned to the treasury and every find had already been banked -- so
      dying cost the guild nothing and caution had nothing to weigh. */
-  const lostGold=h.gold||0,lostPack=(h.pack||[]).length;
+  /* relics ride home regardless: see isRelic */
+  const saved=(h.pack||[]).filter(isRelic);
+  for(const it of saved)storeItem(s,it);
+  if(saved.length)hlog(h,'\u2726 '+t('Recovered from the body: ')+saved.length+t(' relic(s)'),'rune');
+  const lostGold=h.gold||0,lostPack=(h.pack||[]).length-saved.length;
   if(lostGold||lostPack)
     hlog(h,'\u2620 '+t('Lost with the body: ')+(lostPack?lostPack+t(' item(s)'):'')+
       (lostPack&&lostGold?t(' and '):'')+(lostGold?fmt(lostGold)+' 🜚':''),'death');
@@ -392,7 +396,7 @@ export function heroDie(h,killer,s){
   for(const slot of Object.keys(h.gear)){
     const it=h.gear[slot];
     /* the Quartermaster keystone: nothing is lost in the dark */
-    if(it&&!it.id.startsWith('st')&&(memHas(s,'k_autoequip')||rnd(h)<.9)){
+    if(it&&!it.id.startsWith('st')&&(isRelic(it)||memHas(s,'k_autoequip')||rnd(h)<.9)){
       storeItem(s,it);
       s.tel.gearHome++; if(it.unrandId)s.tel.artefacts++;
     }

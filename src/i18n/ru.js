@@ -1241,4 +1241,6 @@ export const RU = {
   'Mastery: every node you own in the forge region makes all of its effects 5% stronger. You may swear only ONE Way, and the oath is released when you prestige — the next cycle is a fresh choice.': 'Мастерство: каждый узел, которым ты владеешь в регионе кузни, усиливает все его эффекты на 5%. Присягнуть можно лишь ОДНОМУ Пути, и клятва снимается при престиже — следующий цикл выбирает заново.',
   'Mastery: every node you own in the heroes region makes all of its effects 5% stronger. You may swear only ONE Way, and the oath is released when you prestige — the next cycle is a fresh choice. Expedition slots are not affected — they are already the strongest thing this tree sells.': 'Мастерство: каждый узел, которым ты владеешь в регионе героев, усиливает все его эффекты на 5%. Присягнуть можно лишь ОДНОМУ Пути, и клятва снимается при престиже — следующий цикл выбирает заново. Слоты экспедиции не затрагиваются — они и без того самое сильное, что продаёт это дерево.',
   ' — it is released when you prestige': ' — она снимается при престиже',
+  'Recovered from the body: ': 'Снято с тела: ',
+  ' relic(s)': ' реликв.',
 };
