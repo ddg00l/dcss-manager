@@ -3,7 +3,7 @@
    Survives a prestige: Hall of Fame, combo stars/shards/collection, unrands
    (both the account flags and the items themselves), zot upgrades, keystones
    of the Memory tree, lifetime stats and the prestige layer itself. */
-import { NODES, treeLvl } from '../data/memtree.js';
+import { NODES, treeLvl, MASTERY_KEY } from '../data/memtree.js';
 import { ascKeepGear, ascKeepTree } from './ascension.js';
 
 /** effective NG+ level: prestiges only. The "New Depth" keystone used to add +1
@@ -269,8 +269,15 @@ export function doPrestige(s, keepIds) {
      burns them too — that is the price of the meta-layer. */
   if (!ascKeepTree(s)) {
     const tree = { root: 1 };
+    /* Keystones are the account's engraved mechanics and prestige does not take them --
+       except the Ways. An oath that outlived the cycle locked the account into one
+       region forever, and its multiplier counts nodes owned in that region, which the
+       prestige burns: the keystone stayed and its effect fell from x1.60 to x1.03, an
+       inert icon rebuilding itself every cycle. Releasing it makes the next cycle a
+       fresh question -- which region is this run about? -- which is what a Way was for. */
+    const ways = new Set(Object.values(MASTERY_KEY));
     for (const n of NODES)
-      if (n.keystone && treeLvl(s, n.id) > 0) tree[n.id] = s.tree[n.id];
+      if (n.keystone && !ways.has(n.id) && treeLvl(s, n.id) > 0) tree[n.id] = s.tree[n.id];
     s.tree = tree;
   }
   s.rev = (s.rev || 0) + 1; /* tree changed: invalidate stat caches */

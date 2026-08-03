@@ -253,27 +253,27 @@ keystone('k_ngplus', 'heroes', 26, 9, {
    Deliberately expensive -- it is meant to be a commitment to one region rather than
    something a broad build picks up along the way. */
 keystone('k_mcombat', 'combat', -26, 9, {
-  n: '⟐ Way of the Blade', d: 'Mastery: every node you own in the combat region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend.',
+  n: '⟐ Way of the Blade', d: 'Mastery: every node you own in the combat region makes all of its effects 5% stronger. You may swear only ONE Way, and the oath is released when you prestige — the next cycle is a fresh choice.',
   icon: 'sk_long_blades', base: 1200, req: ['combat_s8'], ach: { kills: 2000, t: '2000 kills' },
 });
 keystone('k_mdungeon', 'dungeon', 26, 9, {
-  n: '⟐ Way of the Deep', d: 'Mastery: every node you own in the dungeon region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend.',
+  n: '⟐ Way of the Deep', d: 'Mastery: every node you own in the dungeon region makes all of its effects 5% stronger. You may swear only ONE Way, and the oath is released when you prestige — the next cycle is a fresh choice.',
   icon: 'sk_stealth', base: 1200, req: ['dungeon_s8'], ach: { uniq: 10, t: 'kill 10 uniques' },
 });
 keystone('k_mgacha', 'gacha', -26, 9, {
-  n: '⟐ Way of the Bloodline', d: 'Mastery: every node you own in the gacha region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend.',
+  n: '⟐ Way of the Bloodline', d: 'Mastery: every node you own in the gacha region makes all of its effects 5% stronger. You may swear only ONE Way, and the oath is released when you prestige — the next cycle is a fresh choice.',
   icon: 'sk_summonings', base: 1200, req: ['gacha_s8'], ach: { rolls: 100, t: '100 summons' },
 });
 keystone('k_meconomy', 'economy', 26, 9, {
-  n: '⟐ Way of the Ledger', d: 'Mastery: every node you own in the economy region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend.',
+  n: '⟐ Way of the Ledger', d: 'Mastery: every node you own in the economy region makes all of its effects 5% stronger. You may swear only ONE Way, and the oath is released when you prestige — the next cycle is a fresh choice.',
   icon: 'i_gold', base: 1200, req: ['economy_s8'], ach: { deaths: 50, t: '50 fallen' },
 });
 keystone('k_mforge', 'forge', -26, 9, {
-  n: '⟐ Way of the Anvil', d: 'Mastery: every node you own in the forge region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend.',
+  n: '⟐ Way of the Anvil', d: 'Mastery: every node you own in the forge region makes all of its effects 5% stronger. You may swear only ONE Way, and the oath is released when you prestige — the next cycle is a fresh choice.',
   icon: 'sk_armour', base: 1200, req: ['forge_s8'], ach: { forged: 40, t: 'forge 40 items' },
 });
 keystone('k_mheroes', 'heroes', 0, 9, {
-  n: '⟐ Way of the Guild', d: 'Mastery: every node you own in the heroes region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend. Expedition slots are not affected — they are already the strongest thing this tree sells.',
+  n: '⟐ Way of the Guild', d: 'Mastery: every node you own in the heroes region makes all of its effects 5% stronger. You may swear only ONE Way, and the oath is released when you prestige — the next cycle is a fresh choice. Expedition slots are not affected — they are already the strongest thing this tree sells.',
   icon: 'sk_fighting', base: 1200, req: ['heroes_s8'], ach: { wins: 3, t: '3 victories' },
 });
 
@@ -317,7 +317,10 @@ keystone('k_ordsummon', 'gacha', 13, 5, {
    which is not a flaw in combat nodes, it is the absence of a decision.
 
    Mastery makes depth in a region pay for itself: once a region's mastery keystone is
-   taken, everything already spent there counts for more. Specialising a single region
+   taken, everything already spent there counts for more. The oath is released by a
+   prestige -- it counts nodes owned in its region and the prestige burns those, so an
+   oath that outlived the cycle would be an inert icon rebuilding itself; released, each
+   cycle asks again which region this run is about. Specialising a single region
    roughly doubles its output; spreading thin gains almost nothing. Slots are excluded
    on purpose -- they are already the strongest lever in the tree, and scaling them
    would deepen the very imbalance this exists to correct. */

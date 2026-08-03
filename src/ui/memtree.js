@@ -172,7 +172,7 @@ function renderNodeModal() {
   const isWay = Object.values(MASTERY_KEY).includes(n.id);
   if (!maxed && isWay && sworn && sworn !== n.region)
     reqParts.push('<span class="req">' + t('another Way is already sworn: ') +
-      t(nodeById(MASTERY_KEY[sworn]).n) + t(' — it holds until you Ascend') + '</span>');
+      t(nodeById(MASTERY_KEY[sworn]).n) + t(' — it is released when you prestige') + '</span>');
   const cost = nodeCost(save, n);
   if (!maxed && reachable && ach && (save.mem || 0) < cost)
     reqParts.push('<span class="req">' + t('short of Memory by ') + fmt(cost - (save.mem || 0)) + ' 🕯</span>');

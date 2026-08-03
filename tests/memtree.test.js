@@ -352,3 +352,33 @@ describe('standing orders are earned, not given', () => {
     expect(h.state).not.toBe('camp');
   });
 });
+
+describe('the Way is released by a prestige', () => {
+  it('a prestige takes the oath and leaves every other keystone', async () => {
+    /* An oath that outlived the cycle locked the account into one region forever, and
+       its multiplier counts nodes owned in that region -- which the prestige burns. The
+       keystone stayed while its effect fell from x1.60 to x1.03: an inert icon
+       rebuilding itself every cycle. Released, the next cycle asks the question again. */
+    const { doPrestige } = await import('../src/core/prestige.js');
+    const s = makeState();
+    s.tree[MASTERY_KEY.forge] = 1;
+    s.tree.k_ngplus = 1;                      /* an ordinary keystone, for contrast */
+    for (const n of NODES.filter(n => n.region === 'forge' && !n.keystone).slice(0, 5))
+      s.tree[n.id] = 1;
+    s.stat.wins = 99; s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 }; s.prestReq = 1;
+    doPrestige(s);
+    expect(treeLvl(s, MASTERY_KEY.forge), 'the oath survived').toBe(0);
+    expect(treeLvl(s, 'k_ngplus'), 'an ordinary keystone was taken').toBe(1);
+    expect(masteredRegion(s)).toBe(null);
+  });
+
+  it('and a different Way can be sworn in the next cycle', async () => {
+    const { doPrestige } = await import('../src/core/prestige.js');
+    const s = makeState();
+    s.tree[MASTERY_KEY.forge] = 1;
+    s.stat.wins = 99; s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 }; s.prestReq = 1;
+    doPrestige(s);
+    /* nothing sworn, so any region is open again */
+    for (const id of Object.values(MASTERY_KEY)) expect(treeLvl(s, id)).toBe(0);
+  });
+});
