@@ -1,5 +1,5 @@
 import {gXp,gGold,gDrop,gSpd,gAtk,gHp,shardMul as shardMulF,maxSlots,rollCost,freeRollAvailable,GOLD_DEPTH_BASE} from '../core/economy.js';
-import {gainMem,memEff,memHas,NODES,canBuy,buyNode,nodeCost,treeLvl,MASTERY_KEY} from '../data/memtree.js';
+import {gainMem,memEff,memHas,NODES,canBuy,buyNode,nodeCost,treeLvl,MASTERY_KEY,ORDER_KEY} from '../data/memtree.js';
 const MASTERY_IDS=new Set(Object.values(MASTERY_KEY));
 import {clamp,fmt} from '../core/fmt.js';
 import {heroStats,rollHero,ringSlotKeys} from './hero.js';
@@ -1219,9 +1219,14 @@ function standingOrders(s){
       s.shards[ck]-=need;s.stars[ck]=stars+1;
     }
   }
+  /* Each order is a keystone away. Automation is the progression in a game of this
+     kind, and handing all of it over in the first minute turns the most interesting
+     decision -- what to delegate, and when -- into a settings screen configured once
+     and forgotten. The MECHANICAL automations above stay free: nobody declines to send
+     out a seeker already standing in the hall. */
   const o=s.auto;
   if(!o)return;
-  if(o.prestige&&canPrestige(s))doPrestige(s);
+  if(o.prestige&&memHas(s,ORDER_KEY.prestige)&&canPrestige(s))doPrestige(s);
   /* Memory left in the treasury buys nothing. An account checking in once a day has
      twenty chances to spend in twenty days against an attentive account's five
      thousand, and it showed: 730,088 Memory sitting idle against 892, and seekers
@@ -1231,7 +1236,7 @@ function standingOrders(s){
      the party falls there is nobody to dispatch, and a guild that may not hire cannot
      start again until the player returns. The player says how much of the treasury may
      go to summoning; the guild obeys that and nothing more. */
-  if(o.summon){
+  if(o.summon&&memHas(s,ORDER_KEY.summon)){
     let guard=0;
     while(guard++<8){
       const running=s.heroes.filter(h=>h.state==='run').length;
@@ -1241,7 +1246,7 @@ function standingOrders(s){
       if(!rollHero(s,false))break;
     }
   }
-  if(o.memory){
+  if(o.memory&&memHas(s,ORDER_KEY.memory)){
     let guard=0;
     while(guard++<12){
       let pool=NODES.filter(n=>canBuy(s,n));

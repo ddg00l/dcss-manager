@@ -1192,4 +1192,16 @@ export const RU = {
   'at four times the cost': 'при четырёхкратной цене',
   'Summon a replacement': 'Призывать замену',
   'How much of the treasury the guild may spend to refill the hall.': 'Сколько казны гильдия может потратить, чтобы заполнить зал.',
+  /* standing-order keystones */
+  '⟐ Standing Order: Prestige': '⟐ Постоянный приказ: престиж',
+  '⟐ Standing Order: Memory': '⟐ Постоянный приказ: Память',
+  '⟐ Standing Order: Summons': '⟐ Постоянный приказ: призыв',
+  'Unlocks the standing order for prestige: the guild resets the cycle itself once the bar is full.': 'Открывает постоянный приказ на престиж: гильдия сама сбрасывает цикл, когда шкала полна.',
+  'Unlocks the standing order for Memory: the guild spends it to a policy you set instead of hoarding it until you return.': 'Открывает постоянный приказ на Память: гильдия тратит её по заданной тобой политике, а не копит до твоего возвращения.',
+  'Unlocks the standing order for summoning: the guild refills the hall from its own treasury, up to the share you allow.': 'Открывает постоянный приказ на призыв: гильдия пополняет зал из своей казны в пределах разрешённой тобой доли.',
+  'carry out one Orb': 'вынести один Шар',
+  '5 fallen': '5 павших',
+  '5 summons': '5 призывов',
+  'Locked — opened by ': 'Закрыто — открывает ',
+  ' in the Memory tree': ' в дереве Памяти',
 };

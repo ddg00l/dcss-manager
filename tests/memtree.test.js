@@ -310,3 +310,45 @@ describe('mastery is a commitment, not a purchase', () => {
       expect(nodeById(id).d).toMatch(/only ONE Way/);
   });
 });
+
+describe('standing orders are earned, not given', () => {
+  it('every order has a keystone that opens it', async () => {
+    const { ORDER_KEY, nodeById } = await import('../src/data/memtree.js');
+    for (const [order, id] of Object.entries(ORDER_KEY)) {
+      const n = nodeById(id);
+      expect(n, order).toBeDefined();
+      expect(n.keystone, order).toBe(true);
+    }
+  });
+
+  it('an order does nothing until its keystone is owned', async () => {
+    /* The flag alone must not act. A save that predates the gate, or one edited by
+       hand, would otherwise get the automation for free -- and the whole point of
+       putting these on the tree is that they are the progression. */
+    const { advanceHeroes } = await import('../src/sim/tick.js');
+    const { ORDER_KEY } = await import('../src/data/memtree.js');
+    const s = makeState();
+    s.mem = 500000;
+    s.auto = { prestige: false, memory: 'cheapest', summon: 0 };
+    const before = Object.keys(s.tree).length;
+    advanceHeroes(s, 600, true);
+    expect(Object.keys(s.tree).length, 'spent without the keystone').toBe(before);
+    /* with it, the guild spends to policy */
+    s.tree[ORDER_KEY.memory] = 1;
+    advanceHeroes(s, 600, true);
+    expect(Object.keys(s.tree).length).toBeGreaterThan(before + 1);
+  });
+
+  it('the mechanical automations stay free', async () => {
+    /* Dispatching a seeker who is standing in the hall is not a decision anyone
+       declines, and charging for it is charging for the game to work -- that was the
+       122x attention penalty. Only the POLICY orders sit behind keystones. */
+    const { advanceHeroes } = await import('../src/sim/tick.js');
+    const s = makeState();
+    const h = newHero('minotaur', 'fighter', 2, s);
+    s.heroes.push(h);
+    expect(h.state).toBe('camp');
+    advanceHeroes(s, 600, true);
+    expect(h.state).not.toBe('camp');
+  });
+});

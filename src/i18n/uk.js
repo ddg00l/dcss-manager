@@ -1192,4 +1192,16 @@ export const UK = {
   'at four times the cost': 'за чотирикратної ціни',
   'Summon a replacement': 'Призивати заміну',
   'How much of the treasury the guild may spend to refill the hall.': 'Скільки скарбниці гільдія може витратити, щоб заповнити залу.',
+  /* standing-order keystones */
+  '⟐ Standing Order: Prestige': '⟐ Постійний наказ: престиж',
+  '⟐ Standing Order: Memory': '⟐ Постійний наказ: Пам’ять',
+  '⟐ Standing Order: Summons': '⟐ Постійний наказ: призов',
+  'Unlocks the standing order for prestige: the guild resets the cycle itself once the bar is full.': 'Відкриває постійний наказ на престиж: гільдія сама скидає цикл, коли шкала повна.',
+  'Unlocks the standing order for Memory: the guild spends it to a policy you set instead of hoarding it until you return.': 'Відкриває постійний наказ на Пам’ять: гільдія витрачає її за заданою тобою політикою, а не копичить до твого повернення.',
+  'Unlocks the standing order for summoning: the guild refills the hall from its own treasury, up to the share you allow.': 'Відкриває постійний наказ на призов: гільдія поповнює залу зі своєї скарбниці в межах дозволеної тобою частки.',
+  'carry out one Orb': 'винести одну Сферу',
+  '5 fallen': '5 полеглих',
+  '5 summons': '5 призовів',
+  'Locked — opened by ': 'Закрито — відкриває ',
+  ' in the Memory tree': ' у дереві Пам’яті',
 };

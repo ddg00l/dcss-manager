@@ -277,6 +277,34 @@ keystone('k_mheroes', 'heroes', 0, 9, {
   icon: 'sk_fighting', base: 1200, req: ['heroes_s8'], ach: { wins: 3, t: '3 victories' },
 });
 
+/* ---- standing orders: automation is unlocked, not given ----
+
+   Each of these opens one row of the guild's standing orders. They used to be free
+   from the first minute, which made the most interesting decision in the game -- what
+   to delegate and when -- into a settings screen you configure once and forget.
+   Unlocking automation IS the progression in a game of this kind, so the orders are
+   earned like anything else worth having.
+
+   Deliberately on inner rings and cheap by keystone standards. What they gate is the
+   guild growing while the player is away, and an account that cannot grow while away
+   is the 122x attention penalty this whole layer exists to remove -- so the wait must
+   be short enough to feel like an early goal rather than a wall. The mechanical
+   automations stay free for the same reason: dispatching a seeker who is standing in
+   the hall, arming them from the armoury and promoting a duplicate are not decisions
+   anyone would decline, and charging for them is charging for the game to work. */
+keystone('k_ordprestige', 'economy', 13, 5, {
+  n: '⟐ Standing Order: Prestige', d: 'Unlocks the standing order for prestige: the guild resets the cycle itself once the bar is full.',
+  icon: 'i_orb', base: 260, req: ['economy_s4'], ach: { wins: 1, t: 'carry out one Orb' },
+});
+keystone('k_ordmemory', 'dungeon', 13, 5, {
+  n: '⟐ Standing Order: Memory', d: 'Unlocks the standing order for Memory: the guild spends it to a policy you set instead of hoarding it until you return.',
+  icon: 'd_altar', base: 260, req: ['dungeon_s4'], ach: { deaths: 5, t: '5 fallen' },
+});
+keystone('k_ordsummon', 'gacha', 13, 5, {
+  n: '⟐ Standing Order: Summons', d: 'Unlocks the standing order for summoning: the guild refills the hall from its own treasury, up to the share you allow.',
+  icon: 'sk_summonings', base: 260, req: ['gacha_s4'], ach: { rolls: 5, t: '5 summons' },
+});
+
 /* ---- region mastery: the reason to specialise ----
 
    The tree measured a 1.70x spread across its six regions where it needs 3x, and the
@@ -294,6 +322,8 @@ keystone('k_mheroes', 'heroes', 0, 9, {
    on purpose -- they are already the strongest lever in the tree, and scaling them
    would deepen the very imbalance this exists to correct. */
 export const MASTERY_K = 0.03;
+/** Which keystone unlocks which standing order. */
+export const ORDER_KEY = { prestige: 'k_ordprestige', memory: 'k_ordmemory', summon: 'k_ordsummon' };
 export const MASTERY_KEY = {
   combat: 'k_mcombat', dungeon: 'k_mdungeon', gacha: 'k_mgacha',
   economy: 'k_meconomy', forge: 'k_mforge', heroes: 'k_mheroes',

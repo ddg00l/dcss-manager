@@ -10,7 +10,7 @@ import {GODS} from '../data/gods.js';
 import {BRANCHES,brTag,ROAD_KEYS,ROAD_INFO,roadOf,roadRunes} from '../data/branches.js';
 import {itemName,itemTile,randomItem,itemInfo} from '../data/items.js';
 import {maxSlots} from '../core/economy.js';
-import {memHas} from '../data/memtree.js';
+import {memHas, ORDER_KEY, nodeById} from '../data/memtree.js';
 import {newHero,heroStats} from '../sim/hero.js';
 import {startRun,tryAutoEquip,recallHero,fundZiggurat} from '../sim/tick.js';
 import {zigFee} from '../core/treasury.js';
@@ -37,18 +37,24 @@ function renderStandingOrders(){
   box.innerHTML='<div class="label">'+t('Standing orders')+'</div>'+
     '<div class="hint">'+t('What the guild does while you are away. Off by default.')+'</div>';
 
-  const row=(label,hint,el)=>{
+  /* A locked order still shows what it would do and what opens it. Hiding it would
+     hide the goal, and the goal is the point of locking it in the first place. */
+  const row=(key,label,hint,el)=>{
+    const node=nodeById(ORDER_KEY[key]);
+    const open=memHas(save,ORDER_KEY[key]);
     const d=document.createElement('div');
-    d.className='orderRow';
+    d.className='orderRow'+(open?'':' locked');
     const l=document.createElement('div');
-    l.innerHTML='<div>'+label+'</div><div class="ds">'+hint+'</div>';
+    l.innerHTML='<div>'+label+'</div><div class="ds">'+
+      (open?hint:t('Locked — opened by ')+t(node.n)+t(' in the Memory tree'))+'</div>';
+    if(!open){el.disabled=true;el.title=t('Locked — opened by ')+t(node.n)}
     d.appendChild(l);d.appendChild(el);box.appendChild(d);
   };
 
   const cb=document.createElement('input');
   cb.type='checkbox';cb.checked=!!o.prestige;
   cb.onchange=()=>{o.prestige=cb.checked;persist()};
-  row(t('Prestige when the bar fills'),
+  row('prestige',t('Prestige when the bar fills'),
       t('Resets the Memory tree and deepens the ladder. Keystones survive.'),cb);
 
   const mem=document.createElement('select');
@@ -59,7 +65,7 @@ function renderStandingOrders(){
   }
   mem.value=o.memory||'';
   mem.onchange=()=>{o.memory=mem.value;persist()};
-  row(t('Spend Memory on'),t('Memory left in the treasury buys nothing.'),mem);
+  row('memory',t('Spend Memory on'),t('Memory left in the treasury buys nothing.'),mem);
 
   const sum=document.createElement('select');
   for(const [v,n] of [[0,t('never')],[1,t('whenever affordable')],[2,t('at twice the cost')],
@@ -68,7 +74,7 @@ function renderStandingOrders(){
   }
   sum.value=String(o.summon||0);
   sum.onchange=()=>{o.summon=parseInt(sum.value,10);persist()};
-  row(t('Summon a replacement'),t('How much of the treasury the guild may spend to refill the hall.'),sum);
+  row('summon',t('Summon a replacement'),t('How much of the treasury the guild may spend to refill the hall.'),sum);
 }
 
 export function renderHeroes(){

@@ -1192,4 +1192,16 @@ export const ES = {
   'at four times the cost': 'al cuádruple del coste',
   'Summon a replacement': 'Invocar un reemplazo',
   'How much of the treasury the guild may spend to refill the hall.': 'Cuánto del tesoro puede gastar el gremio para llenar la sala.',
+  /* standing-order keystones */
+  '⟐ Standing Order: Prestige': '⟐ Orden permanente: prestigio',
+  '⟐ Standing Order: Memory': '⟐ Orden permanente: Memoria',
+  '⟐ Standing Order: Summons': '⟐ Orden permanente: invocación',
+  'Unlocks the standing order for prestige: the guild resets the cycle itself once the bar is full.': 'Desbloquea la orden permanente de prestigio: el gremio reinicia el ciclo por sí mismo cuando la barra se llena.',
+  'Unlocks the standing order for Memory: the guild spends it to a policy you set instead of hoarding it until you return.': 'Desbloquea la orden permanente de Memoria: el gremio la gasta según la política que fijes, en vez de acumularla hasta que vuelvas.',
+  'Unlocks the standing order for summoning: the guild refills the hall from its own treasury, up to the share you allow.': 'Desbloquea la orden permanente de invocación: el gremio llena la sala con su propio tesoro, hasta la parte que permitas.',
+  'carry out one Orb': 'sacar un Orbe',
+  '5 fallen': '5 caídos',
+  '5 summons': '5 invocaciones',
+  'Locked — opened by ': 'Bloqueado — lo abre ',
+  ' in the Memory tree': ' en el árbol de Memoria',
 };

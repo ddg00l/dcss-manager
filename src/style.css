@@ -435,3 +435,7 @@
 #standingOrders .orderRow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px}
 #standingOrders .orderRow .ds{opacity:.7;font-size:.85em}
 #standingOrders select{max-width:46%}
+
+/* A standing order not yet earned: visible, explained, and plainly not yours yet. */
+#standingOrders .orderRow.locked{opacity:.5}
+#standingOrders .orderRow.locked .ds{color:var(--dim)}

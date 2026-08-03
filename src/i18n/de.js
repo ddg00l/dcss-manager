@@ -1192,4 +1192,16 @@ export const DE = {
   'at four times the cost': 'beim Vierfachen der Kosten',
   'Summon a replacement': 'Ersatz beschwören',
   'How much of the treasury the guild may spend to refill the hall.': 'Wie viel der Kasse die Gilde ausgeben darf, um die Halle zu füllen.',
+  /* standing-order keystones */
+  '⟐ Standing Order: Prestige': '⟐ Stehender Befehl: Prestige',
+  '⟐ Standing Order: Memory': '⟐ Stehender Befehl: Gedächtnis',
+  '⟐ Standing Order: Summons': '⟐ Stehender Befehl: Beschwörung',
+  'Unlocks the standing order for prestige: the guild resets the cycle itself once the bar is full.': 'Öffnet den stehenden Befehl für Prestige: die Gilde setzt den Zyklus selbst zurück, sobald die Leiste voll ist.',
+  'Unlocks the standing order for Memory: the guild spends it to a policy you set instead of hoarding it until you return.': 'Öffnet den stehenden Befehl für Gedächtnis: die Gilde gibt es nach deiner Vorgabe aus, statt es bis zu deiner Rückkehr zu horten.',
+  'Unlocks the standing order for summoning: the guild refills the hall from its own treasury, up to the share you allow.': 'Öffnet den stehenden Befehl für Beschwörung: die Gilde füllt die Halle aus der eigenen Kasse, bis zu dem von dir erlaubten Anteil.',
+  'carry out one Orb': 'eine Kugel heraustragen',
+  '5 fallen': '5 Gefallene',
+  '5 summons': '5 Beschwörungen',
+  'Locked — opened by ': 'Gesperrt — geöffnet durch ',
+  ' in the Memory tree': ' im Gedächtnisbaum',
 };
