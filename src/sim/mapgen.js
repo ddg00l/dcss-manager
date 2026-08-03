@@ -3,7 +3,7 @@ import {GOLD_DEPTH_BASE} from '../core/economy.js';
 import {ngMonMul,inCycleMul,ngLevel} from '../core/prestige.js';
 import {nemesisLevel} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
-import {FLOOR_KEYS,floorAffixChance,eliteChance,rollEliteAffixes,affixLevel,endgamePressure} from '../data/eliteAffixes.js';
+import {FLOOR_KEYS,floorAffixChance,eliteChance,rollEliteAffixes,affixLevel,endgamePressure, feltAffix} from '../data/eliteAffixes.js';
 import {BRANCHES,brDepth,BR_OFFSET,BR_ORDER,BR_CORE} from '../data/branches.js';
 import {MONS,UNIQUES} from '../data/monsters.js';
 import {GODKEYS} from '../data/gods.js';
@@ -56,7 +56,7 @@ export function genFloor(h,s){
   const depth=P?(h.portalDepth+(P.depthRamp||0)*(h.inPortal.floor-1)):brDepth(h);
   const isBossFloor=P?false:((br.floors===h.floor&&(br.boss||br.bossMon))||(br.every&&h.floor%br.every===0));
   const monsters=[];
-  const afx=todayAffix(); /* the daily affix colours every floor */
+  const afx=feltAffix(s,todayAffix()); /* the day, as THIS guild feels it */
   let pool=P?br.mobs:br.mobs.filter(m=>h.floor>=m[1]&&h.floor<=m[2]);
   if(!pool.length)pool=br.mobs; /* floors past the branch's tabled depth still get its mobs, never an empty pool */
   let n=P?(P.mobs.length?6+Math.floor(rng()*5):0):(5+Math.floor(rng()*5)+(h.branch==='zot'?2:0));

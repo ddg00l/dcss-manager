@@ -55,6 +55,28 @@ export function readiness(s) {
   let zot = 0; if (s.zupg) for (const k in s.zupg) zot += s.zupg[k];
   return greatCount * .35 + starPower * 1.5 + legacy * .5 + zot * .5;
 }
+/** How much of the day's omen a guild actually feels.
+
+    The daily affix landed at full strength on a brand-new account. Three of the five
+    days are harsher than calm, so a player starting on the wrong one met Day of Titans
+    -- monsters at +60% health and +25% damage -- in their first minute, with no tree,
+    no stars and one seeker, and nothing to tell them that tomorrow would be easier or
+    that the day before would have been. Whether the game is fair depended on the date
+    they happened to install it.
+
+    The endgame already scales to the guild rather than to the calendar (see
+    endgamePressure and readiness below). The weather does the same now: a young guild
+    plays in near-calm and grows into the full swing of the days. The LOOT side is left
+    alone -- a newcomer stumbling into a gold rush should enjoy it. */
+const AFFIX_FULL = 12;   /* readiness at which the day is felt in full */
+export const affixWeight = s => Math.max(0, Math.min(1, readiness(s) / AFFIX_FULL));
+/** the day's monster modifiers as this particular guild experiences them */
+export const feltAffix = (s, afx) => ({
+  ...afx,
+  monHp: 1 + (afx.monHp - 1) * affixWeight(s),
+  monDmg: 1 + (afx.monDmg - 1) * affixWeight(s),
+});
+
 /* The Realm of Zot scales to the guild that walks into it, in BOTH directions.
    An account can otherwise stall on the very first Orb and never start the
    meta-loop at all: one seed reached Zot:4 again and again across ten days at

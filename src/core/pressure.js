@@ -14,7 +14,7 @@
    reason it applies. Sources that are inactive are omitted rather than shown at
    x1.00 — a list of no-ops teaches nothing. */
 import { ngMonMul, inCycleMul, ngLevel, cycleProgress, prestigeReq } from './prestige.js';
-import { affixLevel, eliteChance, endgamePressure, ENDGAME_FROM, readiness } from '../data/eliteAffixes.js';
+import { affixLevel, eliteChance, endgamePressure, ENDGAME_FROM, readiness, feltAffix } from '../data/eliteAffixes.js';
 import { todayAffix } from '../data/affixes.js';
 import { brDepth } from '../data/branches.js';
 import { FLOOR_AFFIXES } from '../data/eliteAffixes.js';
@@ -48,7 +48,9 @@ export function dungeonPressure(s, h) {
     });
   }
 
-  const afx = todayAffix();
+  /* what the panel shows must be what the dungeon does: a young guild feels a
+     fraction of the day, so quoting the raw affix here would be a lie */
+  const afx = feltAffix(s, todayAffix());
   if (afx.monHp !== 1 || afx.monDmg !== 1) out.push({
     key: 'daily', n: afx.n, mul: Math.max(afx.monHp, afx.monDmg),
     txt: (afx.monHp !== 1 ? pct(afx.monHp) + ' HP' : '') +

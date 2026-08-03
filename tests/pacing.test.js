@@ -250,8 +250,10 @@ describe('the dungeon explains itself', () => {
     const s = makeState();
     s.ng = 6; s.stat.wins = 11; s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
     const h = hero(s); startRun(h, s); h.branch = 'zot'; h.floor = 4;
-    /* mapgen multiplies monster HP/damage by exactly these terms */
-    const afx = todayAffix();
+    /* mapgen multiplies monster HP/damage by exactly these terms -- including the
+       day as THIS guild feels it, since a young one plays in near-calm weather */
+    const { feltAffix } = await import('../src/data/eliteAffixes.js');
+    const afx = feltAffix(s, todayAffix());
     const real = ngMonMul(s) * inCycleMul(s) * endgamePressure(s, brDepth(h)) * Math.max(afx.monHp, afx.monDmg);
     expect(pressureTotal(s, h)).toBeCloseTo(real, 5);
   });
@@ -336,5 +338,32 @@ describe('a trapped delver withdraws from a portal, never descends', () => {
        stuck seeker was pushed into strictly worse odds every 4000 turns, 998
        times over, until the portal hit its own 999-floor cap. */
     expect(h.inPortal === null || h.inPortal.floor <= startFloor).toBe(true);
+  });
+});
+
+describe('the day of the week is not a difficulty setting for newcomers', () => {
+  it('a fresh guild barely feels the harshest day', async () => {
+    /* Three of the five days are harsher than calm, so a player starting on the wrong
+       one met Day of Titans -- +60% monster health, +25% damage -- in their first
+       minute, with no tree, no stars and one seeker. Whether the game was fair depended
+       on the date they installed it. */
+    const { feltAffix, affixWeight } = await import('../src/data/eliteAffixes.js');
+    const { AFFIXES } = await import('../src/data/affixes.js');
+    const fresh = makeState();
+    expect(affixWeight(fresh)).toBe(0);
+    const felt = feltAffix(fresh, AFFIXES.titans);
+    expect(felt.monHp).toBe(1);
+    expect(felt.monDmg).toBe(1);
+    expect(felt.gold, 'the loot side should still be enjoyed').toBe(AFFIXES.titans.gold);
+  });
+
+  it('an established guild feels the day in full', async () => {
+    const { feltAffix, affixWeight } = await import('../src/data/eliteAffixes.js');
+    const { AFFIXES } = await import('../src/data/affixes.js');
+    const s = makeState();
+    s.stars = { 'human/fighter': 8 };
+    s.pupg = { p_legacy: 20 };
+    expect(affixWeight(s)).toBe(1);
+    expect(feltAffix(s, AFFIXES.titans).monHp).toBeCloseTo(1.6);
   });
 });
