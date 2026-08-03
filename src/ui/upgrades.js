@@ -16,6 +16,8 @@ import {MW,MH} from '../sim/mapgen.js';
 import {comboKey,RARN} from '../data/combos.js';
 import { t } from '../i18n/index.js';
 import {PUPGRADES,pupg,pupgCost,ngLevel,legendsReward,canPrestige,doPrestige,cycleProgress,prestigeReq} from '../core/prestige.js';
+import {ascKeepGear} from '../core/ascension.js';
+import {openReliquary} from './reliquary.js';
 import {chronicleGoals,greatRaces,greatClasses,greatMul,cycleContract} from '../core/chronicle.js';
 import {FAME_SUBTABS,fameSubUnlocked} from '../core/ftue.js';
 import {renderAscension} from './ascension.js';
@@ -108,9 +110,9 @@ export function renderFame(){
       t('Prestige needs {n} victories this cycle ({w} so far)',{n:prestigeReq(save),w:cyc.wins});
     pb.disabled=!canPrestige(save);
     pb.onclick=()=>{
-      if(!confirm(t('Prestige now: +')+reward+' ⚜? '+t('Prestige resets heroes, armory, currencies and the small nodes of the Memory tree. Keystones, the Hall of Fame, the collection, unrands and zot upgrades remain. Each prestige raises NG+: monsters and rewards grow.')))return;
-      doPrestige(save);
-      sfx.win();persist();window.__renderAll();updTop();
+      /* The reliquary IS the confirmation now: it shows what survives and what burns in
+         one list, and the choice is made there rather than guessed at from a number. */
+      openReliquary(()=>{window.__renderAll();updTop()});
     };
     card.appendChild(pb);
     pr.appendChild(card);

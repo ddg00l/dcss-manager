@@ -4,7 +4,7 @@ import { save, persist } from '../core/state.js';
 import { fmt } from '../core/fmt.js';
 import { sfx } from './audio.js';
 import {
-  NODES, REGIONS, CX, CY, nodeById, treeLvl, nodeCost, canBuy, buyNode, achMet, memEff, MASTERY_KEY, MASTERY_K, regionMastery} from '../data/memtree.js';
+  NODES, REGIONS, CX, CY, nodeById, treeLvl, nodeCost, canBuy, buyNode, achMet, memEff, MASTERY_KEY, MASTERY_K, regionMastery, masteredRegion} from '../data/memtree.js';
 import { t } from '../i18n/index.js';
 
 let selId = null, built = false, centered = false;
@@ -164,6 +164,18 @@ function renderNodeModal() {
   const reqParts = [];
   if (!reachable) reqParts.push('<span class="req">' + t('requires an adjacent node') + '</span>');
   if (n.ach) reqParts.push('<span class="' + (ach ? 'achOk' : 'req') + '">' + t('condition: ') + t(n.ach.t) + (ach ? ' ✓' : '') + '</span>');
+  /* Say why the button is dead. A node whose stated conditions all read as met and
+     whose button is nonetheless greyed out is the game refusing without a reason --
+     and mastery has a rule that lives nowhere in this panel: one Way at a time. A
+     player who has already sworn one sees every condition ticked and no explanation. */
+  const sworn = masteredRegion(save);
+  const isWay = Object.values(MASTERY_KEY).includes(n.id);
+  if (!maxed && isWay && sworn && sworn !== n.region)
+    reqParts.push('<span class="req">' + t('another Way is already sworn: ') +
+      t(nodeById(MASTERY_KEY[sworn]).n) + t(' — it holds until you Ascend') + '</span>');
+  const cost = nodeCost(save, n);
+  if (!maxed && reachable && ach && (save.mem || 0) < cost)
+    reqParts.push('<span class="req">' + t('short of Memory by ') + fmt(cost - (save.mem || 0)) + ' 🕯</span>');
   const statusLine = maxed ? '<b>MAX</b>' : reqParts.join(' · ');
   box.innerHTML =
     '<div class="nodeHead">' +

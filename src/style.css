@@ -439,3 +439,18 @@
 /* A standing order not yet earned: visible, explained, and plainly not yours yet. */
 #standingOrders .orderRow.locked{opacity:.5}
 #standingOrders .orderRow.locked .ds{color:var(--dim)}
+
+/* The reliquary: the armoury laid out at the moment of a prestige, each piece marked
+   with what is about to happen to it. Colour carries the fate — kept, safe, burning —
+   because a list of thirty items read as prose would not be read at all. */
+.relicList{max-height:52vh;overflow-y:auto;margin-top:8px;display:flex;flex-direction:column;gap:4px}
+.relicRow{padding:7px 9px;border:1px solid var(--line);background:var(--panel2);cursor:pointer}
+.relicRow .nm{font-size:12px}
+.relicRow .ds{font-size:10px;color:var(--dim)}
+.relicRow .label{margin-top:2px}
+.relicRow.kept{border-color:rgba(236,201,94,.55);background:rgba(236,201,94,.08)}
+.relicRow.kept .label{color:var(--gold)}
+.relicRow.safe{border-color:rgba(176,107,224,.45);background:rgba(176,107,224,.06);cursor:default}
+.relicRow.safe .label{color:var(--epic)}
+.relicRow.burn{opacity:.62}
+.relicRow.burn .label{color:var(--bad)}
