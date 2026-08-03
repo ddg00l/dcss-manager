@@ -77,6 +77,36 @@ function renderAll() {
   renderChips(); renderHeroes(); renderGacha(); renderForge(); renderMemTree(); renderFame(); renderTreasury(); updTop();
 }
 
+/* Only the pane you are looking at, and only when you are not in the middle of using it.
+
+   The periodic refresh called renderAll every four seconds on every tab but the
+   dungeon: six panes rebuilt from scratch when five of them were not on screen. On the
+   Heroes tab that tears down the route, caution and spending selects and the standing
+   orders panel and builds them again, so an open dropdown closes under the cursor,
+   focus is lost, a long list scrolls back to the top and text cannot be selected long
+   enough to copy. The watch panel learned this already -- "build once, update values
+   per frame; innerHTML would kill taps mid-click" -- and the guild tabs never did.
+
+   Rendering under someone's hands is the part that actually hurts, so a focused
+   control postpones the refresh entirely. Nothing is lost: the next tick is four
+   seconds away, and the numbers it would have redrawn are not going anywhere. */
+const PANE_RENDER = {
+  pHeroes: () => { renderHeroes(); renderGacha(); },
+  pForge: renderForge,
+  pUpg: renderMemTree,
+  pFame: renderFame,
+  pTreasury: renderTreasury,
+};
+function renderActivePane() {
+  const act = document.querySelector('.pane.active');
+  if (!act) return;
+  const f = document.activeElement;
+  if (f && act.contains(f) && /^(SELECT|INPUT|TEXTAREA|BUTTON)$/.test(f.tagName)) return;
+  const r = PANE_RENDER[act.id];
+  if (r) r();
+  updTop();
+}
+
 /* main loop.
    The sim runs on a real-time clock (Date.now), not on rAF deltas: rAF stops in
    background tabs, so elapsed hidden time must be caught up, not thrown away. */
@@ -108,7 +138,7 @@ setInterval(() => {
   if (ascAutoPrestige(save) && canPrestige(save)) doPrestige(save);
   persist();
   const act = document.querySelector('.pane.active');
-  if (act && act.id !== 'pDun') renderAll();
+  if (act && act.id !== 'pDun') renderActivePane();
   else renderChips();
 }, 4000);
 
