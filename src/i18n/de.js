@@ -1208,4 +1208,7 @@ export const DE = {
   'Replace the current save with this file? Orbs carried: ': 'Aktuellen Spielstand durch diese Datei ersetzen? Getragene Kugeln: ',
   '. The save being replaced is kept and can still be exported.': '. Der ersetzte Spielstand bleibt erhalten und kann weiterhin exportiert werden.',
   'That file is not a DCSS Manager save.': 'Diese Datei ist kein DCSS-Manager-Spielstand.',
+  'another Way is already sworn: ': 'ein anderer Weg ist bereits geschworen: ',
+  ' — it holds until you Ascend': ' — er hält bis zum Aufstieg',
+  'short of Memory by ': 'es fehlt Gedächtnis: ',
 };

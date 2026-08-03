@@ -1208,4 +1208,7 @@ export const UK = {
   'Replace the current save with this file? Orbs carried: ': 'Замінити поточне збереження цим файлом? Винесено Сфер: ',
   '. The save being replaced is kept and can still be exported.': '. Замінюване збереження зберігається і його ще можна вивантажити.',
   'That file is not a DCSS Manager save.': 'Це не збереження DCSS Manager.',
+  'another Way is already sworn: ': 'уже дано іншу присягу: ',
+  ' — it holds until you Ascend': ' — вона тримається до Сходження',
+  'short of Memory by ': 'бракує Пам’яті: ',
 };

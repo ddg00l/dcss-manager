@@ -1208,4 +1208,7 @@ export const ES = {
   'Replace the current save with this file? Orbs carried: ': '¿Reemplazar la partida actual con este archivo? Orbes sacados: ',
   '. The save being replaced is kept and can still be exported.': '. La partida reemplazada se conserva y aún puede exportarse.',
   'That file is not a DCSS Manager save.': 'Ese archivo no es una partida de DCSS Manager.',
+  'another Way is already sworn: ': 'ya has jurado otra Vía: ',
+  ' — it holds until you Ascend': ' — dura hasta la Ascensión',
+  'short of Memory by ': 'falta Memoria: ',
 };

@@ -1208,4 +1208,7 @@ export const RU = {
   'Replace the current save with this file? Orbs carried: ': 'Заменить текущее сохранение этим файлом? Вынесено Шаров: ',
   '. The save being replaced is kept and can still be exported.': '. Заменяемое сохранение сохраняется и его ещё можно выгрузить.',
   'That file is not a DCSS Manager save.': 'Это не сохранение DCSS Manager.',
+  'another Way is already sworn: ': 'уже дана другая клятва: ',
+  ' — it holds until you Ascend': ' — она держится до Восхождения',
+  'short of Memory by ': 'не хватает Памяти: ',
 };
