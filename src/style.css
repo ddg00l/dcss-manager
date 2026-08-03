@@ -96,9 +96,11 @@
 
   /* cards */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}
+  .grid>*{min-width:0}
   @media (max-width:700px){.grid{grid-template-columns:1fr}}
   .card{border:1px solid var(--line);background:var(--panel);padding:12px;display:flex;
-    flex-direction:column;gap:8px}
+    flex-direction:column;gap:8px;min-width:0}
+  .card>*{min-width:0}
   .card .rowT{display:flex;gap:10px;align-items:center}
   .card img.pt{width:36px;height:36px;image-rendering:pixelated;flex-shrink:0}
   .card .nm{font-size:13px;font-weight:700;color:var(--bone)}
@@ -234,8 +236,14 @@
   .rar0{color:var(--stone)} .rar1{color:var(--rare)} .rar2{color:var(--epic)} .rar3{color:var(--leg)}
   .bord0{border-color:var(--line)} .bord1{border-color:rgba(94,158,224,.5)}
   .bord2{border-color:rgba(176,107,224,.55)} .bord3{border-color:rgba(224,160,60,.6)}
+  /* min-width:0 matters more than width:100% here. A flex or grid child defaults to
+     min-width:auto, which for a <select> is the width of its widest option -- so the
+     route selector, whose options became whole sentences describing what each road
+     yields, pushed the hero card wider than its column and gave the whole guild page a
+     horizontal scroll on a phone. The percentage width cannot help: the container had
+     already been stretched. */
   select{font-family:var(--mono);font-size:12px;background:var(--panel2);color:var(--text);
-    border:1px solid var(--line);padding:9px 8px;min-height:40px;width:100%}
+    border:1px solid var(--line);padding:9px 8px;min-height:40px;width:100%;min-width:0}
   .kv{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px dashed rgba(42,52,66,.5)}
   .kv b{color:var(--bone)}
   .kvList{margin-top:6px}
@@ -434,7 +442,8 @@
 #standingOrders{margin:10px 0 14px;padding:10px 12px;border:1px solid var(--line);border-radius:8px}
 #standingOrders .orderRow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px}
 #standingOrders .orderRow .ds{opacity:.7;font-size:.85em}
-#standingOrders select{max-width:46%}
+#standingOrders select{max-width:46%;min-width:0}
+#standingOrders .orderRow>div{min-width:0}
 
 /* A standing order not yet earned: visible, explained, and plainly not yours yet. */
 #standingOrders .orderRow.locked{opacity:.5}

@@ -135,3 +135,19 @@ describe('canonical strings are English', () => {
     expect(bad).toEqual([]);
   });
 });
+
+describe('nothing on a phone scrolls sideways', () => {
+  it('every flex or grid container that holds a select lets it shrink', () => {
+    /* A flex or grid child defaults to min-width:auto, which for a <select> is the
+       width of its widest option. The route selector's options became whole sentences
+       describing what each road yields, and the hero card grew past its column: the
+       whole guild page gained a horizontal scroll on a phone. width:100% cannot help,
+       because by then the container itself has been stretched. */
+    const css = readFileSync(join(ROOT, 'src/style.css'), 'utf8');
+    const selRule = css.match(/\n\s*select\{[^}]*\}/);
+    expect(selRule, 'no base rule for select').toBeTruthy();
+    expect(selRule[0], 'select can still stretch its container').toContain('min-width:0');
+    for (const holder of ['.card>*', '.grid>*']) 
+      expect(css, holder + ' may still be stretched by its contents').toContain(holder + '{min-width:0}');
+  });
+});
