@@ -1204,4 +1204,8 @@ export const RU = {
   '5 summons': '5 призывов',
   'Locked — opened by ': 'Закрыто — открывает ',
   ' in the Memory tree': ' в дереве Памяти',
+  'Import save from file': 'Импортировать сейв из файла',
+  'Replace the current save with this file? Orbs carried: ': 'Заменить текущее сохранение этим файлом? Вынесено Шаров: ',
+  '. The save being replaced is kept and can still be exported.': '. Заменяемое сохранение сохраняется и его ещё можно выгрузить.',
+  'That file is not a DCSS Manager save.': 'Это не сохранение DCSS Manager.',
 };

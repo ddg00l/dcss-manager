@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { mulberry32 } from '../src/core/rng.js';
 import { fmt, clamp } from '../src/core/fmt.js';
 import { makeState } from '../src/core/state.js';
@@ -94,5 +94,43 @@ describe('sfx contract', () => {
       for (const m of readFileSync(p, 'utf8').matchAll(/\bsfx\.(\w+)/g)) used.add(m[1]);
     const missing = [...used].filter(k => typeof sfx[k] !== 'function');
     expect(missing).toEqual([]);
+  });
+});
+
+describe('a save can come back', () => {
+  const mem = () => { const m = {}; return { getItem: k => (k in m ? m[k] : null), setItem: (k, v) => { m[k] = String(v); }, removeItem: k => { delete m[k]; }, _m: m }; };
+
+  it('an unreadable save is kept rather than overwritten', async () => {
+    /* It used to be dropped in silence, and the next autosave wrote over it: the player
+       saw a fresh account, the console said nothing, and there was nothing left to
+       recover. */
+    const { loadState } = await import('../src/core/state.js');
+    const st = mem();
+    st.setItem('dcssmanager.save.v2', '{ this is not json');
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const s = loadState(st);
+    spy.mockRestore();
+    expect(s.loadFailed).toBe(true);
+    expect(st.getItem('dcssmanager.save.v2.broken')).toBe('{ this is not json');
+  });
+
+  it('an imported save runs the migrations rather than being pasted in', async () => {
+    const { makeState, importSave } = await import('../src/core/state.js');
+    const st = mem();
+    const old = makeState();
+    old.balV = 6; old.gold = 4242; delete old.auto;
+    if (old.heroes[0]) old.heroes[0].strategy = 'classic';
+    const s = importSave(JSON.parse(JSON.stringify(old)), st);
+    expect(s.gold).toBe(4242);
+    expect(s.balV).toBe(7);          /* the migration chain ran */
+    expect(s.auto).toBeDefined();    /* fields the old save never had */
+  });
+
+  it('importing rubbish changes nothing', async () => {
+    const { importSave } = await import('../src/core/state.js');
+    const st = mem();
+    st.setItem('dcssmanager.save.v2', JSON.stringify({ tree: { root: 1 }, gold: 99 }));
+    expect(() => importSave({ hello: 'world' }, st)).toThrow();
+    expect(JSON.parse(st.getItem('dcssmanager.save.v2')).gold).toBe(99);
   });
 });

@@ -1204,4 +1204,8 @@ export const DE = {
   '5 summons': '5 Beschwörungen',
   'Locked — opened by ': 'Gesperrt — geöffnet durch ',
   ' in the Memory tree': ' im Gedächtnisbaum',
+  'Import save from file': 'Spielstand aus Datei laden',
+  'Replace the current save with this file? Orbs carried: ': 'Aktuellen Spielstand durch diese Datei ersetzen? Getragene Kugeln: ',
+  '. The save being replaced is kept and can still be exported.': '. Der ersetzte Spielstand bleibt erhalten und kann weiterhin exportiert werden.',
+  'That file is not a DCSS Manager save.': 'Diese Datei ist kein DCSS-Manager-Spielstand.',
 };

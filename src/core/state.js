@@ -190,7 +190,19 @@ export function loadState(storage) {
         state.upg = {};
       }
     }
-  } catch (e) { /* corrupted save — start fresh */ }
+  } catch (e) {
+    /* A save that will not parse used to be dropped in silence, and the first autosave
+       afterwards wrote over it -- so a player saw a brand-new account, with nothing in
+       the console and nothing left to recover. Keep the bytes under their own key and
+       say so out loud. Whatever went wrong, the one thing that must not happen is
+       destroying the evidence. */
+    console.error('save could not be read; starting fresh. The unreadable copy is kept at', SKEY + '.broken', e);
+    try {
+      const raw = storage && storage.getItem(SKEY);
+      if (raw && !storage.getItem(SKEY + '.broken')) storage.setItem(SKEY + '.broken', raw);
+    } catch (e2) { /* quota: nothing further to do */ }
+    state.loadFailed = true;
+  }
   if (!state.ftue) {
     state.ftue = isVeteranSave(state) ? completedFtue() : defaultFtue();
   }
@@ -218,6 +230,30 @@ export function persistState(state, storage) {
 const storage = typeof localStorage !== 'undefined' ? localStorage : null;
 export const save = loadState(storage);
 export const persist = () => persistState(save, storage);
+
+/** Replace the live save with an imported one, running every migration on the way.
+
+    Written through storage on purpose: loadState holds the whole migration chain, and
+    an import that skipped it would quietly hand a modern game a save shaped for an
+    older one. The save being replaced is kept under its own key first -- importing the
+    wrong file should be a mistake, not a loss. */
+export function importSave(obj, storage2) {
+  const st = storage2 || storage;
+  if (!obj || typeof obj !== 'object' || !(obj.tree || obj.heroes || obj.stat))
+    throw new Error('not a DCSS Manager save');
+  const prev = st && st.getItem(SKEY);
+  if (prev && st) st.setItem(SKEY + '.replaced', prev);
+  st && st.setItem(SKEY, JSON.stringify(obj));
+  const loaded = loadState(st);
+  if (loaded.loadFailed) {
+    if (prev && st) st.setItem(SKEY, prev);   /* put the old one back, untouched */
+    throw new Error('the imported file could not be loaded');
+  }
+  for (const k of Object.keys(save)) delete save[k];
+  Object.assign(save, loaded);
+  persistState(save, st);
+  return save;
+}
 
 /** Wipe local storage and reset the live save singleton to a fresh account.
    Keeps object identity (imported `save` reference stays valid) by mutating it. */

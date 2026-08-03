@@ -1204,4 +1204,8 @@ export const UK = {
   '5 summons': '5 призовів',
   'Locked — opened by ': 'Закрито — відкриває ',
   ' in the Memory tree': ' у дереві Пам’яті',
+  'Import save from file': 'Імпортувати збереження з файлу',
+  'Replace the current save with this file? Orbs carried: ': 'Замінити поточне збереження цим файлом? Винесено Сфер: ',
+  '. The save being replaced is kept and can still be exported.': '. Замінюване збереження зберігається і його ще можна вивантажити.',
+  'That file is not a DCSS Manager save.': 'Це не збереження DCSS Manager.',
 };

@@ -1204,4 +1204,8 @@ export const ES = {
   '5 summons': '5 invocaciones',
   'Locked — opened by ': 'Bloqueado — lo abre ',
   ' in the Memory tree': ' en el árbol de Memoria',
+  'Import save from file': 'Importar partida desde archivo',
+  'Replace the current save with this file? Orbs carried: ': '¿Reemplazar la partida actual con este archivo? Orbes sacados: ',
+  '. The save being replaced is kept and can still be exported.': '. La partida reemplazada se conserva y aún puede exportarse.',
+  'That file is not a DCSS Manager save.': 'Ese archivo no es una partida de DCSS Manager.',
 };
