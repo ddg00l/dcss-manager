@@ -1211,4 +1211,5 @@ export const RU = {
   'another Way is already sworn: ': 'уже дана другая клятва: ',
   ' — it holds until you Ascend': ' — она держится до Восхождения',
   'short of Memory by ': 'не хватает Памяти: ',
+  'This burns {n} items, {r} of them rare or artefact. Only named artefacts survive.': 'Сгорит предметов: {n}, из них редких или артефактных: {r}. Уцелеют только именные артефакты.',
 };

@@ -1211,4 +1211,5 @@ export const ES = {
   'another Way is already sworn: ': 'ya has jurado otra Vía: ',
   ' — it holds until you Ascend': ' — dura hasta la Ascensión',
   'short of Memory by ': 'falta Memoria: ',
+  'This burns {n} items, {r} of them rare or artefact. Only named artefacts survive.': 'Esto quema {n} objetos, {r} de ellos raros o artefactos. Solo sobreviven los artefactos con nombre.',
 };

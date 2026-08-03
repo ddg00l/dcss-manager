@@ -1211,4 +1211,5 @@ export const UK = {
   'another Way is already sworn: ': 'уже дано іншу присягу: ',
   ' — it holds until you Ascend': ' — вона тримається до Сходження',
   'short of Memory by ': 'бракує Пам’яті: ',
+  'This burns {n} items, {r} of them rare or artefact. Only named artefacts survive.': 'Згорить предметів: {n}, з них рідкісних або артефактних: {r}. Уціліють лише іменні артефакти.',
 };

@@ -1211,4 +1211,5 @@ export const DE = {
   'another Way is already sworn: ': 'ein anderer Weg ist bereits geschworen: ',
   ' — it holds until you Ascend': ' — er hält bis zum Aufstieg',
   'short of Memory by ': 'es fehlt Gedächtnis: ',
+  'This burns {n} items, {r} of them rare or artefact. Only named artefacts survive.': 'Dabei verbrennen {n} Gegenstände, davon {r} selten oder Artefakt. Nur benannte Artefakte überstehen es.',
 };
