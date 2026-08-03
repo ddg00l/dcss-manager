@@ -10,6 +10,7 @@ import {BRANCHES,brTag} from '../data/branches.js';
 import {itemName,itemTile,randomItem,itemInfo} from '../data/items.js';
 import {consTile} from '../data/consumables.js';
 import {PORTALS} from '../data/portals.js';
+import {SPELLBOOKS} from '../data/spells.js';
 
 import {heroStats} from '../sim/hero.js';
 import {LOG_MAX} from '../sim/tick.js';
@@ -18,6 +19,7 @@ import {stackHTML,heroLayers} from './portrait.js';
 import {comboKey,RARN} from '../data/combos.js';
 import { t } from '../i18n/index.js';
 import {todayAffix} from '../data/affixes.js';
+import {dungeonPressure,pressureTotal} from '../core/pressure.js';
 import {ELITE_AFFIXES,FLOOR_AFFIXES} from '../data/eliteAffixes.js';
 /* ===================== watch view ===================== */
 export let watchId=null;
@@ -86,6 +88,7 @@ export function renderWatch(){
     const t=it.kind==='gold'?'i_gold':
       it.kind==='cons'?consTile(it.c):
       it.kind==='item'?(it.it?itemTile(it.it):'i_scroll'):it.kind==='orb'?'i_orb':
+      it.kind==='book'?(SPELLBOOKS[it.book]?SPELLBOOKS[it.book].icon:'b_conjuration'):
       it.kind==='key'?'i_key':
       it.kind==='shop'?('sh_'+it.stype):
       it.kind==='portal'?PORTALS[it.ptype].t:
@@ -140,6 +143,16 @@ export function renderWatch(){
       wctx.fillRect(X(a.x)+2,Y(a.y)-3,(TILE-4)*clamp(a.hp/a.maxHp,0,1),3);
     }
   }
+  /* transient spell effect tile at the target, fading over a few frames */
+  if(m.fx&&m.fx.tile){
+    if(inV(m.fx.x,m.fx.y)){
+      wctx.save();
+      wctx.globalAlpha=Math.max(0,Math.min(1,m.fx.t/4));
+      wctx.drawImage(tileImg(m.fx.tile),X(m.fx.x),Y(m.fx.y),TILE,TILE);
+      wctx.restore();
+    }
+    m.fx.t--; if(m.fx.t<=0)m.fx=null;
+  }
   /* hero */
   if(h.state==='run'){
     for(const layer of heroLayers(h))
@@ -158,8 +171,16 @@ export function renderWatch(){
     $('watchInfo').innerHTML=
       '<div class="wiRow"><b id="wiName"></b> <span class="label" id="wiMeta"></span></div>'+
       '<div class="wiRow"><div class="bar"><div id="wiHp" style="background:#c94f43"></div></div>'+
+      '<span class="label" id="wiHpTxt" style="flex:0 0 auto"></span>'+
+      '<div class="bar" id="wiMpBar" style="display:none;flex:0 0 56px;max-width:56px"><div id="wiMp" style="background:var(--mp)"></div></div>'+
+      '<span class="label" id="wiMpTxt" style="flex:0 0 auto;display:none"></span>'+
       '<span class="label" id="wiStats"></span>'+
-      '<button id="wSheetBtn">Status</button></div>';
+      '<button id="wSheetBtn">Status</button></div>'+
+      /* Every multiplier acting on the monsters, spelled out. The player used to
+         see coloured rings and an affix name — decoration — while the systemic
+         pressure that actually decides a delve stayed invisible. Difficulty that
+         moves silently reads as the numbers cheating. */
+      '<div class="wiRow" id="wiPressRow" style="flex-wrap:wrap;gap:4px 10px"></div>';
   }
   const nameEl=$('wiName');
   nameEl.className='rar'+h.rarity;
@@ -167,11 +188,26 @@ export function renderWatch(){
   $('wiMeta').textContent=t(RACES[h.race].n)+' '+t(CLASSES[h.cls].n)+' XL'+h.xl+' · '+brTag(h)+(h.map&&h.map.elite?t(' · ELITE'):'')+
     (h.god?' · ✧'+t(GODS[h.god].n):'')+' · '+t(todayAffix().n)+
     (h.map&&h.map.fafx?' · \u2b51'+t(FLOOR_AFFIXES[h.map.fafx].n):'')+t(' · turn ')+h.turn;
+  /* dungeon pressure: what is making these monsters what they are */
+  const press=dungeonPressure(save,h);
+  const tot=pressureTotal(save,h);
+  $('wiPressRow').innerHTML=
+    '<span class="label" style="color:var(--bad)">'+t('Dungeon pressure')+
+    (tot>1.01?' ×'+tot.toFixed(2):'')+'</span>'+
+    press.map(p=>'<span class="label" title="'+t(p.why).replace(/"/g,'&quot;')+'">'+
+      t(p.n)+(p.detail?' ('+p.detail+')':'')+(p.txt?' <b>'+p.txt+'</b>':'')+'</span>').join('');
   $('wiHp').style.width=hpc+'%';
+  $('wiHpTxt').textContent=Math.ceil(h.curHp||0)+'/'+h.maxHpCache+' HP';
+  if(st.caster){
+    const mpMax=st.mpMax||1;
+    $('wiMpBar').style.display='';$('wiMpTxt').style.display='';
+    $('wiMp').style.width=clamp((h.mp||0)/mpMax*100,0,100)+'%';
+    $('wiMpTxt').textContent=Math.round(h.mp||0)+'/'+mpMax+' MP';
+  }else{$('wiMpBar').style.display='none';$('wiMpTxt').style.display='none';}
   const invN=Object.values(h.inv||{}).reduce((a,b)=>a+b,0);
   const stIcons=[h.status.haste>0?'⚡':'',h.status.might>0?'💪':'',h.status.berserk>0?'🔥':'',
     h.poison?'☠':'',h.status.net>0?'🕸':'',h.banished?'🌀':''].join('');
-  $('wiStats').textContent=Math.ceil(h.curHp||0)+'/'+h.maxHpCache+' HP · 🧪'+invN+
+  $('wiStats').textContent='🧪'+invN+
     ' · 💰'+fmt(h.gold||0)+' · ᚱ'+h.runes.length+(stIcons?' · '+stIcons:'');
   $('wSheetBtn').textContent=t('Status');
   $('wSheetBtn').onclick=()=>window.__openSheet(h.id);

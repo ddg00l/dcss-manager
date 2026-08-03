@@ -99,15 +99,17 @@ describe('qualitative escalation: elite affixes and floor affixes', () => {
   it('elite frequency and affix count grow slowly and endlessly with NG', async () => {
     const { eliteChance, eliteAffixCount, rollEliteAffixes, ELITE_KEYS, affixLevel, readiness } = await import('../src/data/eliteAffixes.js');
     expect(eliteChance(0)).toBeCloseTo(.05);
-    expect(eliteChance(100)).toBeCloseTo(.48); // capped frequency (raised: harder base)
+    expect(eliteChance(100)).toBeCloseTo(.48); // capped frequency
     expect(eliteAffixCount(0)).toBe(1);
-    expect(eliteAffixCount(20)).toBe(3);       // softened peak: max 3 affixes
+    expect(eliteAffixCount(20)).toBe(3);
     const { mulberry32 } = await import('../src/core/rng.js');
     const af = rollEliteAffixes(20, mulberry32(7));
     expect(af.length).toBe(3);
     expect(new Set(af).size).toBe(3);          // no duplicates
     for (const k of af) expect(ELITE_KEYS).toContain(k);
-    /* affix pressure is capped by readiness, not raw NG */
+    /* Affix pressure is capped by readiness AND by NG. Letting it follow
+       readiness uncapped was measured as overtightening the game to a halt and
+       is reverted; see eliteAffixes.js. */
     const { makeState } = await import('../src/core/state.js');
     const weak = makeState(); weak.ng = 30;
     expect(affixLevel(weak, 30)).toBeLessThan(10); // out-prestiged a weak build → eased

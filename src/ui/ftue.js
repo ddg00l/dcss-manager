@@ -21,7 +21,7 @@ const RAIL = {
 
 export const TOURS = {
   pHeroes: [
-    { sel: '[data-ftue="strategy"]', mode: 'next', text: 'The route decides where the hero goes: classic covers every branch, speedrun races straight for Zot.' },
+    { sel: '[data-ftue="strategy"]', mode: 'next', text: 'The route decides WHAT the hero brings back, not how fast. The Iron Road yields weapons and plate, the Wild Road potions, the Arcane Road rings and amulets. Each carries four rune branches and the Gates of Zot demand three, so one missed boss is survivable.' },
     { sel: '[data-ftue="caution"]', mode: 'next', text: 'Caution sets when to drink healing potions. Cowardly lives longer, reckless moves faster.' },
     { sel: '[data-ftue="spend"]', mode: 'next', text: 'There are shops in the dungeon. This policy decides how much of the wallet the hero leaves there.' },
     { sel: '[data-ftue="recall"]', mode: 'next', text: 'Recall brings the hero back and frees the slot — but all run progress burns away. Forever.' },

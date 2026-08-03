@@ -7,17 +7,78 @@ import {RACES} from '../data/races.js';
 import {CLASSES} from '../data/classes.js';
 import {comboKey,comboRarity,RARN,SHARDS_PER,starStr} from '../data/combos.js';
 import {GODS} from '../data/gods.js';
-import {BRANCHES,brTag} from '../data/branches.js';
+import {BRANCHES,brTag,ROAD_KEYS,ROAD_INFO,roadOf,roadRunes} from '../data/branches.js';
 import {itemName,itemTile,randomItem,itemInfo} from '../data/items.js';
 import {maxSlots} from '../core/economy.js';
-import {memHas} from '../data/memtree.js';
+import {memHas, ORDER_KEY, nodeById} from '../data/memtree.js';
 import {newHero,heroStats} from '../sim/hero.js';
 import {startRun,tryAutoEquip,recallHero,fundZiggurat} from '../sim/tick.js';
 import {zigFee} from '../core/treasury.js';
 import {stackHTML} from './portrait.js';
 import { t } from '../i18n/index.js';
 /* ===================== heroes pane ===================== */
+/* Standing orders: the policy the guild follows while the player is away.
+
+   The guild used to stop whenever the player did -- not from idleness, its seekers
+   kept delving, but because every DECISION waited for someone to be present. Over 30
+   days that made checking in every five minutes worth 122x checking in once a day. A
+   decision that cannot be delegated is not a policy, it is a chore with a timer on it.
+
+   Mechanical things (dispatching, equipping from the armoury, promoting duplicates)
+   now happen unprompted and need no switch here -- nobody has ever declined them. What
+   this panel holds is the three real choices, and every one is off by default:
+   prestige wipes the tree, and no automation should do that to someone who did not
+   ask for it. */
+function renderStandingOrders(){
+  const box=$('standingOrders');
+  if(!box)return;
+  save.auto=save.auto||{prestige:false,memory:'',summon:0};
+  const o=save.auto;
+  box.innerHTML='<div class="label">'+t('Standing orders')+'</div>'+
+    '<div class="hint">'+t('What the guild does while you are away. Off by default.')+'</div>';
+
+  /* A locked order still shows what it would do and what opens it. Hiding it would
+     hide the goal, and the goal is the point of locking it in the first place. */
+  const row=(key,label,hint,el)=>{
+    const node=nodeById(ORDER_KEY[key]);
+    const open=memHas(save,ORDER_KEY[key]);
+    const d=document.createElement('div');
+    d.className='orderRow'+(open?'':' locked');
+    const l=document.createElement('div');
+    l.innerHTML='<div>'+label+'</div><div class="ds">'+
+      (open?hint:t('Locked — opened by ')+t(node.n)+t(' in the Memory tree'))+'</div>';
+    if(!open){el.disabled=true;el.title=t('Locked — opened by ')+t(node.n)}
+    d.appendChild(l);d.appendChild(el);box.appendChild(d);
+  };
+
+  const cb=document.createElement('input');
+  cb.type='checkbox';cb.checked=!!o.prestige;
+  cb.onchange=()=>{o.prestige=cb.checked;persist()};
+  row('prestige',t('Prestige when the bar fills'),
+      t('Resets the Memory tree and deepens the ladder. Keystones survive.'),cb);
+
+  const mem=document.createElement('select');
+  for(const [v,n] of [['',t('hold it')],['cheapest',t('cheapest node first')],
+      ['combat',t('combat')],['dungeon',t('dungeon')],['gacha',t('summoning')],
+      ['economy',t('economy')],['forge',t('forge')],['heroes',t('heroes')]]){
+    const op=document.createElement('option');op.value=v;op.textContent=n;mem.appendChild(op);
+  }
+  mem.value=o.memory||'';
+  mem.onchange=()=>{o.memory=mem.value;persist()};
+  row('memory',t('Spend Memory on'),t('Memory left in the treasury buys nothing.'),mem);
+
+  const sum=document.createElement('select');
+  for(const [v,n] of [[0,t('never')],[1,t('whenever affordable')],[2,t('at twice the cost')],
+      [4,t('at four times the cost')]]){
+    const op=document.createElement('option');op.value=v;op.textContent=n;sum.appendChild(op);
+  }
+  sum.value=String(o.summon||0);
+  sum.onchange=()=>{o.summon=parseInt(sum.value,10);persist()};
+  row('summon',t('Summon a replacement'),t('How much of the treasury the guild may spend to refill the hall.'),sum);
+}
+
 export function renderHeroes(){
+  renderStandingOrders();
   const box=$('heroList');box.innerHTML='';
   const heroes=save.heroes.filter(h=>h.state!=='dead'&&h.state!=='victor')
     .sort((a,b)=>(b.state==='run')-(a.state==='run')); /* delving heroes first, then camp */
@@ -46,11 +107,15 @@ export function renderHeroes(){
     el.appendChild(gearRow);
     /* strategy selects */
     const selS=document.createElement('select');
-    const routes=[['classic',t('Route: classic (all branches)')],['speed',t('Route: speedrun (to Zot)')]];
-    if(memHas(save,'k_abyss'))routes.push(['abyss',t('Route: Abyss (endless farming)')]);
+    /* The roads differ in what they YIELD, not in how fast they run, so the option
+       has to say what it yields — otherwise the player is picking a word. */
+    const routes=ROAD_KEYS.map(k=>[k,t('Route: ')+t(ROAD_INFO[k].n)+' — '+t(ROAD_INFO[k].yield)]);
+    if(memHas(save,'k_abyss'))routes.push(['abyss',t('Route: the Abyss — endless farming, no Orb')]);
     for(const [v,n] of routes){
-      const o=document.createElement('option');o.value=v;o.textContent=n;selS.appendChild(o)}
-    selS.value=h.strategy;
+      const o=document.createElement('option');o.value=v;o.textContent=n;
+      if(ROAD_INFO[v])o.title=t('Runes on this road: ')+roadRunes(v).map(r=>t(r)).join(' · ');
+      selS.appendChild(o)}
+    selS.value=roadOf(h.strategy);
     selS.onchange=()=>{h.strategy=selS.value;persist()};
     selS.dataset.ftue='strategy';
     el.appendChild(selS);

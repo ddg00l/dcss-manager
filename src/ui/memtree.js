@@ -4,8 +4,7 @@ import { save, persist } from '../core/state.js';
 import { fmt } from '../core/fmt.js';
 import { sfx } from './audio.js';
 import {
-  NODES, REGIONS, CX, CY, nodeById, treeLvl, nodeCost, canBuy, buyNode, achMet, memEff,
-} from '../data/memtree.js';
+  NODES, REGIONS, CX, CY, nodeById, treeLvl, nodeCost, canBuy, buyNode, achMet, memEff, MASTERY_KEY, MASTERY_K, regionMastery} from '../data/memtree.js';
 import { t } from '../i18n/index.js';
 
 let selId = null, built = false, centered = false;
@@ -138,6 +137,23 @@ export function openNodeModal(id) {
   $('memNode').classList.add('show');
 }
 
+/* What mastery is currently worth in this region, in the region's own terms. The
+   keystone's description states the rule; a player deciding whether to commit needs
+   the number it currently comes to, and how far it has already grown. */
+function masteryLine(n) {
+  const region = n.region;
+  const kid = MASTERY_KEY[region];
+  if (!kid) return '';
+  const owned = treeLvl(save, kid) > 0;
+  /* show it on the mastery keystone itself, and on any node of a region already
+     mastered -- there the number is the reason to keep buying here */
+  if (n.id !== kid && !owned) return '';
+  const lv = regionMastery(save, region);
+  const mul = 1 + MASTERY_K * lv;
+  return '<div class="cost">' + t('Mastery here: ') + lv + ' ' + t('nodes') +
+    ' → ×' + mul.toFixed(2) + (owned ? '' : ' ' + t('(once taken)')) + '</div>';
+}
+
 function renderNodeModal() {
   const box = $('memNodeBox');
   const n = selId && nodeById(selId);
@@ -155,6 +171,7 @@ function renderNodeModal() {
     '<div><div class="nm" style="color:' + REGIONS[n.region].col + '">' + t(n.n) + (n.keystone ? ' ⟐' : '') + '</div>' +
     '<div class="label">' + (n.keystone ? t('keystone') + ' · ' : '') + lvl + ' / ' + n.max + '</div></div></div>' +
     '<div class="ds" style="margin:10px 0 8px">' + t(n.d) + '</div>' +
+    masteryLine(n) +
     (statusLine ? '<div class="cost">' + statusLine + '</div>' : '');
   if (!maxed) {
     const b = document.createElement('button');

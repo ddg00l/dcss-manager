@@ -959,14 +959,33 @@ describe('Auto-summon keystone runs inside the sim (offline too)', () => {
     advanceHeroes(s, 10, true);
     expect(h.state).not.toBe('camp');
   });
-  it('without the keystone a living camp hero is left alone (only dead accounts revive)', async () => {
+  it('without the keystone the guild still sends out who it already has', async () => {
+    /* This used to pin the opposite: no keystone, no dispatch. That is what made
+       attention worth 122x over 30 days — 594 Orbs checking in every five minutes
+       against 4.9 checking in once a day, because the guild stood still whenever the
+       player did, and the keystone that would fix it sits deep in the gacha spine
+       behind Memory that only delving earns. A guild that refuses to work unprompted
+       is not an idle game. Dispatch is free; the keystone sells SPENDING. */
     const { advanceHeroes } = await import('../src/sim/tick.js');
     const s = makeState();
     s.gold = 100000;
     const h = newHero('minotaur', 'fighter', 2, s);
     s.heroes.push(h);
     advanceHeroes(s, 600, true);
-    expect(h.state).toBe('camp');          // player's own hero is not touched
-    expect(s.heroes.length).toBe(1);       // and no paid summons happen
+    expect(h.state).not.toBe('camp');      // the seeker goes back down on its own
+    expect(s.heroes.length).toBe(1);       // but no paid summons happen: that is the keystone
+  });
+  it('a seeker the player recalled stays recalled', async () => {
+    /* Auto-dispatch must not overrule the player. recallHero sets `rest`, and that
+       is the player's word about this seeker. */
+    const { advanceHeroes, recallHero, startRun } = await import('../src/sim/tick.js');
+    const s = makeState();
+    const h = newHero('minotaur', 'fighter', 2, s);
+    s.heroes.push(h);
+    startRun(h, s);
+    recallHero(h, s);
+    expect(h.state).toBe('camp');
+    advanceHeroes(s, 600, true);
+    expect(h.state).toBe('camp');
   });
 });

@@ -1,6 +1,10 @@
 /* "Dungeon Memory" — a single radial upgrade tree (CIFI-modules style).
    Small nodes are multi-level increments; keystones are radical mechanics,
    gated by account achievements. No respec. */
+import { ascGoldMul, ascDeathMemMul } from '../core/ascension.js';
+/* NOT imported from prestige.js: that module imports this one, and the cycle would
+   put the arrow-function exports in TDZ. The keystone level is readable locally. */
+const ngPlusRewardLocal = s => (memHas(s, 'k_ngplus') ? 2.5 : 1);
 
 export const REGIONS = {
   combat:  { a: 0,   col: '#d96055', n: 'Fighting' },
@@ -35,6 +39,16 @@ const STAT_ICON = {
 };
 
 /* stat descriptions of small nodes: [effKey, "per level", label] */
+/* Combat stats were a measured trap: a combat-first build finished on 47 Orbs
+   where a slots-first build took 322. The asymmetry is structural — a slot is a
+   compounding throughput multiplier while +1% damage is a linear addition to an
+   already-large product — but combat stats DO reach throughput, just too weakly
+   to matter. Killing faster clears floors faster, and surviving avoids the
+   single largest time sink in the game: a dead hero loses every level and skill
+   and restarts from floor 1, and the sim buries hundreds of them per ten days.
+   The offensive and survival lines are therefore worth roughly 1.6x what they
+   were, with attack speed lifted furthest since it converts most directly into
+   floors cleared per hour. TUNABLE — validated by the tree ablation. */
 const STAT = {
   atk:   [.010, '+1% damage for all heroes'],
   hp:    [.010, '+1% health for all heroes'],
@@ -122,14 +136,26 @@ for (const [reg, spine] of Object.entries(SPINES)) {
     });
   });
 }
-/* expedition slots — a chain in the heroes region (deep and expensive) */
-/* the 2nd seeker is early and cheap (target: ~20-30 minutes of gameplay);
-   from there the chain goes deeper and gets steeply more expensive */
+/* Expedition slots — a chain in the heroes region.
+
+   These were by far the most underpriced nodes in the game. A slot is not a
+   stat: a second seeker doubles EVERYTHING the guild produces — kills, loot,
+   gold, Memory — and that extra Memory buys more tree, which compounds. No stat
+   node can answer a compounding throughput multiplier, and the sim showed it
+   plainly: a slots-first build took 322 Orbs in ten days where a combat-first
+   build took 47, a 6.8x spread on identical seeds.
+
+   The 2nd seeker stays cheap on purpose: it is the game's first real goal and
+   the lesson that expeditions run in parallel, reachable inside half an hour.
+   The runaway is not there — it is in STACKING slots, so every later rung is
+   repriced steeply against the compounding it unlocks. This is repricing, not a
+   nerf: a slot grants exactly what it always did. TUNABLE — validated by the
+   tree ablation. */
 ['slot1', 'slot2', 'slot3', 'slot4'].forEach((id, i) => {
   node('hslot' + i, 'heroes', REGIONS.heroes.a - 8, [3, 5, 6, 7][i] * RING_R + 30, {
     n: ['2nd', '3rd', '4th', '5th'][i] + ' seeker', d: '+1 concurrent expedition',
     icon: 'pc_human', eff: { slot: 1 }, max: 1,
-    base: [230, 900, 4000, 18000][i], g: 1,
+    base: [230, 4200, 26000, 150000][i], g: 1,
     req: [i === 0 ? 'heroes_s2' : 'hslot' + (i - 1)],
   });
 });
@@ -167,9 +193,14 @@ keystone('k_elite', 'dungeon', -26, 7, {
   n: '⟐ Hunter of the Marked', d: 'Elite monsters are half again as common; their spoils ×2.',
   icon:'m_two_headed_ogre',base: 600, req: ['dungeon_b0_3'], ach: { uniq: 3, t: 'kill 3 uniques' },
 });
+/* Was Auto-Summon, which is now a standing order the player sets. A keystone that
+   sells PERMISSION to keep the hall staffed is what left an absent guild standing
+   empty, and once the order exists the keystone would sell nothing at all. Keystones
+   sell power. */
 keystone('k_autosummon', 'gacha', 0, 9, {
-  n: '⟐ Auto-Summon', d: 'A free slot and gold ≥ 2× the cost — summoning happens on its own.',
+  n: '⟐ The Long Roster', d: 'The guild remembers its own: every summons costs a third less, forever.',
   icon:'sk_summonings',base: 800, req: ['gacha_s8'], ach: { rolls: 20, t: '20 summons' },
+  eff: { gdisc: 0.33 },
 });
 keystone('k_herald', 'gacha', -26, 2, {
   n: '⟐ Guild Herald', d: 'When the whole party has fallen, the guild sends a free seeker who sets out on his own — even offline.',
@@ -195,8 +226,13 @@ keystone('k_autodismantle', 'forge', -26, 7, {
   n: '⟐ Auto-Dismantle', d: 'Common (grey) items are dismantled into scrap automatically.',
   icon:'w_hand_axe',base: 500, req: ['forge_b0_3'], ach: { dismantled: 10, t: 'dismantle 10 items' },
 });
+/* Was Auto-Equip, which the guild now does unpaid: a seeker always takes the best the
+   armoury holds, because leaving good armour in a chest while your fighter goes down
+   naked is not a decision anyone would make. That left a keystone charging 800 Memory
+   for nothing, which is the worst kind of placebo, so it sells something the forge
+   would actually sell -- nothing is ever lost from a body. */
 keystone('k_autoequip', 'forge', 0, 9, {
-  n: '⟐ Auto-Equip', d: 'Before departing, the hero equips the best gear from the armory automatically.',
+  n: '⟐ Quartermaster', d: 'The kit of the fallen always comes home. No piece is ever lost in the dark.',
   icon:'a_chain_mail',base: 800, req: ['forge_s8'], ach: { forged: 10, t: 'forge 10 items' },
 });
 keystone('k_ring3', 'forge', 26, 8, {
@@ -211,6 +247,109 @@ keystone('k_ngplus', 'heroes', 26, 9, {
   n: '⟐ New Depth', d: 'NG+: monsters ×2 stronger, all rewards ×2.5. Forever.',
   icon:'m_orb_of_fire',base: 2000, req: ['heroes_b1_3'], ach: { wins: 1, t: 'victory' },
 });
+
+
+/* The capstone of each region: the node that makes going deep there worth it.
+   Deliberately expensive -- it is meant to be a commitment to one region rather than
+   something a broad build picks up along the way. */
+keystone('k_mcombat', 'combat', -26, 9, {
+  n: '⟐ Way of the Blade', d: 'Mastery: every node you own in the combat region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend.',
+  icon: 'sk_long_blades', base: 1200, req: ['combat_s8'], ach: { kills: 2000, t: '2000 kills' },
+});
+keystone('k_mdungeon', 'dungeon', 26, 9, {
+  n: '⟐ Way of the Deep', d: 'Mastery: every node you own in the dungeon region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend.',
+  icon: 'sk_stealth', base: 1200, req: ['dungeon_s8'], ach: { uniq: 10, t: 'kill 10 uniques' },
+});
+keystone('k_mgacha', 'gacha', -26, 9, {
+  n: '⟐ Way of the Bloodline', d: 'Mastery: every node you own in the gacha region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend.',
+  icon: 'sk_summonings', base: 1200, req: ['gacha_s8'], ach: { rolls: 100, t: '100 summons' },
+});
+keystone('k_meconomy', 'economy', 26, 9, {
+  n: '⟐ Way of the Ledger', d: 'Mastery: every node you own in the economy region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend.',
+  icon: 'i_gold', base: 1200, req: ['economy_s8'], ach: { deaths: 50, t: '50 fallen' },
+});
+keystone('k_mforge', 'forge', -26, 9, {
+  n: '⟐ Way of the Anvil', d: 'Mastery: every node you own in the forge region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend.',
+  icon: 'sk_armour', base: 1200, req: ['forge_s8'], ach: { forged: 40, t: 'forge 40 items' },
+});
+keystone('k_mheroes', 'heroes', 0, 9, {
+  n: '⟐ Way of the Guild', d: 'Mastery: every node you own in the heroes region makes all of its effects 5% stronger. You may swear only ONE Way; the oath holds until you Ascend. Expedition slots are not affected — they are already the strongest thing this tree sells.',
+  icon: 'sk_fighting', base: 1200, req: ['heroes_s8'], ach: { wins: 3, t: '3 victories' },
+});
+
+/* ---- standing orders: automation is unlocked, not given ----
+
+   Each of these opens one row of the guild's standing orders. They used to be free
+   from the first minute, which made the most interesting decision in the game -- what
+   to delegate and when -- into a settings screen you configure once and forget.
+   Unlocking automation IS the progression in a game of this kind, so the orders are
+   earned like anything else worth having.
+
+   Deliberately on inner rings and cheap by keystone standards. What they gate is the
+   guild growing while the player is away, and an account that cannot grow while away
+   is the 122x attention penalty this whole layer exists to remove -- so the wait must
+   be short enough to feel like an early goal rather than a wall. The mechanical
+   automations stay free for the same reason: dispatching a seeker who is standing in
+   the hall, arming them from the armoury and promoting a duplicate are not decisions
+   anyone would decline, and charging for them is charging for the game to work. */
+keystone('k_ordprestige', 'economy', 13, 5, {
+  n: '⟐ Standing Order: Prestige', d: 'Unlocks the standing order for prestige: the guild resets the cycle itself once the bar is full.',
+  icon: 'i_orb', base: 260, req: ['economy_s4'], ach: { wins: 1, t: 'carry out one Orb' },
+});
+keystone('k_ordmemory', 'dungeon', 13, 5, {
+  n: '⟐ Standing Order: Memory', d: 'Unlocks the standing order for Memory: the guild spends it to a policy you set instead of hoarding it until you return.',
+  icon: 'd_altar', base: 260, req: ['dungeon_s4'], ach: { deaths: 5, t: '5 fallen' },
+});
+keystone('k_ordsummon', 'gacha', 13, 5, {
+  n: '⟐ Standing Order: Summons', d: 'Unlocks the standing order for summoning: the guild refills the hall from its own treasury, up to the share you allow.',
+  icon: 'sk_summonings', base: 260, req: ['gacha_s4'], ach: { rolls: 5, t: '5 summons' },
+});
+
+/* ---- region mastery: the reason to specialise ----
+
+   The tree measured a 1.70x spread across its six regions where it needs 3x, and the
+   static audit says why. A fully bought region grants roughly +80% to +290% of two or
+   three of its own stats -- real numbers, not noise -- except `heroes`, which grants
+   +4 EXPEDITION SLOTS. A slot is a different class of quantity: it multiplies how
+   much delving happens at once, while every other region multiplies one term inside a
+   single delve. So slots win regardless, the remaining five regions are decoration,
+   and a combat build that also takes slots lands within 3% of a pure slots build --
+   which is not a flaw in combat nodes, it is the absence of a decision.
+
+   Mastery makes depth in a region pay for itself: once a region's mastery keystone is
+   taken, everything already spent there counts for more. Specialising a single region
+   roughly doubles its output; spreading thin gains almost nothing. Slots are excluded
+   on purpose -- they are already the strongest lever in the tree, and scaling them
+   would deepen the very imbalance this exists to correct. */
+export const MASTERY_K = 0.03;
+/** Which keystone unlocks which standing order. */
+export const ORDER_KEY = { prestige: 'k_ordprestige', memory: 'k_ordmemory', summon: 'k_ordsummon' };
+export const MASTERY_KEY = {
+  combat: 'k_mcombat', dungeon: 'k_mdungeon', gacha: 'k_mgacha',
+  economy: 'k_meconomy', forge: 'k_mforge', heroes: 'k_mheroes',
+};
+/** Total node levels the guild has bought inside one region. */
+export function regionMastery(s, region) {
+  let lv = 0;
+  for (const n of NODES) if (n.region === region && s.tree[n.id]) lv += s.tree[n.id];
+  return lv;
+}
+/* The engines are exempt, and getting this backwards was instructive. Mastery exists
+   to lift the five decorative regions toward the class of the one that mattered; at
+   5% and with nothing exempt it did the opposite -- it multiplied the effects that
+   were ALREADY throughput-class and turned them into runaways. Measured over 8 days:
+   a dungeon specialist took 1358 Orbs and an economy specialist 1084, against 174 for
+   a broad build and 45 for a combat specialist. A 30x spread satisfies the ">=3x, the
+   choice must matter" criterion and is nonetheless a worse game: it does not mean the
+   choice is interesting, it means five regions are traps and one is compulsory.
+
+   So the line is drawn by CLASS, not by region. Three effects multiply throughput or
+   the tree's own growth and compound with everything else:
+     slot  more delving at once
+     spd   more delving per unit of time
+     mem   more tree, which buys more of all of the above
+   Mastery lifts the stats. It does not touch the engines. */
+const MASTERY_EXEMPT = new Set(['slot', 'spd', 'mem']);
 
 /* ---- API ---- */
 export const nodeById = id => byId[id];
@@ -232,9 +371,14 @@ export function memEff(s, key) {
   const hit = m.map.get(key);
   if (hit !== undefined) return hit;
   let sum = 0;
+  /* one pass per region, computed only on a memo miss */
+  const mul = {};
+  if (!MASTERY_EXEMPT.has(key))
+    for (const [region, kid] of Object.entries(MASTERY_KEY))
+      if (s.tree[kid]) mul[region] = 1 + MASTERY_K * regionMastery(s, region);
   for (const n of NODES) {
     const l = s.tree[n.id];
-    if (l && n.eff[key]) sum += n.eff[key] * l;
+    if (l && n.eff[key]) sum += n.eff[key] * l * (mul[n.region] || 1);
   }
   m.map.set(key, sum);
   return sum;
@@ -253,10 +397,25 @@ export function achMet(s, n) {
   if (a.memEarned && st.memEarned < a.memEarned) return false;
   return true;
 }
+/** The Way already sworn, if any. */
+export function masteredRegion(s) {
+  for (const [region, id] of Object.entries(MASTERY_KEY)) if (treeLvl(s, id) > 0) return region;
+  return null;
+}
 export function canBuy(s, n) {
   if (treeLvl(s, n.id) >= n.max) return false;
   if (n.id !== 'root' && !n.req.some(r => memHas(s, r))) return false;
   if (!achMet(s, n)) return false;
+  /* One Way at a time. Mastery was written to reward CHOOSING a region and nothing
+     made the choice exclusive, so a broad build simply bought all six -- keystones
+     are what a balanced build reaches for first -- and collected the multiplier
+     everywhere. That is not specialisation, it is a universal multiplier, and over a
+     long horizon it compounded: on identical seeds, the same tactic on the same road
+     took 292 Orbs in 30 days without mastery and 2070 with it. An eight-day window
+     showed 3.5 Orbs a day and hid all of it.
+     The oath survives prestige, as keystones do, and is released by Ascension. */
+  const key = Object.entries(MASTERY_KEY).find(([, id]) => id === n.id);
+  if (key) { const sworn = masteredRegion(s); if (sworn && sworn !== key[0]) return false; }
   return s.mem >= nodeCost(s, n);
 }
 export function buyNode(s, n) {
@@ -268,8 +427,9 @@ export function buyNode(s, n) {
 }
 /** Memory gain with tree multipliers applied */
 export function gainMem(s, amount, isDeath) {
-  let v = amount * (1 + memEff(s, 'mem')) * (1 + .15 * ((s.pupg && s.pupg.p_memmul) || 0));
+  let v = amount * (1 + memEff(s, 'mem')) * (1 + .15 * ((s.pupg && s.pupg.p_memmul) || 0)) * ascGoldMul(s) * ngPlusRewardLocal(s);
   if (isDeath && memHas(s, 'k_deathmem')) v *= 2;
+  if (isDeath) v *= ascDeathMemMul(s); /* Ascension: Martyrdom */
   v = Math.ceil(v);
   s.mem += v; s.stat.memEarned += v;
   return v;

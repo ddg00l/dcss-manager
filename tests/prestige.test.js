@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { makeState } from '../src/core/state.js';
 import { newHero, heroStats } from '../src/sim/hero.js';
 import {
-  ngLevel, legendsReward, canPrestige, doPrestige, cycleProgress, PUPGRADES, pupg, pupgCost,
+  ngLevel, legendsReward, canPrestige, doPrestige, cycleProgress, PUPGRADES, pupg, pupgCost, PREST_FLOOR, TARGET_DAYS,
 } from '../src/core/prestige.js';
 import { gAtk, gHp, ngMul, rollCost } from '../src/core/economy.js';
 import { gainMem } from '../src/data/memtree.js';
@@ -65,8 +65,15 @@ describe('prestige', () => {
     s.ng = 2;
     expect(ngLevel(s)).toBe(2);
     expect(ngMul(s)).toBe(4);
-    s.tree.k_ngplus = 1; // legacy keystone stacks as one more level
-    expect(ngLevel(s)).toBe(3);
+    /* "New Depth" is NOT an extra NG level any more. As a level it was a 2000-Memory
+       no-op past ng 9, where both the monster and the gold scalars are already
+       capped — it now multiplies on top of the caps and does what it advertises. */
+    s.tree.k_ngplus = 1;
+    expect(ngLevel(s)).toBe(2);
+    expect(ngMul(s)).toBe(4 * 2.5);
+    s.ng = 30; // deep ladder: the capped scalar stops, the keystone still pays
+    const capped = makeState(); capped.ng = 30;
+    expect(ngMul(s)).toBeCloseTo(ngMul(capped) * 2.5, 5);
   });
   it('the NG reward multiplier caps at +500% (anti-runaway)', async () => {
     const { legendsReward } = await import('../src/core/prestige.js');
@@ -107,17 +114,22 @@ describe('prestige', () => {
 });
 
 describe('balance fixes from the 1000-session study', () => {
-  it('each victory in the cycle hardens the dungeon', async () => {
+  it('each victory in the cycle hardens the dungeon, up to a cap', async () => {
     const { genFloor } = await import('../src/sim/mapgen.js');
-    const hpAt = (wins) => {
+    const { IN_CYCLE_PEAK } = await import('../src/core/prestige.js');
+    const hpAt = (cycleWins) => {
       const s = makeState();
-      s.stat.wins = wins;
+      s.stat.wins = cycleWins;
+      s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
       const h = newHero('human', 'fighter', 0, s);
       h.branch = 'dungeon'; h.floor = 3; h.seed = 42; h.regenN = 0;
       genFloor(h, s);
       return h.map.monsters.reduce((a, m) => a + m.maxHp, 0) / h.map.monsters.length;
     };
-    expect(hpAt(3)).toBeGreaterThan(hpAt(0) * 1.5);
+    expect(hpAt(6)).toBeGreaterThan(hpAt(0));
+    expect(hpAt(15)).toBeGreaterThan(hpAt(6));
+    /* bounded: greed costs, but never without limit */
+    expect(hpAt(500) / hpAt(0)).toBeCloseTo(IN_CYCLE_PEAK, 0);
   });
   it('a named rune is collected once per cycle; prestige resets the ledger', async () => {
     const { startRun, simTick } = await import('../src/sim/tick.js');
@@ -263,7 +275,7 @@ describe('graceful migration of rune-inflation-era saves (balV 2)', () => {
     expect(s.gold).toBe(1000 + 260 * 800);             // excess sold for gold
     const { canPrestige } = await import('../src/core/prestige.js');
     expect(canPrestige(s)).toBe(false);                // needs a NEW victory
-    expect(s.balV).toBe(4);
+    expect(s.balV).toBe(7);
   });
   it('bought elite levels keep their paid-for power after the effect nerf', async () => {
     const { gAtk, zupgCap, ZUPGRADES } = await import('../src/core/economy.js');
@@ -300,9 +312,9 @@ describe('graceful migration of rune-inflation-era saves (balV 2)', () => {
     expect(s.legends).toBeLessThan(80);
     expect(s.mem).toBe(5000); // memory balance untouched
   });
-  it('fresh accounts are born on balV 4 with no grant', () => {
+  it('fresh accounts are born on the current balV with no grant', () => {
     const s = makeState();
-    expect(s.balV).toBe(4);
+    expect(s.balV).toBe(7);
     expect(s.legends).toBe(0);
   });
 });
@@ -323,33 +335,54 @@ describe('prestige requirement is a fixed snapshot with a forward-only ratchet',
   it('the NEXT bar tracks lifetime Orbs (sub-linear) — cadence-independent', async () => {
     const { nextPrestigeReq } = await import('../src/core/prestige.js');
     const s = makeState();
-    expect(nextPrestigeReq(s)).toBe(1);        // 0 lifetime Orbs
-    s.stat.wins = 3;                           // 1 + floor(1.1*sqrt(3)) = 2
-    expect(nextPrestigeReq(s)).toBe(2);
-    s.stat.wins = 100;                         // 1 + floor(1.1*sqrt(100)) = 12
-    expect(nextPrestigeReq(s)).toBe(12);
-    s.stat.wins = 2000;                        // a runaway's total → an unreachable bar
-    expect(nextPrestigeReq(s)).toBe(50);       // 1 + floor(1.1*sqrt(2000)); the in-cycle 1.25^bar walls it
+    expect(nextPrestigeReq(s)).toBe(PREST_FLOOR);   // a new account: reachable floor
+    /* The bar is no longer a curve over lifetime Orbs. That could not hold a
+       cadence, because output is not steady: the same build took 12.9 Orbs a day
+       at day eight and 68 by day twelve, so any fixed curve was right at one
+       point on it and wrong everywhere else. It now asks for roughly
+       TARGET_DAYS of whatever the guild currently produces. */
+    s.orbRate = 30;
+    expect(nextPrestigeReq(s)).toBe(Math.round(30 * TARGET_DAYS));
+    s.stat.wins = 5000;                             // lifetime total is irrelevant now
+    expect(nextPrestigeReq(s)).toBe(Math.round(30 * TARGET_DAYS));
   });
-  it('doPrestige locks the next bar in from lifetime Orbs', async () => {
+  it('doPrestige locks the next bar in as a snapshot', async () => {
     const { doPrestige } = await import('../src/core/prestige.js');
-    const s = makeState();
-    s.prestReq = 2;
-    s.cycBase = { wins: 0, runes: 0, uniq: 0, mem: 0 };
-    s.stat.wins = 5;                           // 5 lifetime Orbs (this is the first cycle)
-    expect(doPrestige(s)).toBeGreaterThan(0);
-    expect(s.prestReq).toBe(3);                // 1 + floor(sqrt(5)) = 3, snapshotted for next cycle
+    const s2 = makeState();
+    s2.orbRate = 20;
+    winCycle(s2, 5);
+    doPrestige(s2);
+    /* the target is fixed for the cycle: it can never rise under a delver */
+    const locked = s2.prestReq;
+    expect(locked).toBe(Math.round(20 * TARGET_DAYS));
+    s2.orbRate = 200;
+    expect(s2.prestReq).toBe(locked);
   });
-});
+  it('NG+ scales geometrically, because what it answers to does', async () => {
+    /* This used to pin the opposite: a light capped seasoning, on the reasoning that
+       the in-cycle hardening was the real difficulty valve. Inside a cycle it is -- but
+       it resets at every prestige, so between cycles nothing rose at all while Legends,
+       Ascendancy, the tree and star power accumulated permanently. Traced over 60 days
+       the Orb rate left its 3-4 band on day 8 and reached 84 a day.
 
-describe('no-softlock guarantees (asymptotic NG + unbounded stars)', () => {
-  it('NG+ is a light capped seasoning; in-cycle wins are the real valve', async () => {
-    const { ngMonMul } = await import('../src/core/prestige.js');
+       A term linear in NG cannot answer a quantity that compounds; raising the linear
+       slope fourteenfold only moved the exit from day 8 to day 42. The monster term now
+       has the same shape as the power it chases. */
+    const { ngMonMul, NG_TUNE } = await import('../src/core/prestige.js');
     const at = (ng) => { const s = makeState(); s.ng = ng; return ngMonMul(s); };
     expect(at(0)).toBe(1);
-    expect(at(1)).toBeCloseTo(1.1);   // the first win of a cycle stays reachable
-    expect(at(10)).toBeCloseTo(2);    // hybrid cap: numbers stop at x2, affixes carry the depth
-    expect(at(50)).toBeCloseTo(2);    // never grows past it
+    expect(at(1)).toBeCloseTo(NG_TUNE.monBase);
+    expect(at(4)).toBeCloseTo(Math.pow(NG_TUNE.monBase, 4));
+    /* and it must never stop growing: a ceiling here is what let power run away */
+    expect(at(50)).toBeGreaterThan(at(20));
+  });
+  it('the swept NG base stays clear of the cliff', async () => {
+    /* Between a working 1.55 and a dead 1.6 lies five hundredths -- at 1.6 the traced
+       account takes zero Orbs over its last ten days and never recovers. Whatever this
+       constant becomes, it must keep its distance from that edge. */
+    const { NG_TUNE } = await import('../src/core/prestige.js');
+    expect(NG_TUNE.monBase).toBeGreaterThan(1);
+    expect(NG_TUNE.monBase).toBeLessThanOrEqual(1.55);
   });
   it('star promotions never cap and keep raising hero power', async () => {
     const { starNeed, starStr } = await import('../src/data/combos.js');

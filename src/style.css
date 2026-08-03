@@ -6,6 +6,25 @@
     --text:#c5ccd6; --dim:#6b7688;
     --mono:ui-monospace,'SF Mono','Cascadia Mono',Menlo,Consolas,monospace;
   }
+  /* Scrollbars.
+
+     Six containers scroll -- the main pane, the dungeon log, the memory tree, the chip
+     strip, the sheet overlay and the death panel -- and every one of them wore the
+     platform default: a wide grey trough with a raised thumb, sitting inside a UI whose
+     entire language is 1px lines, small caps and flat dark panels. On a phone it never
+     showed, because mobile scrollbars are overlays; on a desktop window it was the
+     loudest element on the screen.
+
+     A thin rule instead, transparent until the container actually overflows. The thumb
+     borrows --line at rest and --stone under the cursor, so it reads as part of the
+     same drawing rather than as a control borrowed from the operating system. */
+  *{scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+  ::-webkit-scrollbar{width:5px;height:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--stone)}
+  ::-webkit-scrollbar-corner{background:transparent}
+
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
   body{background:var(--ink);color:var(--text);font-family:var(--mono);overflow:hidden;
@@ -373,6 +392,13 @@
   /* Memory tree: PoE-style drag panning */
   #memWrap{cursor:grab;user-select:none;-webkit-user-select:none}
   #memWrap.grabbing{cursor:grabbing}
+  /* Ascension tree: a bounded pannable canvas inside the Fame sub-tab */
+  #ascWrap{overflow:auto;height:calc(100dvh - 340px);min-height:300px;margin-top:8px;
+    border:1px solid var(--line);border-radius:8px;-webkit-overflow-scrolling:touch;
+    background:radial-gradient(circle at 50% 45%,#1b1526,#0a0c10 75%);
+    cursor:grab;user-select:none;-webkit-user-select:none}
+  #ascWrap.grabbing{cursor:grabbing}
+  #ascTree{position:relative}
   /* update banner */
   #updBar{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;gap:12px;
     align-items:center;justify-content:center;padding:9px 14px;
@@ -401,3 +427,15 @@
     background:var(--panel2);border:1px solid var(--gold);color:var(--text);
     font-size:12px;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Standing orders: policy rows in the Heroes pane. The label carries a one-line
+   explanation because every one of these hands a decision to the guild, and a player
+   who cannot see what they are delegating will not delegate it. */
+#standingOrders{margin:10px 0 14px;padding:10px 12px;border:1px solid var(--line);border-radius:8px}
+#standingOrders .orderRow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px}
+#standingOrders .orderRow .ds{opacity:.7;font-size:.85em}
+#standingOrders select{max-width:46%}
+
+/* A standing order not yet earned: visible, explained, and plainly not yours yet. */
+#standingOrders .orderRow.locked{opacity:.5}
+#standingOrders .orderRow.locked .ds{color:var(--dim)}

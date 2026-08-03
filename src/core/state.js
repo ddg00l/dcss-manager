@@ -1,4 +1,7 @@
+import { roadOf } from '../data/branches.js';
 import { defaultFtue, completedFtue, isVeteranSave } from './ftue.js';
+import { ASCEND_GATE } from './ascension.js';
+import { RUNE_AURA_K } from './economy.js';
 import { stream, hashSeed } from './rng.js';
 import { WEP_BASES } from '../data/items.js';
 import { CLASSES } from '../data/classes.js';
@@ -31,7 +34,14 @@ export function makeState() {
     mem: 0, tree: { root: 1 },
     stat: { kills: 0, deaths: 0, uniqKills: 0, forged: 0, dismantled: 0, memEarned: 0, wins: 0, bestXL: {} },
     runesTotal: 0, pendingDeaths: [], pendingWins: [], unrandsOwned: [],
-    ng: 0, legends: 0, prestiges: 0, pupg: {}, balV: 4,
+    ng: 0, legends: 0, prestiges: 0, prestigesTotal: 0, pupg: {}, balV: 7,
+    /* standing orders: policy the guild follows without the player present */
+    auto: { prestige: false, memory: '', summon: 0 },
+    runeAuraLegacy: 0, /* frozen grandfathered Rune Aura from the balV 6 curve change */
+    runesSpent: 0, /* runes burned on dark summonings — they no longer feed the aura */
+    darkRolls: 0, /* dark summonings this cycle; each one makes the next dearer */
+    orbRate: 0, orbsThisWindow: 0, rateWindow: 0, /* smoothed Orbs/day; the prestige bar is quoted against it */
+    ascendancy: 0, ascBase: 0, ascensions: 0, ascUpg: {}, /* Ascension meta-layer */
     prestReq: 1, /* Orbs the current cycle needs to prestige; snapshotted at cycle start, never rises mid-cycle */
     vic: { races: {}, classes: {} }, nemeses: {}, cycRunnerBest: 0, cycContractDone: 0,
     pantheon: {}, /* eternal: godKey → lifetime Orbs won while pledged (Pantheon favor) */
@@ -39,7 +49,7 @@ export function makeState() {
     cycBase: { wins: 0, runes: 0, uniq: 0, mem: 0 }, cycRunes: [],
     cofferBuys: 0, zigFunded: 0, provisions: {}, /* per-cycle gold sinks; reset at prestige */
     ftue: null,
-    progress: { D: 0, Lair: 0, Orc: 0, Elf: 0, Vaults: 0, Depths: 0, Zot: 0, Abyss: 0 },
+    progress: { D: 0, Lair: 0, Swamp: 0, Spider: 0, Orc: 0, Elf: 0, Vaults: 0, Depths: 0, Tomb: 0, Zot: 0, Abyss: 0 },
     last: Date.now(), muted: false, lang: 'en',
     /* master seed: every gameplay random derives from this via domain streams;
        synced forever, identical on all of the player's devices */
@@ -61,7 +71,7 @@ export function loadState(storage) {
         progress: { ...state.progress, ...(s.progress || {}) },
         tree: { root: 1, ...(s.tree || {}) },
         stat: { ...state.stat, ...(s.stat || {}) },
-        pupg: { ...(s.pupg || {}) },
+        pupg: { ...(s.pupg || {}) }, ascUpg: { ...(s.ascUpg || {}) },
         vic: { races: { ...((s.vic || {}).races || {}) }, classes: { ...((s.vic || {}).classes || {}) } },
         nemeses: { ...(s.nemeses || {}) },
         pantheon: { ...(s.pantheon || {}) }, bestiary: { ...(s.bestiary || {}) },
@@ -138,7 +148,35 @@ export function loadState(storage) {
          accrue from here on; no backfill is possible since neither per-god wins
          nor per-type kills were ever recorded. The merge above guarantees the
          fields exist so nothing reads undefined. */
-      state.balV = 4;
+      /* balV 5: prestigesTotal — lifetime prestige count that Ascension does not
+         reset, so the endgame gate (Pantheon/Bestiary) stops switching itself off
+         on every Ascension. Veterans inherit at least their current cycle's count;
+         ascensions before this migration cannot be recovered, so an already-
+         ascended account gets credit for what it can prove. */
+      if (s.prestigesTotal === undefined)
+        state.prestigesTotal = (s.prestiges || 0) + ASCEND_GATE * (s.ascensions || 0);
+      /* balV 6: Rune Auras become sub-linear (see economy.js). Applying the new
+         curve bare would retroactively strip a veteran of most of their aura —
+         punishment for having played — so the shortfall is frozen into
+         runeAuraLegacy. The account keeps exactly the multiplier it had at
+         migration and every rune from here on adds on the new, gentler curve.
+         Only accounts that actually own the keystone are compensated. */
+      if (s.runeAuraLegacy === undefined) {
+        const runes = s.runesTotal || 0;
+        const old = 0.02 * runes;                       /* the bonus they had */
+        const now = RUNE_AURA_K * Math.sqrt(runes);     /* what the curve now grants */
+        state.runeAuraLegacy = (s.tree && s.tree.k_runeaura) ? Math.max(0, old - now) : 0;
+      }
+      /* balV 7: the themed roads. "classic" and "speedrun" were a difference of
+         length, i.e. a second tempo control; the roads now differ in what they
+         yield. A hero mid-delve keeps walking whatever segment list they are on, so
+         the only thing to migrate is the NAME each hero and the guild's standing
+         orders are stored under. classic maps to the Iron Road, the closest thing
+         to the old grand tour; speedrun keeps its own road and its own price. */
+      if ((s.balV || 0) < 7) {
+        for (const h of (state.heroes || [])) if (h.strategy) h.strategy = roadOf(h.strategy);
+      }
+      state.balV = 7;
       pruneSave(state); /* shrink pre-existing bloated saves (accumulated dead heroes) */
       if (s.masterSeed === undefined) {
         /* derive a stable seed from immutable account facts so it never shifts */
@@ -152,7 +190,19 @@ export function loadState(storage) {
         state.upg = {};
       }
     }
-  } catch (e) { /* corrupted save — start fresh */ }
+  } catch (e) {
+    /* A save that will not parse used to be dropped in silence, and the first autosave
+       afterwards wrote over it -- so a player saw a brand-new account, with nothing in
+       the console and nothing left to recover. Keep the bytes under their own key and
+       say so out loud. Whatever went wrong, the one thing that must not happen is
+       destroying the evidence. */
+    console.error('save could not be read; starting fresh. The unreadable copy is kept at', SKEY + '.broken', e);
+    try {
+      const raw = storage && storage.getItem(SKEY);
+      if (raw && !storage.getItem(SKEY + '.broken')) storage.setItem(SKEY + '.broken', raw);
+    } catch (e2) { /* quota: nothing further to do */ }
+    state.loadFailed = true;
+  }
   if (!state.ftue) {
     state.ftue = isVeteranSave(state) ? completedFtue() : defaultFtue();
   }
@@ -180,6 +230,30 @@ export function persistState(state, storage) {
 const storage = typeof localStorage !== 'undefined' ? localStorage : null;
 export const save = loadState(storage);
 export const persist = () => persistState(save, storage);
+
+/** Replace the live save with an imported one, running every migration on the way.
+
+    Written through storage on purpose: loadState holds the whole migration chain, and
+    an import that skipped it would quietly hand a modern game a save shaped for an
+    older one. The save being replaced is kept under its own key first -- importing the
+    wrong file should be a mistake, not a loss. */
+export function importSave(obj, storage2) {
+  const st = storage2 || storage;
+  if (!obj || typeof obj !== 'object' || !(obj.tree || obj.heroes || obj.stat))
+    throw new Error('not a DCSS Manager save');
+  const prev = st && st.getItem(SKEY);
+  if (prev && st) st.setItem(SKEY + '.replaced', prev);
+  st && st.setItem(SKEY, JSON.stringify(obj));
+  const loaded = loadState(st);
+  if (loaded.loadFailed) {
+    if (prev && st) st.setItem(SKEY, prev);   /* put the old one back, untouched */
+    throw new Error('the imported file could not be loaded');
+  }
+  for (const k of Object.keys(save)) delete save[k];
+  Object.assign(save, loaded);
+  persistState(save, st);
+  return save;
+}
 
 /** Wipe local storage and reset the live save singleton to a fresh account.
    Keeps object identity (imported `save` reference stays valid) by mutating it. */

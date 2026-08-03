@@ -6,4 +6,10 @@
    before the gate so the player watches the codex and favor fill toward the
    unlock. Leaf module (no imports) so any layer can read the gate cycle-free. */
 export const ENDGAME_GATE = 10;
-export const endgameUnlocked = s => (s.prestiges || 0) >= ENDGAME_GATE;
+/* Counts LIFETIME prestiges, not the current ascension-cycle's. Ascension resets
+   s.prestiges to 0, and this gate shares its threshold with ASCEND_GATE — so the
+   moment a player ascended, the Pantheon and Bestiary powers they had just earned
+   switched back off (measured: 173k family kills, +0% family bonus). Ascension is
+   supposed to cost the prestige LAYER, never the eternal Collection. */
+export const endgameUnlocked = s =>
+  Math.max(s.prestigesTotal || 0, s.prestiges || 0) >= ENDGAME_GATE;

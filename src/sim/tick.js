@@ -1,25 +1,42 @@
-import {gXp,gGold,gDrop,gSpd,gAtk,gHp,shardMul as shardMulF,maxSlots,rollCost,freeRollAvailable} from '../core/economy.js';
-import {gainMem,memEff,memHas} from '../data/memtree.js';
+import {gXp,gGold,gDrop,gSpd,gAtk,gHp,shardMul as shardMulF,maxSlots,rollCost,freeRollAvailable,GOLD_DEPTH_BASE} from '../core/economy.js';
+import {gainMem,memEff,memHas,NODES,canBuy,buyNode,nodeCost,treeLvl,MASTERY_KEY,ORDER_KEY} from '../data/memtree.js';
+const MASTERY_IDS=new Set(Object.values(MASTERY_KEY));
 import {clamp,fmt} from '../core/fmt.js';
 import {heroStats,rollHero,ringSlotKeys} from './hero.js';
 import {genFloor,reveal,los,MW,MH} from './mapgen.js';
-import {BRANCHES,buildRoute,brDepth,brTag} from '../data/branches.js';
+import {BRANCHES,buildRoute,brDepth,brTag,BR_ORDER,BR_OFFSET} from '../data/branches.js';
 import {RACES,aptMul} from '../data/races.js';
 import {crossBoost} from '../data/skills.js';
 import {CLASSES} from '../data/classes.js';
 import {GODS,godField} from '../data/gods.js';
-import {comboKey,SHARDS_PER} from '../data/combos.js';
+import {comboKey,SHARDS_PER,starNeed} from '../data/combos.js';
 import {randomItem,itemName,itemInfo,scoreItem,WEP_BASES,UNRANDS,makeUnrand} from '../data/items.js';
 import {POTIONS,SCROLLS,consName,randConsumable} from '../data/consumables.js';
 import {MUTS,randomMut} from '../data/mutations.js';
 import {PORTALS} from '../data/portals.js';
+import {bestDamageSpell,bestSummonSpell,learnBook,mpMaxOf,spellById} from '../data/spells.js';
 import {zigFee,zigStartDepth} from '../core/treasury.js';
+import {ascAutoGuild} from '../core/ascension.js';
+import {canPrestige,doPrestige} from '../core/prestige.js';
 import {MONS,FAMILY_OF,familyDmgBonus} from '../data/monsters.js';
 import {recordVictory,recordRunnerWin,checkContract,recordNemesisKill,avengeNemesis} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
 import {ELITE_AFFIXES,FLOOR_AFFIXES} from '../data/eliteAffixes.js';
 import { hashSeed } from '../core/rng.js';
 import { t } from '../i18n/index.js';
+/** Per-axis telemetry. Every player control was measured only by Orbs per day,
+    which is why balancing them made them converge: four decisions competing in one
+    number can only be equalised. Each field records what one decision is FOR. */
+export const newTel=()=>({fallenXL:0,fallenDepth:0,fallenN:0,gearHome:0,artefacts:0,
+  runeKinds:{},godWins:{},martialHome:0,jewelHome:0,consFound:0,
+  /* where a road loses its seekers, and how often it loses them to the gate rather
+     than to a monster: a hero turned away from Zot for want of a rune is a failure
+     of the ROAD, and it is invisible in any count of deaths */
+  deathBr:{},sealed:0,gateOk:0,
+  /* How strong a road delivers its seekers to the Gates. This turned out to be the
+     thing that decides a road, far more than its loot: two roads with the same
+     destinations differed 13x in Orbs while their hauls were interchangeable. */
+  zotXL:0,zotHp:0});
 
 export const simHooks={onDeath:null,onWin:null};
 /* DCSS: movement and adjacency are 8-directional (Chebyshev metric) */
@@ -51,15 +68,85 @@ function hlog(h,txt,cls){
   if(h.log.length>LOG_MAX)h.log.shift();
 }
 
+/* What a cleared floor is worth in Memory, by depth.
+
+   This is the role combat power was missing. Throughput multiplies volume: a
+   second seeker doubles the floors cleared per hour. It cannot multiply DEPTH —
+   five weak heroes reach exactly as deep as one weak hero, because depth is
+   gated by a single delver's power. So as long as shallow floors paid nearly as
+   well as deep ones (depth 26 paid 4.6x depth 3, near-linear), farming wide
+   strictly beat delving deep, and no coefficient on a stat node could answer
+   that: measured, a slots-first build took 322 Orbs to a combat-first build's
+   47, and buffing the stats 1.6x only widened it to 26x because every build
+   buys stat nodes and only the wide one compounds them.
+
+   The depth premium is ADDED to the old curve rather than replacing it. The
+   first attempt redistributed instead: deep floors gained, shallow ones lost,
+   and the default balanced build fell from 88 Orbs to 29 — punishing the way
+   most people play to fix a comparison between two builds. Now no floor pays
+   less than it used to and depth 26 pays about 10x depth 3 (it paid 4.6x).
+
+   Pairs with the depth-scaled death payout: a seeker who dies deep still brings
+   something home. TUNABLE. */
+export const floorMemory = depth => {
+  const d = Math.max(0, depth);
+  return 2 + d * 0.6 + Math.pow(d, 1.75) / 12;
+};
+
+/* Runes the Gates of Zot demand of every delver (DCSS asks for 3). TUNABLE: this
+   is the main dial for how long a full run takes, because each rune costs a
+   branch descent and a branch boss. */
+export const ZOT_RUNES=3;
+/* no floor should ever detain a delver longer than this (see the escape hatch) */
+export const FLOOR_TURN_LIMIT=4000;
+/* Chance a seeker skips what remains of a floor and heads for the stairs.
+   Cowardly clears everything; reckless dives. TUNABLE — validated against the
+   average level of the fallen, which is what caution is for. */
+export const DIVE_CHANCE={cautious:0,normal:0.35,bold:0.9};
+/** The nearest branch ON THIS HERO'S ROUTE whose rune it still lacks, or null.
+
+    Restricted to the route on purpose. Searching every branch made the Gates of
+    Zot override the player's routing entirely: wherever a guild was sent, the
+    detour walked it to whatever rune happened to be missing, so both routes came
+    home with the same six kinds of rune and the choice moved nothing but tempo
+    (measured: runeKinds 6.3 against 6.0, a 1.05x spread, while Orbs differed
+    1.75x — exactly backwards from what a route is supposed to decide).
+
+    Each road now carries four rune branches for the three the Gates demand, so a
+    missed boss costs a detour rather than the run -- and the detour stays on the
+    road, which is what lets the roads keep their own characters. */
+export function runeBranchFor(h){
+  const onRoute=new Set(buildRoute(h.strategy).map(seg=>seg[0]));
+  let best=null,bestD=1e9;
+  for(const k of BR_ORDER){
+    const br=BRANCHES[k];
+    if(!br.rune||h.runes.includes(br.rune))continue;
+    if(!onRoute.has(k))continue;
+    const d=Math.abs((BR_OFFSET[k]||0)-brDepth(h));
+    if(d<bestD){bestD=d;best=k}
+  }
+  return best;
+}
 export function startRun(h,s){
   h.state='run';h.rest=false;h.segIdx=0;h.turn=0;
   h.curHp=null;h.uniqSeen=[];h.runes=[];
   h.inv={curing:2+memEff(s,'pots')};
   h.known=[];h.status={};h.gold=0;h.keys=0;
-  h.inPortal=null;h.banished=null;h.fundedZig=false;
-  if(memHas(s,'k_autoequip'))equipBestFromArmory(h,s);
+  h.inPortal=null;h.banished=null;h.fundedZig=false;h.detour=null;
+  h.maxDepth=null;h.maxBrDepth=0; /* per-run reach: the death payout reads it */
+  h.mp=mpMaxOf(h); /* casters start with a full mana pool */
+  /* A seeker always takes the best the guild holds. This used to be sold as a
+     keystone, which meant an automatically dispatched hero walked into the dungeon
+     empty-handed past a full armoury -- and once dispatch became unconditional that
+     turned from an inconvenience into the whole problem. Measured over 20 days at one
+     check-in a day: seekers reached the Gates of Zot at the same level as an
+     attentive account's (13.7 against 14.4) with 424 hit points against 4640, and the
+     account took zero Orbs. Leaving good armour in a chest while your fighter goes
+     down naked is not a decision any guild would make, so it is not a decision the
+     game should charge for. */
+  equipBestFromArmory(h,s);
   const route=buildRoute(h.strategy);
-  h.branch=route[0][0];h.floor=1;
+  h.branch=route[0][0];h.floor=1;h.floorTurns=0;
   genFloor(h,s);
   const st=heroStats(h,s);
   h.curHp=st.hpMax;h.maxHpCache=st.hpMax;
@@ -105,19 +192,78 @@ function nextFloor(h,s){
   const seg=route[h.segIdx];
   const br=BRANCHES[h.branch];
   h.rep.floors++;
-  gainMem(s,2+brDepth(h)*.6);
+  gainMem(s,floorMemory(brDepth(h)));
   /* progress tracking */
   const short=br.short;
   const pk=short==='D'?'D':short;
   s.progress[pk]=Math.max(s.progress[pk]||0,h.floor);
+  /* Rune detour: the hero was sent off-route to fetch a rune the Gates demand.
+     A detour must run to the branch's OWN floor (the boss holds the rune) — the
+     route segment's limit is meaningless here and would turn the hero around one
+     floor short of the boss, forever. */
+  if(h.detour){
+    if(h.branch===h.detour&&h.floor<br.floors){
+      h.floor++;
+      genFloor(h,s);
+      hlog(h,h.name+t(' enters ')+brTag(h),'sys');
+      h.maxDepth=brTag(h);h.maxBrDepth=Math.max(h.maxBrDepth||0,brDepth(h));
+      return;
+    }
+    /* bottom reached: the boss either yielded its rune or there is none to take */
+    h.detour=null;
+    const nxt=h.runes.length<ZOT_RUNES?runeBranchFor(h):null;
+    if(nxt){
+      h.detour=nxt;h.branch=nxt;h.floor=1;
+      hlog(h,h.name+t(' presses on toward ')+t(BRANCHES[nxt].n),'sys');
+      genFloor(h,s);return;
+    }
+    h.branch='zot';h.floor=1;
+    hlog(h,'ᚱ '+h.name+t(' bears the runes to the Gates of Zot!'),'rune');
+    genFloor(h,s);
+    h.maxDepth=brTag(h);h.maxBrDepth=Math.max(h.maxBrDepth||0,brDepth(h));
+    return;
+  }
   if(h.floor>=seg[1]||h.floor>=br.floors){
     /* segment done → next segment */
     h.segIdx++;
     if(h.segIdx>=route.length){h.segIdx=route.length-1}
-    const ns=route[h.segIdx];
-    /* zot gate check */
-    if(ns[0]==='zot'&&s.runesTotal<3&&h.runes.length<3){
-      hlog(h,t('The Gates of Zot are sealed — 3 runes required. ')+h.name+t(' farms the Depths.'),'sys');
+    let ns=route[h.segIdx];
+    /* The fourth rune branch is SLACK, not homework. Every road carries four
+       because the Gates demand three and a road with exactly three fails outright
+       on one missed boss -- but a hero who already carries three was still being
+       marched through the last one, which on the Iron Road means walking into the
+       Tomb for nothing. Measured, that made the road a meat grinder: 880 deaths
+       and 1.3 Orbs against the Wild Road's 568 and 16.7. Skip what the Gates no
+       longer need; a rune branch is a means, not a waypoint. */
+    let ns2=ns;
+    while(ns2[0]!=='zot'&&BRANCHES[ns2[0]]&&BRANCHES[ns2[0]].rune&&h.runes.length>=ZOT_RUNES
+          &&h.segIdx<route.length-1){
+      hlog(h,h.name+t(' carries the runes the Gates demand and passes by ')+t(BRANCHES[ns2[0]].n),'sys');
+      h.segIdx++;ns2=route[h.segIdx];
+    }
+    ns=ns2;
+    /* Gates of Zot: THIS delver must carry 3 runes, as in DCSS. The old check
+       read s.runesTotal, so the gate opened forever after any account banked 3
+       and every later hero walked in empty-handed — the single biggest reason a
+       full run took under an hour and the Orb showed up 14 times a day. */
+    if(ns[0]==='zot'&&h.runes.length>=ZOT_RUNES){
+      const tl=s.tel=s.tel||newTel();
+      tl.gateOk++;tl.zotXL+=h.xl;tl.zotHp+=(h.maxHpCache||0);
+    }
+    if(ns[0]==='zot'&&h.runes.length<ZOT_RUNES){
+      (s.tel=s.tel||newTel()).sealed++;
+      const want=runeBranchFor(h);
+      if(want){
+        hlog(h,t('The Gates of Zot are sealed — ')+ZOT_RUNES+t(' runes required (')+h.runes.length+
+          t(' carried). ')+h.name+t(' turns toward ')+t(BRANCHES[want].n),'sys');
+        h.detour=want;h.branch=want;h.floor=1;
+        genFloor(h,s);return;
+      }
+      /* every rune branch already stripped: nothing left but to grind the Depths */
+      /* the chosen path holds no more runes: this route has failed, and the
+         seeker delves on until something finishes it */
+      hlog(h,t('The Gates of Zot are sealed and this path holds no more runes. ')+
+        h.name+t(' delves on regardless.'),'sys');
       h.branch='depths';h.floor=Math.max(1,Math.min(5,h.floor));
       genFloor(h,s);return;
     }
@@ -133,8 +279,9 @@ function nextFloor(h,s){
     if(h.branch==='dungeon')h.dFloor=Math.max(h.dFloor||1,h.floor);
   }
   genFloor(h,s);
+  h.floorTurns=0;
   hlog(h,h.name+t(' enters ')+brTag(h),'sys');
-  h.maxDepth=brTag(h);
+  h.maxDepth=brTag(h);h.maxBrDepth=Math.max(h.maxBrDepth||0,brDepth(h));
 }
 /* DCSS-style training: kill XP goes into a pool, which is distributed among
    the skills in use (auto-training), factoring in aptitudes, crosstraining and
@@ -191,7 +338,31 @@ export function heroDie(h,killer,s){
   if(h.gold>0){s.gold+=h.gold;hlog(h,t('Hero\'s wallet (')+fmt(h.gold)+t(' 🜚) returns to the treasury'),'sys')}
   const ck0=comboKey(h.race,h.cls);
   s.stat.bestXL[ck0]=Math.max(s.stat.bestXL[ck0]||0,h.xl);
-  const gained=gainMem(s,30+h.xl*4,true);
+  /* Per-axis telemetry. Every player control was measured only by Orbs per day,
+     which is why balancing them made them converge: four different decisions
+     competing in one number can only be equalised. These record what each
+     decision is actually FOR — how far a seeker got before falling (caution),
+     and what the delve brought home (route, spend). */
+  const tel=s.tel=s.tel||newTel();
+  tel.fallenXL+=h.xl; tel.fallenN++;
+  /* Depth at death, not level at death. Level turned out to be pinned by the
+     difficulty curve: a seeker falls when monsters outclass it, which happens at
+     a fairly fixed power, and a diver earns richer experience per kill on deeper
+     floors so its level catches up. Measured, the three caution settings left
+     corpses at 14.94, 14.65 and 14.76 — a metric the system holds flat no matter
+     what the control does. How FAR it got is the thing caution can actually
+     move. */
+  tel.fallenDepth+=(h.maxBrDepth||0);
+  const dbr=h.inPortal?h.inPortal.type:(h.branch||'?');
+  tel.deathBr[dbr]=(tel.deathBr[dbr]||0)+1;
+  /* Death pays for how FAR the seeker got, not merely that they died. A flat
+     payout made dying strictly profitable (Memory, shards and ghost stacks with
+     the gear and wallet handed back), so throwing bodies at D:3 beat delving.
+     Now a deep loss is still worth mourning while a shallow flameout is not,
+     which is what makes caution and recall real decisions. */
+  const reach=h.maxBrDepth||brDepth(h);
+  const depthMul=0.35+reach/14; /* D:3 ~0.6x, Lair ~1.0x, Depths ~1.9x, Zot:5 ~2.2x */
+  const gained=gainMem(s,Math.round((18+h.xl*3)*depthMul),true);
   hlog(h,t('🕯 Dungeon Memory: +')+gained,'sys');
   const sh=Math.max(1,Math.floor((SHARDS_PER[h.rarity]+h.xl*.4)*shardMulF(s)));
   const ck=comboKey(h.race,h.cls);
@@ -210,7 +381,11 @@ export function heroDie(h,killer,s){
   /* gear back to armory (90%) */
   for(const slot of Object.keys(h.gear)){
     const it=h.gear[slot];
-    if(it&&!it.id.startsWith('st')&&rnd(h)<.9)storeItem(s,it);
+    /* the Quartermaster keystone: nothing is lost in the dark */
+    if(it&&!it.id.startsWith('st')&&(memHas(s,'k_autoequip')||rnd(h)<.9)){
+      storeItem(s,it);
+      s.tel.gearHome++; if(it.unrandId)s.tel.artefacts++;
+    }
   }
   s.fame.unshift({name:h.name,race:h.race,cls:h.cls,rarity:h.rarity,xl:h.xl,
     depth:h.maxDepth||brTag(h),by:killer,won:false,runes:h.runes.length});
@@ -223,9 +398,12 @@ export function heroWin(h,s){
   /* Zot essence pays out once per cycle — the FIRST Orb is the one that matters */
   const firstWin=((s.stat.wins||0)-((s.cycBase&&s.cycBase.wins)||0))===0;
   s.stat.wins=(s.stat.wins||0)+1;
+  s.orbsThisWindow=(s.orbsThisWindow||0)+1; /* feeds the smoothed Orbs-per-day rate */
   s.progress.Zot=Math.max(s.progress.Zot||0,5);
   /* eternal Pantheon: an Orb carried out while pledged deepens that god's favor */
-  if(h.god)s.pantheon[h.god]=(s.pantheon[h.god]||0)+1;
+  if(h.god){s.pantheon[h.god]=(s.pantheon[h.god]||0)+1;
+    s.tel=s.tel||newTel();
+    s.tel.godWins[h.god]=(s.tel.godWins[h.god]||0)+1;}
   recordVictory(s,h);
   recordRunnerWin(s,h);
   const cReward=checkContract(s,h);
@@ -270,6 +448,7 @@ export function simTick(h,s){
   const m=h.map;
   /* regen */
   if(h.turn%8===0)h.curHp=Math.min(h.maxHpCache,h.curHp+st.regen);
+  if(st.caster&&(h.mp||0)<st.mpMax)h.mp=Math.min(st.mpMax,(h.mp||0)+0.35+(h.skills.spellcasting||0)*.06); /* mana regen */
   /* status effects: tick down */
   for(const k of Object.keys(h.status)){
     if(h.status[k]>0)h.status[k]--;
@@ -335,9 +514,16 @@ export function simTick(h,s){
   for(const mo of m.monsters){
     const d=cheb(mo.x,mo.y,m.px,m.py);
     if(d<=wakeR&&los(m,m.px,m.py,mo.x,mo.y))mo.awake=true;
-    /* only lock onto foes the hero can actually reach or see — chasing a phantom
-       walled off from us used to livelock the hero on its start cell */
-    if(mo.awake&&d<td&&(df[mo.y*MW+mo.x]>=0||los(m,m.px,m.py,mo.x,mo.y))){td=d;tgt=mo}
+    /* Lock on only to foes the hero can REACH, or can hit from here this turn.
+       "Reachable or merely visible" looks equivalent but is not: a monster seen
+       across a chasm and out of weapon range made the hero call stepToward every
+       turn, which cannot path to it, while acted=true suppressed both exploring
+       and the stairs. The delver then stood still forever — measured at 24,675
+       turns on one floor of the Lair, twenty simulated days without a single
+       state change, and it is what produced the "stalled account" mode. */
+    const reachable=df[mo.y*MW+mo.x]>=0;
+    const canHitNow=d<=Math.min(st.rng,sight)&&(d<=1||los(m,m.px,m.py,mo.x,mo.y));
+    if(mo.awake&&d<td&&(reachable||canHitNow)){td=d;tgt=mo}
   }
   /* moving unnoticed trains Stealth */
   if(!m.monsters.some(mo=>mo.awake)&&h.turn%4===0)markUse(h,'stealth',.3);
@@ -364,6 +550,30 @@ export function simTick(h,s){
     const here=m.items.findIndex(it=>it.x===m.px&&it.y===m.py);
     if(here>=0){pickup(h,m.items[here],s);m.items.splice(here,1);acted=true}
   }
+  /* Escape hatch: no floor may detain a delver forever. Which way out matters,
+     though, and descending is only safe where depth grows slowly.
+
+     Inside a portal it is the worst possible answer. A Ziggurat adds two depth
+     levels per floor and monsters scale as 1.4^depth, so a seeker pinned by
+     something it can neither kill nor reach was being pushed DEEPER every 4000
+     turns into strictly worse odds — 998 times over, until the portal hit its
+     own 999-floor limit. Observed at Ziggurat:300, depth 613, the hero still at
+     full health beside a monster with 9.1e89 hit points, having spent 4300 turns
+     on the floor. That is not a delve, it is a stuck loop with a staircase.
+
+     So a trapped delver LEAVES a portal and only presses on in a branch, where
+     the next floor is a normal step down rather than a doubling of the world. */
+  h.floorTurns=(h.floorTurns||0)+1;
+  if(h.floorTurns>FLOOR_TURN_LIMIT){
+    if(h.inPortal){
+      hlog(h,h.name+t(' can make no headway here and withdraws.'),'sys');
+      exitPortal(h,s);
+    }else{
+      hlog(h,h.name+t(' finds nothing more here and presses on.'),'sys');
+      nextFloor(h,s);
+    }
+    return;
+  }
   if(!acted){
     /* explore: nearest reachable item or unexplored, else stairs */
     const goal=exploreGoal(h,df);
@@ -381,13 +591,20 @@ export function simTick(h,s){
   }
   /* class mechanics: summoning and blink */
   const cd0=CLASSES[h.cls];
-  if(cd0.summon){
-    h.sumCd=(h.sumCd||0)-1;
-    m.allies=m.allies||[];
-    const cap=1+Math.floor((h.skills.summonings||0)/5);
-    if(h.sumCd<=0&&m.allies.length<cap){
-      h.sumCd=10;
-      summonAlly(h,s);
+  /* summoning is now a SPELL, not a timer: a caster who knows summon spells
+     (summoner via Summonings, necromancer via Death Channel) casts the strongest
+     it can afford when short of the ally cap, spending MP and scaling the ally by
+     the spell's strength (hd). */
+  m.allies=m.allies||[];
+  const sumCap=2+Math.floor((h.skills.summonings||0)/4);
+  if(st.caster&&m.allies.length<sumCap){
+    const ss=bestSummonSpell(h);
+    if(ss){
+      h.mp-=ss.mp;
+      const count=(ss.summon.count||1);
+      for(let i=0;i<count&&m.allies.length<sumCap;i++)summonAlly(h,s,undefined,undefined,ss.summon.hd);
+      m.fx={tile:ss.icon,x:m.px,y:m.py,t:4};
+      hlog(h,'✦ '+h.name+t(' casts ')+t(ss.n),'god');
     }
   }
   if(cd0.blink&&h.curHp/h.maxHpCache<.3&&(h.turn-(h.blinkT||0))>60){
@@ -489,7 +706,21 @@ export function heroAttack(h,st,mo,s){
       mo._ph=(mo._ph||0)+1;
       if(mo._ph%3===0){if(rnd(h)<.3)hlog(h,t(mo.n)+t(' phases through the strike'),'sys');return}
     }
-    let dmg=st.dmg*(0.75+rnd(h)*.5);
+    /* casters auto-cast the strongest affordable spell from their memorised set;
+       out of MP → a weak fallback dart. The spell scales the base magic damage and
+       carries its own side-effects (AOE splash, chill, drain-heal). */
+    let spellPow=1,spellAoe=false,spellSlow=false,spellHeal=0,spellName='';
+    if(st.caster){
+      const clustered=h.map.monsters.some(o=>o!==mo&&Math.abs(o.x-mo.x)<=1&&Math.abs(o.y-mo.y)<=1);
+      const lowHp=h.curHp/(h.maxHpCache||h.curHp)<.4;
+      const sp=(h.mp||0)>0?bestDamageSpell(h,clustered,lowHp):null;
+      if(sp){
+        h.mp-=sp.mp;
+        spellPow=sp.pow;spellAoe=(sp.type==='aoe');spellSlow=!!sp.slow;spellHeal=sp.heal||0;spellName=sp.n;
+        h.map.fx={tile:sp.fx,x:mo.x,y:mo.y,t:4}; /* transient effect tile for the canvas */
+      }else spellPow=.5; /* mana-tapped: a feeble dart */
+    }
+    let dmg=st.dmg*(st.caster?spellPow:1)*(0.75+rnd(h)*.5);
     let crit=rnd(h)<st.critc;
     if(crit)dmg*=2;
     if(hasAf(mo,'antimagic')&&st.style==='magic')dmg*=.5;
@@ -500,7 +731,7 @@ export function heroAttack(h,st,mo,s){
       markUse(h,'stealth',2);
       mo.awake=true;
     }
-    if(st.chill&&mo.hp>0)mo.chill=5; /* frost slows */
+    if((st.chill||spellSlow)&&mo.hp>0)mo.chill=5; /* frost/ice spells slow */
     if(st.vsUndead>1&&mo.special&&mo.special.und)dmg*=st.vsUndead; /* holy wrath burns the undead */
     if(st.venom&&mo.hp>0&&!(mo.special&&mo.special.und))
       mo.poisonA={dps:Math.max(1,st.dmg*.12),t:4}; /* venom blade (undead are immune to poison) */
@@ -512,12 +743,13 @@ export function heroAttack(h,st,mo,s){
     if(cd.rage&&h.curHp/h.maxHpCache<.5)dmg*=1.5;
     /* Okawaru-style heroism vs uniques and bosses (Pantheon favor amplifies it) */
     if(h.god&&(mo.boss||mo.uniq)){const hb=godField(s,h.god,'hero');if(hb)dmg*=hb;}
-    if(cd.aoe){
+    if(cd.aoe||spellAoe){
       for(const o of h.map.monsters)
         if(o!==mo&&Math.abs(o.x-mo.x)<=1&&Math.abs(o.y-mo.y)<=1)o.hp-=dmg*.5;
     }
     mo.hp-=dmg;
     if(st.leech>0)h.curHp=Math.min(h.maxHpCache,h.curHp+dmg*st.leech);
+    if(spellHeal>0)h.curHp=Math.min(h.maxHpCache,h.curHp+dmg*spellHeal); /* necromancy drain */
     if(mo.special&&mo.special.chill){}
     if(hasAf(mo,'thorns')&&st.style==='melee'){
       h.curHp-=dmg*.2;
@@ -528,8 +760,9 @@ export function heroAttack(h,st,mo,s){
       for(const o of h.map.monsters)o.awake=true;
       hlog(h,'\ud83d\udce2 '+t(mo.n)+t(' bellows — the whole floor answers!'),'dmg');
     }
+    if(spellName)hlog(h,'✦ '+h.name+t(' casts ')+t(spellName)+t(' at ')+t(mo.n)+' ('+Math.round(dmg)+')','sys');
     if(mo.hp<=0)killMon(h,mo,s);
-    else{
+    else if(!spellName){
       hlog(h,h.name+t(' hits ')+t(mo.n)+' ('+Math.round(dmg)+')','sys');
       if(hasAf(mo,'blinker')&&rnd(h)<.35){
         const m2=h.map,freeC=[];
@@ -575,7 +808,11 @@ function killMon(h,mo,s){
   const depth=brDepth(h);
   const eliteLoot=mo.eliteAf?(1+.5*mo.eliteAf.length)*(memHas(s,'k_elite')?2:1):1;
   const goldMul=(RACES[h.race].gold||1)*gGold(s)*todayAffix().gold*eliteLoot;
-  const g=Math.floor((2+rnd(h)*4)*Math.pow(1.22,depth)*goldMul);
+  /* Gold income used to compound at 1.22^depth ON TOP of a multiplier stack that
+     itself reaches ~1000x, while every sink was a fixed constant — so treasuries
+     hit tens of millions against 100k prices and gold stopped being a decision.
+     The depth curve is now gentle; the sinks scale with income (see treasury.js). */
+  const g=Math.floor((2+rnd(h)*4)*Math.pow(GOLD_DEPTH_BASE,depth)*goldMul);
   if(h.fundedZig){h.rep.gold+=g;}else{s.gold+=Math.ceil(g*.5);h.gold+=Math.floor(g*.5);h.rep.gold+=g;}
   gainXp(h,mo.xp,s);
   if(rnd(h)<.06*gDrop(s))s.scrap++;
@@ -624,18 +861,30 @@ function killMon(h,mo,s){
     hlog(h,h.name+t(' kills: ')+t(mo.n)+' (+'+g+' 🜚)','kill');
   }
 }
-function giveRune(h,name,s){
-  /* DCSS: each named rune exists once — repeats within a cycle pay out gold */
+/* Two different things used to share one counter, which is why the Gates of Zot
+   stopped meaning anything: a rune IN A HERO'S HANDS is a key (it opens Zot for
+   that delver, exactly as in DCSS), while a rune IN THE TREASURY is currency and
+   permanent aura. Named runes bank once per cycle so the aura cannot inflate —
+   but that dedup also blocked the SECOND hero of a cycle from ever holding three,
+   so the gate had to read the account's lifetime total, and once any account
+   banked 3 runes every future hero strolled into Zot carrying none.
+   Now: the hero always picks the rune up (key), the treasury credits it only the
+   first time per cycle (currency). Pacing and economy stop fighting each other. */
+export function giveRune(h,name,s){
   s.cycRunes=s.cycRunes||[];
   const generic=name===t("a unique's rune");
-  if(!generic&&s.cycRunes.includes(name)){
+  const dupe=!generic&&s.cycRunes.includes(name);
+  if(!generic&&!h.runes.includes(name))h.runes.push(name); /* the key is always earned */
+  if(dupe){
     const g=400+40*brDepth(h);
     s.gold+=g;
-    hlog(h,'ᚱ '+h.name+t(' finds a duplicate rune — the guild sells it (+')+g+' 🜚)','loot');
+    hlog(h,'ᚱ '+h.name+t(' claims a rune the guild already holds — it is sold (+')+g+' 🜚)','loot');
     return;
   }
   if(!generic)s.cycRunes.push(name);
-  h.runes.push(name);
+  if(generic)h.runes.push(name);
+  s.tel=s.tel||newTel();
+  s.tel.runeKinds[name]=(s.tel.runeKinds[name]||0)+1;
   s.runes++;s.runesTotal++;
   hlog(h,'ᚱ '+h.name+t(' collects a rune: ')+t(name)+'!','rune');
   h.rep.notable.push(t('ᚱ obtained: ')+t(name));
@@ -648,13 +897,27 @@ function monAttack(h,st,mo,s){
     hlog(h,h.name+t(' dodges ')+t(mo.n),'sys');
     return;
   }
-  let dmg=mo.dmg*(0.7+rnd(h)*.6);
-  dmg=Math.max(1,dmg-st.ac*.7)*(1-st.resAll);
-  if(RACES[h.race].shrug)dmg*=.9; /* the dwarf shrugs off part of the damage */
-  const cd=CLASSES[h.cls];
-  h.curHp-=dmg;
-  hlog(h,t(mo.n)+t(' hits ')+h.name+' ('+Math.round(dmg)+')','dmg');
-  if(hasAf(mo,'vampiric'))mo.hp=Math.min(mo.maxHp,mo.hp+dmg*.8);
+  let dmg;
+  if(mo.cast){
+    /* a caster monster hurls a bolt from range (DCSS-style): it partly bypasses
+       armour and physical resist, heals the caster on a necromantic drain, and
+       shows its school's effect tile on the hero */
+    const FXT={conj:'fx_iron_shot',fire:'fx_bolt_of_fire',ice:'fx_bolt_of_cold',necro:'fx_bolt_draining'};
+    h.map.fx={tile:FXT[mo.cast]||'fx_magic_dart',x:h.map.px,y:h.map.py,t:4};
+    dmg=mo.dmg*(0.8+rnd(h)*.5);
+    dmg=Math.max(1,dmg-st.ac*.35)*(1-st.resAll*.5);
+    if(RACES[h.race].shrug)dmg*=.9;
+    h.curHp-=dmg;
+    if(mo.cast==='necro')mo.hp=Math.min(mo.maxHp,mo.hp+dmg*.4);
+    hlog(h,'✦ '+t(mo.n)+t(' casts a bolt at ')+h.name+' ('+Math.round(dmg)+')','dmg');
+  }else{
+    dmg=mo.dmg*(0.7+rnd(h)*.6);
+    dmg=Math.max(1,dmg-st.ac*.7)*(1-st.resAll);
+    if(RACES[h.race].shrug)dmg*=.9; /* the dwarf shrugs off part of the damage */
+    h.curHp-=dmg;
+    hlog(h,t(mo.n)+t(' hits ')+h.name+' ('+Math.round(dmg)+')','dmg');
+    if(hasAf(mo,'vampiric'))mo.hp=Math.min(mo.maxHp,mo.hp+dmg*.8);
+  }
   if(mo.special&&mo.special.pois&&!st.rPois&&rnd(h)<.35){
     h.poison={dps:Math.max(1,mo.dmg*.15),t:5};
     hlog(h,'☠ '+h.name+t(' is poisoned (')+t(mo.n)+')','dmg');
@@ -769,6 +1032,7 @@ function monStep(h,mo,df){
   }
   if(bestX>=0){mo.x=bestX;mo.y=bestY}
 }
+export function exploreGoalForTest(h,df){return exploreGoal(h,df)}
 function exploreGoal(h,df){
   const m=h.map;
   const reach=(x,y)=>!df||df[y*MW+x]>=0; /* only pursue goals the hero can path to */
@@ -781,15 +1045,36 @@ function exploreGoal(h,df){
     if(d<bd){bd=d;best=[it.x,it.y]}
   }
   if(best)return best;
-  /* unexplored (classic/cautious only) */
-  if(h.caution!=='bold'||h.strategy!=='speed'){
+  /* Clear the floor, or dive? This is what CAUTION decides, and until now it
+     decided nothing: exploration was gated on the ROUTE, so only a bold
+     speedrunner ever skipped anything and cowardly/normal were identical. The
+     three settings left corpses at indistinguishable levels — 14.36, 14.09 and
+     14.16 — which is a dead control, not a cautious one.
+
+     A seeker that clears floors gathers the experience to survive deeper ones and
+     falls further in; a diver reaches depth it has not earned. The trade is
+     levels against pace, and it is measured as the average level of the fallen,
+     never as Orbs per day. */
+  /* The roll is per FLOOR, not per step. It used to be thrown on every turn, so a
+     seeker with normal caution asked itself "clear this floor or dive?" afresh at each
+     footfall -- 65% explore, 35% stairs -- and when the unexplored corner and the
+     stairs lay in opposite directions it walked west, east, west, pacing on the spot
+     until the coin happened to land the same way often enough to make progress. That
+     is what "on some levels" meant: it depended entirely on whether the two goals
+     pointed the same way.
+     The question is about the floor. Ask it once, when the floor is first considered,
+     and abide by the answer. */
+  if(m.dive===undefined){
+    const p=DIVE_CHANCE[h.caution]??DIVE_CHANCE.normal;
+    m.dive=p>=1||rnd(h)<p;
+  }
+  if(!m.dive){
     for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
       if(m.g[y][x]===0&&!m.explored[y][x]&&reach(x,y)){
         const d=Math.abs(x-m.px)+Math.abs(y-m.py);
         if(d<bd){bd=d;best=[x,y]}
       }
     }
-    if(best&&h.strategy==='speed'&&rnd(h)<.7)best=null;
   }
   return best;
 }
@@ -800,6 +1085,7 @@ function pickup(h,it,s){
     rnd(h);hlog(h,h.name+t(' picks up ')+g+t(' gold'),'loot'); /* keep the draw; log every pickup */
   }else if(it.kind==='cons'){
     h.inv[it.c.type]=(h.inv[it.c.type]||0)+1;
+    (s.tel=s.tel||newTel()).consFound++;
     hlog(h,h.name+t(' picks up: ')+consName(it.c,h.known.includes(it.c.type)),'loot');
   }else if(it.kind==='key'){
     h.keys++;hlog(h,'🗝 '+h.name+t(' finds a golden key!'),'rune');
@@ -810,6 +1096,11 @@ function pickup(h,it,s){
     enterPortal(h,s,it.ptype);
   }else if(it.kind==='abyss_exit'){
     returnFromAbyss(h,s);
+  }else if(it.kind==='book'){
+    /* a spellbook holds a school's capstone spell — a caster of that school learns it */
+    const learned=learnBook(h,it.book);
+    if(learned.length)hlog(h,'📖 '+h.name+t(' masters ')+learned.map(id=>t(spellById(id).n)).join(', ')+'!','loot');
+    else hlog(h,h.name+t(' finds a spellbook (no aptitude to read it)'),'sys');
   }else if(it.kind==='item'){
     /* the item was pre-rolled at floor generation — take exactly that one */
     acquireItem(h,s,it.it||randomItem(null,Math.min(2,Math.floor(brDepth(h)/8)),()=>rnd(h)));
@@ -829,6 +1120,7 @@ export function dropForgeItem(h,s){
   acquireItem(h,s,randomItem(null,Math.min(2,Math.floor(depth/8)),()=>rnd(h)));
 }
 export function acquireItem(h,s,it){
+  telGear(s,it);
   /* auto-equip if better for this hero, else armory */
   const better=tryAutoEquip(h,it,s);
   hlog(h,t('✦ found: ')+itemName(it)+(better?t(' (equipped)'):t(' (to armory)')),'loot');
@@ -874,15 +1166,136 @@ export function resetSimClocks(){simAcc={}}
 /* the "Auto-summon" keystone: fills a free slot with an idle hero, or buys a
    summon when the treasury holds at least twice the price; runs inside the sim
    so it works identically online, in background tabs and in offline catch-up */
-function autoSummonStep(s){
-  if(s.heroes.filter(x=>x.state==='run').length>=maxSlots(s))return;
+/** A seeker standing in the hall walks back into the dungeon. Always on.
+
+    The guild used to stand still whenever the player did: dispatching happened only
+    when a keystone deep in the gacha spine had been bought, so until then a seeker who
+    survived a delve -- or a fresh recruit -- simply waited in camp. That is what made
+    attention worth 122x over 30 days: checking in every five minutes returned 594
+    Orbs and checking in once a day returned 4.9, because the whole day in between the
+    guild was idle. And the escape was circular: reaching the keystone needs tree
+    purchases, tree purchases need Memory, Memory needs delving, delving needs the
+    keystone.
+
+    Standing orders already exist -- a new seeker inherits the guild's route, caution
+    and spending (see guildDoctrine) -- so the guild knows perfectly well what to do
+    without being told again. A seeker deliberately recalled sets `rest` and is left
+    alone; that is the player's word and it still holds.
+
+    What the keystone sells is now what a keystone should sell: spending the treasury
+    on a summons unprompted. Attention should buy BETTER decisions -- when to prestige,
+    where the Memory goes, who to replace -- not the difference between a guild that
+    works and a guild that does not. */
+function autoDispatchStep(s){
+  if(s.heroes.filter(x=>x.state==='run').length>=maxSlots(s))return false;
   const idle=s.heroes.find(x=>x.state==='camp'&&!x.rest);
-  if(idle){startRun(idle,s);return}
+  if(idle){startRun(idle,s);return true}
+  return false;
+}
+/** Standing orders: the policy the player sets once and the guild follows.
+
+    Dispatching seekers was not what made attention worth 122x -- an account checking
+    in once a day still brings home 44% of the gear and 64% of the reagents of one
+    checking in every five minutes, so the guild delves nearly all the time. What it
+    never does is GROW: 1.1 prestiges against 14.9. Prestige, the tree, the summons --
+    every decision waited for the player to be present, and a decision that cannot be
+    delegated is not a policy, it is a chore with a timer on it.
+
+    So the player states the policy and the guild executes it. Attention then buys
+    better judgement -- when to break the standing order, where the Memory really ought
+    to go, who to replace -- rather than the difference between a guild that grows and
+    one that does not. Off by default: a prestige resets the tree, and no automation
+    should do that to a player who has not asked for it. */
+function standingOrders(s){
+  /* Promoting a duplicate into a star is not a decision -- the shards are there, the
+     threshold is fixed, and no player has ever declined. It was nonetheless gated on
+     the player being present, which is how an absent account ends up with three
+     thousand unpromoted duplicates. Mechanical things happen on their own. */
+  for(const ck in s.shards){
+    let guard=0;
+    while(guard++<20){
+      const stars=s.stars[ck]||0,need=starNeed(stars);
+      if((s.shards[ck]||0)<need)break;
+      s.shards[ck]-=need;s.stars[ck]=stars+1;
+    }
+  }
+  /* Each order is a keystone away. Automation is the progression in a game of this
+     kind, and handing all of it over in the first minute turns the most interesting
+     decision -- what to delegate, and when -- into a settings screen configured once
+     and forgotten. The MECHANICAL automations above stay free: nobody declines to send
+     out a seeker already standing in the hall. */
+  const o=s.auto;
+  if(!o)return;
+  if(o.prestige&&memHas(s,ORDER_KEY.prestige)&&canPrestige(s))doPrestige(s);
+  /* Memory left in the treasury buys nothing. An account checking in once a day has
+     twenty chances to spend in twenty days against an attentive account's five
+     thousand, and it showed: 730,088 Memory sitting idle against 892, and seekers
+     reaching the Gates with 429 hit points against 5174. The guild spends to policy. */
+  /* Keeping the hall staffed is policy, not permission. It was the last thing still
+     locked behind a keystone, and it is what left an absent guild standing empty: when
+     the party falls there is nobody to dispatch, and a guild that may not hire cannot
+     start again until the player returns. The player says how much of the treasury may
+     go to summoning; the guild obeys that and nothing more. */
+  if(o.summon&&memHas(s,ORDER_KEY.summon)){
+    let guard=0;
+    while(guard++<8){
+      const running=s.heroes.filter(h=>h.state==='run').length;
+      const camp=s.heroes.filter(h=>h.state==='camp'&&!h.rest).length;
+      if(running+camp>=maxSlots(s))break;
+      if(!freeRollAvailable(s)&&s.gold<o.summon*rollCost(s))break;
+      if(!rollHero(s,false))break;
+    }
+  }
+  if(o.memory&&memHas(s,ORDER_KEY.memory)){
+    let guard=0;
+    while(guard++<12){
+      let pool=NODES.filter(n=>canBuy(s,n));
+      /* The order is a POLICY, and a policy that only ever buys the cheapest node is a
+         policy with no content. It also silently overrode every richer plan: this ran
+         every three seconds while a considered purchase happened only when the player
+         checked in, so the cheapest-first order won every time and eight different tree
+         strategies converged to one. Measured, the whole tree axis collapsed to 1.11x
+         and the no-oath control returned byte-identical numbers to the oath it was
+         meant to be compared against. Say what the policy IS and follow that. */
+      if(o.memory==='keystones'){
+        const k=pool.filter(n=>n.keystone);
+        /* saving for a keystone means SAVING: do not fritter the treasury meanwhile */
+        if(!k.length){
+          const reachable=NODES.some(n=>n.keystone&&!treeLvl(s,n.id)&&
+            n.req.some(r=>treeLvl(s,r)>0));
+          if(reachable)break;
+        } else pool=k;
+      }else if(o.memory!=='cheapest'){
+        pool=pool.filter(n=>n.region===o.memory);
+      }
+      if(o.noOath)pool=pool.filter(n=>!MASTERY_IDS.has(n.id));
+      if(!pool.length)break;
+      pool.sort((a,b)=>nodeCost(s,a)-nodeCost(s,b));
+      if(!buyNode(s,pool[0]))break;
+    }
+  }
+}
+function autoSummonStep(s){
+  if(autoDispatchStep(s))return;
+  if(s.heroes.filter(x=>x.state==='run').length>=maxSlots(s))return;
   if(!freeRollAvailable(s)&&s.gold<2*rollCost(s))return;
-  rollHero(s,false); /* the fresh hero is dispatched on the next step */
+  rollHero(s,false); /* the fresh seeker is dispatched on the next step */
+}
+/* Smoothed Orbs per day. The prestige bar is quoted in days of the guild's own
+   output, so it needs to know that output; a raw instantaneous count would make
+   the bar jitter, hence the day-long window and the even blend with history. */
+export const ORB_RATE_WINDOW=86400;
+function tickOrbRate(s,dtSec){
+  s.rateWindow=(s.rateWindow||0)+dtSec;
+  while(s.rateWindow>=ORB_RATE_WINDOW){
+    s.rateWindow-=ORB_RATE_WINDOW;
+    s.orbRate=((s.orbRate||0)+(s.orbsThisWindow||0))/2;
+    s.orbsThisWindow=0;
+  }
 }
 export function advanceHeroes(s,dtSec,silent){
-  const auto=memHas(s,'k_autosummon');
+  tickOrbRate(s,dtSec);
+  const auto=memHas(s,'k_autosummon')||ascAutoGuild(s);
   const herald=memHas(s,'k_herald');
   let left=dtSec;
   while(left>0){
@@ -896,16 +1309,18 @@ export function advanceHeroes(s,dtSec,silent){
       if(silent)n=Math.min(n,200000);
       while(n-->0&&h.state==='run')simTick(h,s);
     }
-    if(auto||herald){
+    {
       s.autoT=(s.autoT||0)+step;
       if(s.autoT>=3){
         s.autoT=0;
+        standingOrders(s);
         if(auto)autoSummonStep(s);
-        else if(freeRollAvailable(s)){
+        else if(herald&&freeRollAvailable(s)){
           /* Guild Herald keystone: a fallen party is replaced by a free seeker */
           const r=rollHero(s,false);
           if(r&&r.kind==='hero')startRun(r.h,s);
         }
+        else autoDispatchStep(s); /* the guild always sends out who it already has */
       }
     }
     left-=step;
@@ -930,8 +1345,22 @@ export function computeOffline(s,nowMs){
 }
 
 /** item goes to the armory; the "Auto-dismantle" keystone grinds grey items into scrap */
+const MARTIAL=new Set(['weapon','armour','shield']);
+/** Composition of what the dungeon YIELDS -- counted at acquisition, once per item.
+
+   It was first counted inside storeItem, on the reasoning that every path funnels
+   through it. That was wrong, and wrong in a way that hid the whole effect: a fallen
+   hero's kit is stored again on every death, so the count was dominated by gear
+   cycling through the guild, and the composition of THAT is fixed by the slot layout
+   (three martial slots against three of jewellery). Every road was therefore dragged
+   toward one half, and three roads with entirely different destinations measured
+   1.33x apart. Count what the dungeon hands over, not what the guild reshelves. */
+export function telGear(s,it){
+  const tel=s.tel=s.tel||newTel();
+  if(MARTIAL.has(it.slot))tel.martialHome++; else tel.jewelHome++;
+}
 export function storeItem(s,it){
-  if(memHas(s,'k_autodismantle')&&it.rar===0){
+  if((memHas(s,'k_autodismantle')||ascAutoGuild(s))&&it.rar===0){
     s.scrap+=2;s.stat.dismantled++;
     return;
   }
@@ -1160,6 +1589,9 @@ export function exitPortal(h,s){
     h.rep.notable.push(t('🏛 Ziggurat: ')+zf+t(' floors'));
   }else hlog(h,h.name+t(' returns from the portal'),'sys');
 }
+/* how strongly a shop's stock is biased toward rarer gear (same knob ziggurats
+   use). Shops are the one place a delver can convert a fat purse into power. */
+export const SHOP_LUCK=0.55;
 export function shopVisit(h,s,stype){
   const depth=brDepth(h);
   const frac={thrifty:.3,balanced:.6,lavish:1}[h.spend||'balanced'];
@@ -1170,8 +1602,14 @@ export function shopVisit(h,s,stype){
     const wantGear=(stype==='weapon'||stype==='armour')?rnd(h)<.6:rnd(h)<.25;
     if(wantGear){
       const slot=stype==='weapon'?'weapon':stype==='armour'?'armour':null;
-      const it=randomItem(slot,Math.min(2,Math.floor(depth/7)),()=>rnd(h));
-      const price=Math.floor((60+depth*20)*(1+it.rar)*(.8+rnd(h)*.5));
+      /* Shops stock the good stuff. The spending dial was measured as a pure
+         placebo (1.03x spread across thrifty/balanced/lavish) because every
+         offer was cheap enough for every budget: a 460 gold item against a
+         wallet holding thousands is not a choice. Rarity is luck-biased up and
+         priced super-linearly, so a full purse reaches gear a thrifty one never
+         will — and the gold spent here is gold the treasury never banks. */
+      const it=randomItem(slot,Math.min(2,Math.floor(depth/7)),()=>rnd(h),SHOP_LUCK);
+      const price=Math.floor((60+depth*20)*Math.pow(1+it.rar,2.2)*(.8+rnd(h)*.5));
       if(price<=budget){
         const eq=tryAutoEquip(h,it,s);
         if(eq){budget-=price;h.gold-=price;bought.push(itemName(it))}
@@ -1238,7 +1676,7 @@ const SUMMON_TIERS=[
   {min:18,kind:'komodo',n:'summoned monitor lizard'},
   {min:24,kind:'hydra', n:'summoned hydra'},
 ];
-export function summonAlly(h,s,forceKind,forceN){
+export function summonAlly(h,s,forceKind,forceN,hdMul){
   const m=h.map;
   m.allies=m.allies||[];
   let kind=forceKind,name=forceN;
@@ -1258,8 +1696,8 @@ export function summonAlly(h,s,forceKind,forceN){
     const a={kind,n:name,t:base.t,x:nx,y:ny,
       /* the army scales with the account like the summoner himself does —
          otherwise pets melt at deep NG while monsters keep growing */
-      hp:Math.floor(base.hp*(1+powSkl*.20+depth*.06)*gHp(s)),
-      dmg:Math.floor(base.dmg*(1+powSkl*.16+depth*.05)*gAtk(s)),
+      hp:Math.floor(base.hp*(1+powSkl*.30+depth*.10)*gHp(s)*(hdMul||1)),
+      dmg:Math.floor(base.dmg*(1+powSkl*.26+depth*.09)*gAtk(s)*(hdMul||1)),
       ttl:120,mv:0,spd:base.spd||1};
     a.maxHp=a.hp;
     m.allies.push(a);

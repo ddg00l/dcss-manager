@@ -1,9 +1,10 @@
 import {mulberry32} from '../core/rng.js';
-import {ngMonMul,cycleProgress,ngLevel} from '../core/prestige.js';
+import {GOLD_DEPTH_BASE} from '../core/economy.js';
+import {ngMonMul,inCycleMul,ngLevel} from '../core/prestige.js';
 import {nemesisLevel} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
-import {FLOOR_KEYS,floorAffixChance,eliteChance,rollEliteAffixes,affixLevel} from '../data/eliteAffixes.js';
-import {BRANCHES,brDepth,BR_OFFSET,BR_ORDER} from '../data/branches.js';
+import {FLOOR_KEYS,floorAffixChance,eliteChance,rollEliteAffixes,affixLevel,endgamePressure} from '../data/eliteAffixes.js';
+import {BRANCHES,brDepth,BR_OFFSET,BR_ORDER,BR_CORE} from '../data/branches.js';
 import {MONS,UNIQUES} from '../data/monsters.js';
 import {GODKEYS} from '../data/gods.js';
 import {gDrop} from '../core/economy.js';
@@ -11,6 +12,8 @@ import {randConsumable} from '../data/consumables.js';
 import {randomItem} from '../data/items.js';
 import {PORTALS,PORTAL_KEYS} from '../data/portals.js';
 import {memHas} from '../data/memtree.js';
+import {ascAbyssOrb} from '../core/ascension.js';
+import {SPELLBOOK_KEYS} from '../data/spells.js';
 
 export const MW=24,MH=15;
 export function genFloor(h,s){
@@ -95,19 +98,28 @@ export function genFloor(h,s){
     monsters.push(m);
   }
   const items=[];
-  const goldMul=P?P.goldMul:1;
+  /* A branch's loot character is what makes a road a choice about WHAT you get
+     rather than how fast you get it: the Mines drop weapons, the Vaults plate,
+     the Elven Halls enchanted jewellery, the Lair and the Swamp reagents, the
+     Tomb grave goods. Portals keep their own economy. */
+  const lc=(P?null:br.loot)||{};
+  const goldMul=(P?P.goldMul:1)*(lc.gold||1);
   const ng=(P?3:2)+Math.floor(rng()*3);
   for(let i=0;i<ng&&free.length>2;i++){const c=take();
-    items.push({x:c[0],y:c[1],kind:'gold',amt:Math.floor((8+rng()*20)*Math.pow(1.24,depth)*goldMul)})}
-  const consN=P?P.lootN:(rng()<.6?1:2);
+    items.push({x:c[0],y:c[1],kind:'gold',amt:Math.floor((8+rng()*20)*Math.pow(GOLD_DEPTH_BASE,depth)*goldMul)})}
+  const consN=P?P.lootN:Math.round((rng()<.6?1:2)*(lc.cons||1));
   for(let i=0;i<consN&&free.length>2;i++){const c=take();
     items.push({x:c[0],y:c[1],kind:'cons',c:randConsumable(rng)})}
   /* gear drop — ziggurats are gear vaults: near-guaranteed, luck-biased toward
      rarer/randart gear, and the deeper the zig the better the luck */
   const isZig=P&&h.inPortal.type==='zig';
-  const gearLuck=isZig?Math.min(.85,.35+.03*(h.inPortal.floor||1)):0;
-  if(rng()<(isZig?.9:(P?.5:.10)*gDrop(s))&&free.length>2){const c=take();
-    items.push({x:c[0],y:c[1],kind:'item',it:randomItem(null,Math.min(2,Math.floor(depth/8)),rng,gearLuck)})}
+  /* A branch that hands over little gear hands over better gear: one fine thing in a
+     hydra's den beats ten poor ones, and it is what keeps the reagent road from being
+     merely the poor road. */
+  const gearLuck=isZig?Math.min(.85,.35+.03*(h.inPortal.floor||1)):(lc.luck||0);
+  const brSlot=()=>lc.slots?lc.slots[Math.floor(rng()*lc.slots.length)]:null;
+  if(rng()<(isZig?.9:(P?.5:.10*(lc.gear||1))*gDrop(s))&&free.length>2){const c=take();
+    items.push({x:c[0],y:c[1],kind:'item',it:randomItem(brSlot(),Math.min(2,Math.floor(depth/8)),rng,gearLuck)})}
   if(isZig&&rng()<.5&&free.length>2){const c=take(); /* a second, luck-boosted drop */
     items.push({x:c[0],y:c[1],kind:'item',it:randomItem(null,Math.min(2,Math.floor(depth/8)),rng,gearLuck)})}
   if(!P&&rng()<.16&&!h.god&&free.length>2){const c=take();
@@ -139,11 +151,24 @@ export function genFloor(h,s){
       traps.push({x:c[0],y:c[1],kind,seen:false});
     }
   }
-  if(isBossFloor&&br.orb&&free.length>2){const c=take();items.push({x:c[0],y:c[1],kind:'orb'})}
+  /* Ascension "Abyssal Orb": the Abyss route's boss floors also carry out an Orb */
+  if(isBossFloor&&free.length>2&&(br.orb||(!P&&h.branch==='abyss'&&ascAbyssOrb(s)))){const c=take();items.push({x:c[0],y:c[1],kind:'orb'})}
   /* hybrid escalation: soft stat multipliers (in-cycle compound + NG capped
      low) carry the numbers; elite monsters with qualitative affixes carry the
      depth — combinatorics instead of a growing scalar */
-  const ngPlus=ngMonMul(s)*Math.pow(1.25,Math.max(0,cycleProgress(s).wins));
+  /* Endgame pressure answers to the guild's readiness in both directions and
+     ramps with depth: gentle for a guild that cannot yet land its first Orb,
+     merciless for one that outgrew the dungeon long ago.
+
+     It applies to PORTALS TOO. Exempting them left ziggurats outside the whole
+     difficulty system: a strong guild met x9 in Zot and x1 in a Ziggurat, so the
+     deepest content in the game became the safest place in it — measured records
+     of 176, 177 and 260 floors against 8-13 elsewhere. The depth formula above
+     already gives portals a sensible depth (a ziggurat starts at zigStartDepth,
+     a normal portal at the floor it was entered from), so the ramp needs no
+     special case: shallow portals sit below ENDGAME_FROM and are untouched. */
+  const zotMul=endgamePressure(s,depth);
+  const ngPlus=ngMonMul(s)*inCycleMul(s)*zotMul;
   const ech=eliteChance(afl)*(memHas(s,'k_elite')?1.5:1);
   for(const mo of monsters){
     mo.hp=Math.max(1,Math.floor(mo.hp*ngPlus*afx.monHp));mo.maxHp=mo.hp;
@@ -158,6 +183,10 @@ export function genFloor(h,s){
   }
   const explored=[];
   for(let y=0;y<MH;y++)explored.push(new Array(MW).fill(false));
+  /* rare spellbook (a school's capstone). Rolled LAST so it never shifts the
+     deterministic stream that places monsters, items and traps above. */
+  if(!P&&depth>=6&&rng()<.03&&free.length>2){const c=take();
+    items.push({x:c[0],y:c[1],kind:'book',book:SPELLBOOK_KEYS[Math.floor(rng()*SPELLBOOK_KEYS.length)]})}
   h.map={g,monsters,items,stairs:{x:far[0],y:far[1]},px:start[0],py:start[1],explored,
     bossFloor:isBossFloor,fafx,traps,clouds:[]};
   /* volcano: smoldering clouds */
@@ -179,13 +208,15 @@ export function makeMon(kind,depth,x,y,rng){
   return {kind,n:d.n,t:d.t,x,y,hp:Math.floor(d.hp*sc),maxHp:Math.floor(d.hp*sc),
     dmg:Math.floor(d.dmg*Math.pow(1.34,Math.max(0,depth-avgKind(kind)))),
     ac:d.ac,ev:d.ev,xp:d.xp*sc,spd:d.spd||1,rng:d.rng?5:1,acc:3+depth*.8,
-    mv:0,awake:false,special:d};
+    cast:d.cast||null,mv:0,awake:false,special:d};
 }
 const KIND_AVG={};
 function avgKind(kind){
   if(KIND_AVG[kind]!==undefined)return KIND_AVG[kind];
   let lo=99,hi=0;
-  for(const bk of BR_ORDER){const br=BRANCHES[bk];
+  /* BR_CORE, not BR_ORDER: see the note there. A new branch must not rescale
+     the monsters every other branch already uses. */
+  for(const bk of BR_CORE){const br=BRANCHES[bk];
     for(const m of br.mobs)if(m[0]===kind){
       const off=BR_OFFSET[bk];
       lo=Math.min(lo,off+m[1]);hi=Math.max(hi,off+m[2]);}}

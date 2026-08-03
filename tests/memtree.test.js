@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { makeState, loadState } from '../src/core/state.js';
 import {
-  NODES, nodeById, treeLvl, memHas, nodeCost, memEff, achMet, canBuy, buyNode, gainMem,
-} from '../src/data/memtree.js';
+  NODES, nodeById, treeLvl, memHas, nodeCost, memEff, achMet, canBuy, buyNode, gainMem, MASTERY_KEY, MASTERY_K, regionMastery, masteredRegion} from '../src/data/memtree.js';
 import { maxSlots, gAtk, ghostMul, runeAura, rollCost } from '../src/core/economy.js';
 import { newHero } from '../src/sim/hero.js';
 import { comboKey } from '../src/data/combos.js';
@@ -112,14 +111,23 @@ describe('keystone mechanics', () => {
     const other = newHero('human', 'monk', 0, s);
     expect(other.xl).toBe(1);
   });
-  it('ghosts and rune auras multiply global attack', () => {
+  it('ghosts and rune auras multiply global attack', async () => {
     const s = makeState();
     const base = gAtk(s);
     s.tree.k_ghosts = 1; s.stat.deaths = 20;
     expect(ghostMul(s)).toBeCloseTo(1.10);
+    /* Rune Auras are sub-linear: the one permanent multiplier that had neither
+       a cap nor a price, it reached x12.5 on a lifetime total that just piles up
+       (574 runes in ten days). sqrt keeps early runes worth roughly what they
+       were while killing the runaway tail. */
     s.tree.k_runeaura = 1; s.runesTotal = 5;
-    expect(runeAura(s)).toBeCloseTo(1.10);
-    expect(gAtk(s)).toBeCloseTo(base * 1.1 * 1.1, 5);
+    const { RUNE_AURA_K } = await import('../src/core/economy.js');
+    expect(runeAura(s)).toBeCloseTo(1 + RUNE_AURA_K * Math.sqrt(5), 5);
+    expect(gAtk(s)).toBeCloseTo(base * 1.1 * runeAura(s), 5);
+    /* the tail is what matters: a huge lifetime total must not explode */
+    s.runesTotal = 574;
+    expect(runeAura(s)).toBeLessThan(4);        // was 1 + 0.02*574 = 12.5
+    expect(runeAura(s)).toBeGreaterThan(2);     // still a real reward
   });
   it('gacha discount nodes reduce roll cost up to 50% cap', () => {
     const s = makeState();
@@ -216,5 +224,131 @@ describe('tree geometry', () => {
         if (cross([e[0], e[1]], [e[2], e[3]], [f[0], f[1]], [f[2], f[3]])) bad.push(e[4] + ' x ' + f[4]);
       }
     expect(bad).toEqual([]);
+  });
+});
+
+describe('region mastery: the reason to specialise', () => {
+  const fresh = () => ({ tree: { root: 1 } });
+  const spineOf = region => NODES.filter(n => n.region === region && !n.keystone && n.eff && n.eff.atk !== undefined);
+
+  it('mastery multiplies only the region that owns it', () => {
+    const a = fresh(), b = fresh();
+    const combat = NODES.filter(n => n.region === 'combat' && n.eff.atk);
+    for (const n of combat.slice(0, 6)) { a.tree[n.id] = 1; b.tree[n.id] = 1; }
+    const before = memEff(a, 'atk');
+    b.tree[MASTERY_KEY.combat] = 1;
+    const after = memEff(b, 'atk');
+    expect(after).toBeGreaterThan(before);
+    /* six nodes plus the keystone itself: the multiplier reads the region's total */
+    expect(after / before).toBeCloseTo(1 + MASTERY_K * regionMastery(b, 'combat'), 5);
+  });
+
+  it('mastery leaves expedition slots alone', () => {
+    /* A slot multiplies how much delving happens at once, which is a different class
+       of quantity from a percentage inside one delve — it is why the tree measured
+       1.70x in the first place. Scaling it with mastery would deepen exactly the
+       imbalance mastery exists to correct. */
+    const s = fresh();
+    for (const n of NODES.filter(n => n.region === 'heroes')) if (n.eff.slot) s.tree[n.id] = n.max || 1;
+    const before = memEff(s, 'slot');
+    s.tree[MASTERY_KEY.heroes] = 1;
+    expect(memEff(s, 'slot')).toBe(before);
+  });
+
+  it('going deep in one region beats spreading the same nodes over two', () => {
+    const deep = fresh(), thin = fresh();
+    const combat = NODES.filter(n => n.region === 'combat' && n.eff.atk).slice(0, 8);
+    const forge = NODES.filter(n => n.region === 'forge' && n.eff.ac).slice(0, 4);
+    for (const n of combat) deep.tree[n.id] = 1;
+    for (const n of combat.slice(0, 4)) thin.tree[n.id] = 1;
+    for (const n of forge) thin.tree[n.id] = 1;
+    deep.tree[MASTERY_KEY.combat] = 1;
+    thin.tree[MASTERY_KEY.combat] = 1;
+    /* same node count, one region against two: the specialist must come out ahead on
+       the stat it specialised in, or mastery is not doing its job */
+    /* measured 1.62x on equal node counts: the specialist's own stat is worth half
+       again as much, which is the pressure that was missing entirely */
+    expect(memEff(deep, 'atk')).toBeGreaterThan(memEff(thin, 'atk') * 1.5);
+  });
+
+  it('every region has a mastery keystone, and it is the region it names', () => {
+    for (const [region, id] of Object.entries(MASTERY_KEY)) {
+      const n = nodeById(id);
+      expect(n, id).toBeDefined();
+      expect(n.region, id).toBe(region);
+      expect(n.keystone, id).toBe(true);
+    }
+  });
+});
+
+describe('mastery is a commitment, not a purchase', () => {
+  it('only one Way may be sworn', () => {
+    /* Nothing made the choice exclusive at first, so a broad build simply bought all
+       six mastery keystones — a balanced build reaches for keystones first — and
+       collected the multiplier in every region at once. That is a universal
+       multiplier wearing the name of specialisation, and it compounded: on identical
+       seeds the same tactic took 292 Orbs in 30 days without mastery, 2070 with it,
+       and 491 once the oath became exclusive. An eight-day window showed a healthy
+       3.5 Orbs a day and hid the entire effect. */
+    /* achMet reads s.stat, so build a real save rather than a bare object */
+    const s = makeState();
+    s.mem = 1e9;
+    s.stat.kills = 1e6; s.stat.deaths = 1e4; s.stat.uniqKills = 1e3;
+    s.stat.forged = 1e3; s.stat.dismantled = 1e3; s.rolls = 1e3;
+    s.stat.wins = 100; s.runesTotal = 100;
+    for (const n of NODES) if (n.req.length) s.tree[n.req[0]] = 1;   /* satisfy adjacency */
+    const first = nodeById(MASTERY_KEY.combat);
+    expect(canBuy(s, first)).toBe(true);
+    s.tree[first.id] = 1;
+    expect(masteredRegion(s)).toBe('combat');
+    for (const [region, id] of Object.entries(MASTERY_KEY))
+      if (region !== 'combat') expect(canBuy(s, nodeById(id)), id).toBe(false);
+  });
+
+  it('the oath names its own price in the node text', () => {
+    for (const id of Object.values(MASTERY_KEY))
+      expect(nodeById(id).d).toMatch(/only ONE Way/);
+  });
+});
+
+describe('standing orders are earned, not given', () => {
+  it('every order has a keystone that opens it', async () => {
+    const { ORDER_KEY, nodeById } = await import('../src/data/memtree.js');
+    for (const [order, id] of Object.entries(ORDER_KEY)) {
+      const n = nodeById(id);
+      expect(n, order).toBeDefined();
+      expect(n.keystone, order).toBe(true);
+    }
+  });
+
+  it('an order does nothing until its keystone is owned', async () => {
+    /* The flag alone must not act. A save that predates the gate, or one edited by
+       hand, would otherwise get the automation for free -- and the whole point of
+       putting these on the tree is that they are the progression. */
+    const { advanceHeroes } = await import('../src/sim/tick.js');
+    const { ORDER_KEY } = await import('../src/data/memtree.js');
+    const s = makeState();
+    s.mem = 500000;
+    s.auto = { prestige: false, memory: 'cheapest', summon: 0 };
+    const before = Object.keys(s.tree).length;
+    advanceHeroes(s, 600, true);
+    expect(Object.keys(s.tree).length, 'spent without the keystone').toBe(before);
+    /* with it, the guild spends to policy */
+    s.tree[ORDER_KEY.memory] = 1;
+    advanceHeroes(s, 600, true);
+    expect(Object.keys(s.tree).length).toBeGreaterThan(before + 1);
+  });
+
+  it('the mechanical automations stay free', async () => {
+    /* Dispatching a seeker who is standing in the hall is not a decision anyone
+       declines, and charging for it is charging for the game to work -- that was the
+       122x attention penalty. Only the POLICY orders sit behind keystones. */
+    const { advanceHeroes } = await import('../src/sim/tick.js');
+    const s = makeState();
+    const h = newHero('minotaur', 'fighter', 2, s);
+    s.heroes.push(h);
+    expect(h.state).toBe('camp');
+    advanceHeroes(s, 600, true);
+    expect(h.state).not.toBe('camp');
   });
 });

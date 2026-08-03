@@ -19,8 +19,10 @@
 import { session } from './worker.mjs';
 
 /* the control tactic every axis perturbs — a plain engaged player */
+const SEED_BASE = parseInt(process.env.SEED_BASE || '0', 10);
+
 const BASE = {
-  checkin: 300, tree: 'balanced', route: 'classic', caution: 'normal',
+  checkin: 300, tree: 'balanced', route: 'iron', caution: 'normal',
   rollFactor: 1, goldReserve: 0, forge: false, prestige: true, prestigeAfter: 2,
 };
 
@@ -30,10 +32,24 @@ export const AXES = {
               ['6h', { checkin: 21600 }], ['24h', { checkin: 86400 }]],
   caution:   [['cowardly', { caution: 'cautious' }], ['normal', { caution: 'normal' }], ['reckless', { caution: 'bold' }]],
   spend:     [['thrifty', { spend: 'thrifty' }], ['balanced', { spend: 'balanced' }], ['lavish', { spend: 'lavish' }]],
-  route:     [['classic', { route: 'classic' }], ['speedrun', { route: 'speed', caution: 'bold' }]],
-  tree:      [['balanced', { tree: 'balanced' }], ['combat', { tree: 'combat' }],
-              ['combat_fair', { tree: 'combat_fair' }],
-              ['slots', { tree: 'slots' }], ['keystones', { tree: 'keystones' }]],
+  /* The roads are near-equal in length and differ in what they YIELD, so this axis
+     is judged on loot composition, not on Orbs -- an Orb spread here is a FAILURE,
+     it means the selector went back to being a tempo control. */
+  route:     [['iron', { route: 'iron' }], ['wild', { route: 'wild' }], ['arcane', { route: 'arcane' }]],
+  /* the speedrun is openly a tempo choice, so it is measured as one */
+  tempo:     [['full road', { route: 'iron' }], ['short road', { route: 'speed', caution: 'bold' }]],
+  /* Specialists against generalists. The old variant list could not answer the
+     question the tree poses -- balanced, slots and combat_fair all bought expedition
+     slots first and then differed on stat noise, so the axis measured 1.70x where it
+     needs 3x. These variants commit to one region and take its mastery keystone. */
+  tree:      [['spread', { tree: 'balanced' }], ['slots', { tree: 'slots' }],
+              ['keystones', { tree: 'keystones' }],
+              ['m:combat', { tree: 'master_combat' }],
+              ['m:dungeon', { tree: 'master_dungeon' }],
+              ['m:economy', { tree: 'master_economy' }],
+              /* the control: same builds, oath refused */
+              ['spread-noM', { tree: 'balanced', noOath: true }],
+              ['m:econ-noM', { tree: 'master_economy', noOath: true }]],
   /* is the Ascension layer worth taking at all? tactic.ascend===false opts out */
   ascend:    [['ascend ON', {}], ['ascend OFF', { ascend: false }]],
 };
@@ -52,7 +68,11 @@ export function ablate(axis, sessions, days) {
          each session's cost so a runaway is visible in the log immediately
          instead of looking like a stuck job. */
       const t0 = Date.now();
-      const r = session(tac, days, i); /* same seeds per variant */
+      /* Honour SEED_BASE. The workflow gives each shard its own base so the two
+         explore different accounts; ignoring it made both shards run seeds 0..N
+         and return byte-identical rows — double the CI cost for zero extra
+         information, and a seed list that looked twice as large as it was. */
+      const r = session(tac, days, SEED_BASE + i); /* same seeds per variant */
       rs.push(r);
       console.error(`[${axis}/${label}] seed ${i + 1}/${sessions} · ` +
         `${((Date.now() - t0) / 1000).toFixed(1)}s · ${r.wins} Orbs`);
@@ -69,6 +89,16 @@ export function ablate(axis, sessions, days) {
        produce 70 Orbs or 2482 depending only on the seed. Reporting just the
        centre made that invisible and cost several rounds of chasing phantom
        tuning. Ship the whole distribution and let the report judge it. */
+    /* Days to the first Orb. Orbs-per-window turned out to be the wrong instrument
+       for anything but the tempo axis: an account that crosses the three-Orb
+       prestige threshold inside the window compounds and one that misses it by a day
+       does not, so the SAME road measured 2 Orbs on one seed and 15 on the next. The
+       window was amplifying a threshold, not reading a road. Time to the first Orb
+       has no threshold in it. */
+    const firstOrb = rs.map(r => {
+      const i = r.byDay.findIndex(d => d.wins > 0);
+      return i < 0 ? days + 1 : i + 1;
+    });
     const perSeed = rs.map(r => r.wins).sort((a, b) => a - b);
     const at = q => perSeed[Math.min(perSeed.length - 1, Math.floor(q * perSeed.length))];
     rows.push({
@@ -79,6 +109,35 @@ export function ablate(axis, sessions, days) {
       gold: Math.round(avg('gold')), winsLast10d: tail === null ? null : +tail.toFixed(2),
       winsPerSeed: perSeed, median: at(0.5), lo: perSeed[0], hi: perSeed[perSeed.length - 1],
       stalledSeeds: perSeed.filter(w => w === 0).length,
+      /* Per-axis metrics. Judging every control by Orbs per day is what flattened
+         them: four different decisions competing in one number can only be
+         equalised, and balancing them was therefore guaranteed to converge them.
+         Each control is now scored on what it is FOR. */
+      fallenXL: +avg('fallenXL').toFixed(2),
+      fallenDepth: +avg('fallenDepth').toFixed(2), /* caution: how FAR a seeker got */
+      gearHome: Math.round(avg('gearHome')),   /* spend/route: what came home */
+      artefacts: Math.round(avg('artefacts')),
+      runeKinds: +avg('runeKinds').toFixed(1), /* route: how many kinds the path yields */
+      godKinds: +avg('godKinds').toFixed(1),
+      /* Composition, which is what a road actually decides. Counting kinds of rune
+         could not price the roads: give two roads four rune branches each and the
+         COUNT is identical however different the runes are. Steel against
+         enchantment is a difference a number can hold. */
+      martialHome: Math.round(avg('martialHome')),
+      jewelHome: Math.round(avg('jewelHome')),
+      jewelShare: +(avg('jewelHome') / Math.max(1, avg('martialHome') + avg('jewelHome'))).toFixed(3),
+      consFound: Math.round(avg('consFound')),
+      firstOrbDay: +(firstOrb.reduce((a, b) => a + b, 0) / firstOrb.length).toFixed(2),
+      /* The state an absent account is left in. These were added to the session
+         summary and never reached here: this file builds its row from a fixed list, so
+         a field the session reports but the row omits reads as zero downstream and
+         looks like a finding. It briefly looked like every account ended with an empty
+         roster and no unspent Memory, which is impossible. Pass them through. */
+      memIdle: Math.round(avg('memIdle')), treeNodes: +avg('treeNodes').toFixed(1),
+      roster: Math.round(avg('roster')), starPower: Math.round(avg('starPower')),
+      recalls: Math.round(avg('recalls')),
+      sealed: Math.round(avg('sealed')), gateOk: Math.round(avg('gateOk')),
+      zotXL: +avg('zotXL').toFixed(2), zotHp: Math.round(avg('zotHp')),
     });
   }
   return rows;

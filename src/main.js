@@ -23,13 +23,15 @@ import { ftueTick, updateGates, maybeTour } from './ui/ftue.js';
 import { tabUnlocked, TAB_HINT } from './core/ftue.js';
 import { setLang, applyStatic, DEFAULT_LANG, t } from './i18n/index.js';
 import { openSettings } from './ui/settings.js';
-import { canPrestige } from './core/prestige.js';
+import { canPrestige, doPrestige } from './core/prestige.js';
+import { ascAutoPrestige } from './core/ascension.js';
 import './ui/update.js';
 import { initCloud, startAutoSync, cloudPush, cloudAvailable } from './cloud/index.js';
 import { openConflict } from './ui/conflict.js';
 import { setCloudMsg } from './ui/settings.js';
 import { toast } from './ui/toast.js';
 import { initInstallHint } from './ui/install.js';
+import './ui/cheats.js'; /* registers window.__cheats.show() */
 
 /* cross-module UI callbacks (avoids circular imports) */
 window.__renderAll = renderAll;
@@ -102,6 +104,8 @@ setInterval(() => {
   /* in a throttled background tab this still fires ~once a minute and keeps
      the sim advancing, so tab switches never freeze the game */
   simCatchUp();
+  /* Ascension "Wheel of Ages": auto-prestige the moment the cycle allows it */
+  if (ascAutoPrestige(save) && canPrestige(save)) doPrestige(save);
   persist();
   const act = document.querySelector('.pane.active');
   if (act && act.id !== 'pDun') renderAll();

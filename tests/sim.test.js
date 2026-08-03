@@ -28,8 +28,12 @@ describe('heroStats', () => {
     const s = makeState();
     const h = freshHero(s);
     const base = heroStats(h, s).dmg;
-    s.tree.combat_s1 = 12; // +1%/lvl
-    expect(heroStats(h, s).dmg).toBeCloseTo(base * 1.12, 0);
+    /* read the rate from the data rather than pinning a number: combat stats
+       were retuned once already after measuring that a combat-first build lost
+       to a slots-first one 47 Orbs to 322 */
+    s.tree.combat_s1 = 12;
+    const per = NODES.find(n => n.id === 'combat_s1').eff.atk;
+    expect(heroStats(h, s).dmg).toBeCloseTo(base * (1 + 12 * per), 0);
   });
   it('felid has no weapon, troll no armour', () => {
     const s = makeState();
@@ -90,7 +94,12 @@ describe('full run lifecycle', () => {
     expect(h.state).toBe('dead'); // a common should not survive 8h without upgrades
     expect(s.fame.length).toBe(1);
     expect(s.fame[0].by).toBeTruthy();
-    expect(s.shards[comboKey(h.race, h.cls)]).toBeGreaterThan(0);
+    /* A death pays the guild in that combo's currency. It used to be checked as
+       shards on hand, but promoting a duplicate into a star is mechanical -- the
+       shards are there, the threshold is fixed, nobody declines -- so it now happens
+       without the player, and the shards may already have become a star. */
+    const ck = comboKey(h.race, h.cls);
+    expect((s.shards[ck] || 0) + (s.stars[ck] || 0)).toBeGreaterThan(0);
   });
   it('late-game account can win the Orb within 24h', { timeout: 30000 }, () => {
     const s = makeState();
@@ -142,5 +151,35 @@ describe('offline', () => {
     s.ftue = { railDone: false, tours: {} }; // rail active: the guild sends no one yet
     s.last = Date.now() - 2 * 60000;
     expect(computeOffline(s, Date.now())).toBeNull();
+  });
+});
+
+describe('a seeker does not pace on the spot', () => {
+  it('the clear-or-dive question is asked once per floor, not once per step', async () => {
+    /* It used to be thrown on every turn: at normal caution, 65% "explore" and 35%
+       "head for the stairs", re-rolled at each footfall. When the unexplored corner and
+       the stairs lay in opposite directions the seeker walked west, east, west, pacing
+       in place until the coin landed the same way often enough to make progress. The
+       question is about the floor, so it gets one answer per floor. */
+    const { genFloor } = await import('../src/sim/mapgen.js');
+    const { startRun } = await import('../src/sim/tick.js');
+    const s = makeState();
+    const h = newHero('minotaur', 'fighter', 2, s);
+    s.heroes.push(h);
+    h.caution = 'normal';                 /* the setting that used to flip 35/65 */
+    startRun(h, s);
+    genFloor(h, s);
+    const first = h.map.dive;
+    /* whatever it decided, a hundred further turns of deciding must not change it */
+    for (let i = 0; i < 100; i++) {
+      const { exploreGoalForTest } = await import('../src/sim/tick.js');
+      if (exploreGoalForTest) exploreGoalForTest(h, null);
+    }
+    if (first !== undefined) expect(h.map.dive).toBe(first);
+    /* and a fresh floor is entitled to a fresh answer */
+    const before = h.map;
+    genFloor(h, s);
+    expect(h.map).not.toBe(before);
+    expect(h.map.dive).toBeUndefined();
   });
 });

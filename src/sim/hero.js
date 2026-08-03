@@ -5,8 +5,9 @@ import {comboKey,RARMUL,SHARDS_PER} from '../data/combos.js';
 import {WEP_BASES,ARM_BASES,SH_BASES,itemInfo} from '../data/items.js';
 import {GODS,godField} from '../data/gods.js';
 import {HERO_NAMES} from '../data/names.js';
-import {gHp,gAtk,gSpd,freeRollAvailable,rollCost,PITY_AT,rollCombo,pickComboOfTier,shardMul} from '../core/economy.js';
+import {gHp,gAtk,gSpd,freeRollAvailable,rollCost,PITY_AT,rollCombo,pickComboOfTier,shardMul, darkRollCost} from '../core/economy.js';
 import {nextStream} from '../core/streams.js';
+import {mpMaxOf} from '../data/spells.js';
 import {hashSeed} from '../core/rng.js';
 
 /* Ring slots a hero can actually use: a race with a fixed ring count (octopode,
@@ -20,6 +21,16 @@ export function ringSlotKeys(h,s){
 }
 import {memEff,memHas,treeSig} from '../data/memtree.js';
 
+/** The guild's standing orders: what the newest seeker should inherit. */
+export function guildDoctrine(s){
+  const last=[...(s.heroes||[])].reverse().find(h=>h.strategy);
+  return {
+    strategy:last?last.strategy:'classic',
+    caution:last?last.caution:'normal',
+    spend:last?last.spend:'balanced',
+  };
+}
+
 export function newHero(race,cls,rarity,s){
   const rd=RACES[race],cd=CLASSES[cls];
   const stars=s.stars[comboKey(race,cls)]||0;
@@ -32,8 +43,16 @@ export function newHero(race,cls,rarity,s){
       spellcasting:0,conjurations:0,necromancy:0,fire:0,ice:0,summonings:0},
     god:null,piety:0,gear:{weapon:null,armour:null,shield:null,ring1:null,ring2:null,ring3:null,ring4:null,ring5:null,ring6:null,ring7:null,ring8:null,amulet:null},
     inv:{curing:2+memEff(s,'pots')},known:[],muts:[],status:{},gold:0,keys:0,
-    spend:'balanced',lives:rd.lives||1,
-    strategy:'classic',caution:'normal',
+    lives:rd.lives||1,
+    /* A new seeker follows the guild's standing orders, not the factory default.
+       The automation keystones dispatch fresh heroes straight into the dungeon
+       without touching their settings, so every auto-summoned seeker used to run
+       'classic'/'normal'/'balanced' no matter what the player had chosen — a
+       speedrunning guild was measured bringing home crystal and silver runes
+       from branches its route never visits, because a slice of the fleet was
+       quietly on a different route. That also means route, caution and spend
+       were partly inert for any account with automation, which is most of them. */
+    ...guildDoctrine(s),
     state:'camp', // camp | run | dead | victor
     segIdx:0,branch:null,floor:0,turn:0,
     map:null,seed:hashSeed(s.masterSeed,'map',hid)>>>0,
@@ -61,6 +80,10 @@ export function newHero(race,cls,rarity,s){
   }
   /* shield classes start with a buckler (fighter/gladiator) */
   if(cd.sh)h.gear.shield={slot:'shield',base:'buckler',plus:0,ego:null,rar:0,id:'ss'+h.id};
+  /* base spells unlock by level from the caster's school; h.spells holds only the
+     capstone(s) learned from spellbooks found in the dungeon */
+  h.spells=[];
+  h.mp=mpMaxOf(h);
   return h;
 }
 /* hero derived stats.
@@ -115,10 +138,15 @@ function heroStatsCompute(h,s){
   /* DCSS: skill of the specific weapon school (+cross-training), unarmed uses Unarmed Combat */
   const school=wep?wep.school:'unarmed';
   /* DCSS: Summonings has no attack spells — only combat schools deal direct damage */
+  /* casters: spellpower = (spellcasting + best attack school)/2. Halved so it is
+     low early (fragile start), but it climbs with skill and multiplies the spell
+     tier, so damage ramps hard late — the caster arc: weak early, strong late */
   let wskill=style==='magic'?(h.skills.spellcasting+Math.max(h.skills.conjurations,h.skills.necromancy,h.skills.fire,h.skills.ice))/2:
     effSkill(h,school);
   let base=wep?wep.dmg+ (g.weapon.plus||0):(4+h.skills.unarmed*.6);
-  if(style==='magic')base=6+h.xl*.8+(wep&&wep.mag?3:0);
+  /* casters get a LOW flat base (fragile early) — their damage comes from spellpower
+     and the spell tier, so they start weaker than melee and overtake late */
+  if(style==='magic')base=2+(wep&&wep.mag?3:0);
   /* racial physical might does not boost spells (strength is not spellpower) */
   const physMul=style==='magic'?1:rd.dmg;
   let dmg=(base+wskill*.9+h.xl*.55)*physMul*rarMul*starMul*gAtk(s);
@@ -219,13 +247,21 @@ function heroStatsCompute(h,s){
   if(rd.und)vsUndead=1; /* DCSS: the undead cannot channel holy wrath */
   return {ac,ev,dmg,hpMax:Math.floor(hpMax),aspd,acc,leech,critc,regen,resAll,retal,dodge,chill,
     vsUndead,venom,rPois,lantern,waders,twoHanded,
+    caster:style==='magic',mpMax:mpMaxOf(h),
     style,school,rng:style!=='melee'?5:(wep&&wep.reach?2:1),spd:rd.spd*gSpd(s)};
 }
 
 /** One gacha roll, pure state logic (UI adds sounds/animation on top).
     Returns {kind:'dup',res,sh} | {kind:'hero',res,h} | null when unaffordable. */
 export function rollHero(s,premium,rng){
-  if(premium){if(s.runes<1)return null;s.runes--}
+  if(premium){
+    const cost=darkRollCost(s);
+    if(s.runes<cost)return null;
+    s.runes-=cost;
+    s.darkRolls=(s.darkRolls||0)+1;
+    /* the runes leave the guild's collection for good: they stop feeding the aura */
+    s.runesSpent=(s.runesSpent||0)+cost;
+  }
   else if(freeRollAvailable(s)){/* the guild pays when the party is gone */}
   else{const c=rollCost(s);if(s.gold<c)return null;s.gold-=c;s.rolls++}
   s.pity++;

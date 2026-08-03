@@ -2,6 +2,12 @@ import { RKEYS } from '../data/races.js';
 import { CKEYS } from '../data/classes.js';
 import { comboRarity } from '../data/combos.js';
 
+/* Per-depth gold compounding. Was 1.22 on kills and 1.24 on floor piles, which
+   at Zot depth is a ~200x multiplier stacked on top of a permanent-multiplier
+   stack reaching ~1000x — measured result: 77M banked against sinks priced at
+   100k. Deep floors should still pay noticeably better, not exponentially. */
+export const GOLD_DEPTH_BASE = 1.13;
+
 export const ZUPGRADES = [
   { k: 'zatk',  n: 'Essence of Might',      d: '+10% damage for all heroes per lvl',   base: 2, g: 1.45, max: 20 },
   { k: 'zhp',   n: 'Essence of Fortitude', d: '+10% health for all heroes per lvl', base: 2, g: 1.45, max: 20 },
@@ -24,19 +30,63 @@ export const fameMul = s => {
   return 1 + Math.min(1, w <= 5 ? w * .08 : .4 + (w - 5) * .03);
 };
 export const ghostMul = s => memHas(s, 'k_ghosts') ? 1 + Math.min(0.30, s.stat.deaths * 0.005) : 1;
-export const runeAura = s => memHas(s, 'k_runeaura') ? 1 + 0.02 * s.runesTotal : 1;
-import { ngLevel, pupg } from './prestige.js';
+/* Rune Auras. This was the one permanent multiplier with neither a cap nor a
+   price: +2% damage and gold per rune, linear in a lifetime total that simply
+   accumulates as a by-product of delving (measured: 574 runes in ten days, i.e.
+   x12.5 to damage AND to gold, still climbing). Every other permanent term is
+   disciplined — fame and ghosts are capped, Great records are bounded by the
+   content, and the Legacy engravings pay linearly for an exponentially rising
+   price, which is diminishing returns by another name. The aura had none of
+   that, so it drove the runaway on both the power and the gold side.
+
+   Sub-linear now: sqrt keeps the early game almost identical (25 runes: +0.45
+   against the old +0.50) while 574 runes give x3.2 instead of x12.5. Runes stay
+   worth chasing; they stop being an engine.
+
+   s.runeAuraLegacy grandfathers existing accounts — see the balV 6 migration.
+   It is a frozen constant, so veterans lose nothing they had earned and still
+   stop compounding from here on. */
+export const RUNE_AURA_K = 0.09;
+/* Runes the guild has burned on dark summonings. They are gone from the aura:
+   a rune spent is a rune the guild no longer draws power from.
+
+   This is the opportunity cost the dark summoning never had. A premium roll cost
+   one rune, flat, while runes piled up in the thousands and the aura counted the
+   LIFETIME total, so spending them was free — measured, whale builds made 2200
+   and 3400 summons against a normal 411 and took twice the Orbs per day on
+   otherwise identical trees, slots and keystones. Unlimited conversion at a
+   fixed price, the same structural flaw the aura itself had before it went
+   sub-linear.
+
+   Now the trade is real and legible in both directions: burn your trophies for a
+   better seeker today, or keep them and let the guild draw on them forever. */
+/* How much aura a spent rune actually costs. At full weight the trade was
+   ruinous rather than merely expensive: the aura is sqrt-shaped and reaches x5
+   at two thousand runes, so a whale that spent its whole stock lost a fivefold
+   multiplier at once and finished 38% BEHIND a normal build. A dead strategy is
+   a worse outcome than a strong one — this has to price the dark summoning, not
+   forbid it. TUNABLE. */
+export const AURA_SPEND_WEIGHT = 0.5;
+export const runesKept = s =>
+  Math.max(0, (s.runesTotal || 0) - AURA_SPEND_WEIGHT * (s.runesSpent || 0));
+export const runeAura = s => memHas(s, 'k_runeaura')
+  ? 1 + RUNE_AURA_K * Math.sqrt(runesKept(s)) + (s.runeAuraLegacy || 0)
+  : 1;
+import { ngLevel, pupg, ngPlusRewardMul, NG_TUNE } from './prestige.js';
 import { greatMul } from './chronicle.js';
 import { provMul } from './treasury.js';
-export const ngMul = s => 1 + 1.5 * Math.min(10, ngLevel(s)); /* gold reward caps with the rest of the scalars */
+import { ascDmgMul, ascHpMul, ascGoldMul, ascSlots } from './ascension.js';
+/* see NG_TUNE in prestige.js: the reward slope is half of the loop that made the game
+   run six times its target, so it is swept from there rather than written twice */
+export const ngMul = s => (1 + NG_TUNE.rewardSlope * Math.min(NG_TUNE.rewardCap, ngLevel(s))) * ngPlusRewardMul(s);
 
-export const gAtk  = s => (1 + memEff(s, 'atk')) * (1 + 0.1 * zupg(s, 'zatk')) * fameMul(s) * ghostMul(s) * runeAura(s) * (1 + .08 * pupg(s, 'p_dmg')) * (1 + .01 * pupg(s, 'p_legacy')) * greatMul(s) * provMul(s, 'dmg');
-export const gHp   = s => (1 + memEff(s, 'hp'))  * (1 + 0.1 * zupg(s, 'zhp'))  * fameMul(s) * (1 + .08 * pupg(s, 'p_hp')) * (1 + .01 * pupg(s, 'p_legacy')) * greatMul(s) * provMul(s, 'hp');
+export const gAtk  = s => (1 + memEff(s, 'atk')) * (1 + 0.1 * zupg(s, 'zatk')) * fameMul(s) * ghostMul(s) * runeAura(s) * (1 + .08 * pupg(s, 'p_dmg')) * (1 + .01 * pupg(s, 'p_legacy')) * greatMul(s) * provMul(s, 'dmg') * ascDmgMul(s);
+export const gHp   = s => (1 + memEff(s, 'hp'))  * (1 + 0.1 * zupg(s, 'zhp'))  * fameMul(s) * (1 + .08 * pupg(s, 'p_hp')) * (1 + .01 * pupg(s, 'p_legacy')) * greatMul(s) * provMul(s, 'hp') * ascHpMul(s);
 export const gSpd  = s => 1 + memEff(s, 'spd');
-export const gGold = s => (1 + memEff(s, 'gold')) * (1 + 0.15 * zupg(s, 'zloot')) * runeAura(s) * ngMul(s) * provMul(s, 'gold');
+export const gGold = s => (1 + memEff(s, 'gold')) * (1 + 0.15 * zupg(s, 'zloot')) * runeAura(s) * ngMul(s) * provMul(s, 'gold') * ascGoldMul(s);
 export const gDrop = s => 1 + memEff(s, 'drop');
 export const gXp   = s => 1 + memEff(s, 'xp');
-export const maxSlots = s => 1 + memEff(s, 'slot');
+export const maxSlots = s => 1 + memEff(s, 'slot') + ascSlots(s);
 export const shardMul = s => 1 + memEff(s, 'shard');
 export const forgeDisc = s => 1 - Math.min(0.5, memEff(s, 'fdisc'));
 
@@ -45,6 +95,27 @@ export const rollCost = s =>
 /** all heroes dead/gone — the guild sends a seeker for free */
 export const freeRollAvailable = s => !s.heroes.some(h => h.state === 'camp' || h.state === 'run');
 export const effectiveRollCost = s => freeRollAvailable(s) ? 0 : rollCost(s);
+/* The dark summoning gets dearer the more the guild leans on it, within a cycle.
+
+   A flat one-rune price could not hold, because runes accumulate faster than any
+   FIXED penalty grows. Charging the aura for a spent rune helped early and then
+   faded exactly as the sqrt curve says it must: measured at 8 days the whale
+   builds led by 22-29%, and by day 30 they were back to +71-76% on 2169 and 3639
+   summons. A linear penalty against a square-root reward always loses at scale.
+
+   Escalating the price attacks the conversion RATE instead, so it cannot fade:
+   the Nth summon of a cycle costs 1 + floor(N/DARK_STEP) runes, which caps the
+   total conversion a rune stock can buy at roughly sqrt(2*DARK_STEP*runes).
+   Resets at prestige like every other in-cycle pressure, so it prices leaning on
+   the mechanic rather than using it.
+
+   Tightened 60 -> 25 after measuring: the mechanic held at 30 days where the
+   aura link had faded (whales +71/76% before, +44/47% after, summons 2169->1375
+   and 3639->2703) but 60 was too gentle to finish the job. 25 cuts what a
+   two-thousand rune stock can buy from ~450 summons to ~300. TUNABLE. */
+export const DARK_STEP = 25;
+export const darkRollCost = s => 1 + Math.floor((s.darkRolls || 0) / DARK_STEP);
+
 export const PITY_AT = 40;
 /** Roll a race/class combo. Pure: rng is injected. */
 export function rollCombo(s, premium, rng) {
