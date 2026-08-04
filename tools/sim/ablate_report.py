@@ -24,7 +24,12 @@ SPLIT_GAP = 0.45   # one gap holding this share of the range reads as two modes
 # competing in one number can only be equalised. The Orb spread is now an
 # anti-goal for these axes -- different paths, not different speeds.
 AXIS_METRIC = {
-    'caution': ('fallenDepth', 'avg depth at death', 2.0),
+    # Where a seeker DIES is pinned by the difficulty curve, not by caution: a hero
+    # falls when the monsters outclass it, which happens at a roughly fixed power
+    # whatever route it took to get there. Measured twice, and both times flat --
+    # levels at death 14.94/14.65/14.76, then depths at death 11.98/11.99/11.98. What
+    # caution decides is how deep the guild GETS: 14.7/17.1/23.6 on the same run.
+    'caution': ('depth', 'depth the guild reaches', 2.0),
     # Composition, not count. Counting kinds of rune could not price the roads:
     # each road carries four rune branches, so the COUNT is identical however
     # different the runes are. What a road decides is the CHARACTER of the haul --
@@ -70,7 +75,10 @@ def bimodality_report(rows):
     print('  seeds: ' + ' '.join(str(int(w)) for w in pooled))
     if stalled:
         print(f'  {stalled}/{n} seeds took no Orb at all')
-    if share >= SPLIT_GAP:
+    # A single stray seed is an outlier, not a second mode. Requiring two on each side
+    # keeps the flag for what it is meant to catch -- a loop that settles into two
+    # different games -- rather than firing on one lucky account in twenty-four.
+    if share >= SPLIT_GAP and idx + 1 >= 2 and n - (idx + 1) >= 2:
         below, above = pooled[:idx + 1], pooled[idx + 1:]
         print(f'  BIMODAL: {len(below)} seeds <= {int(below[-1])}, '
               f'{len(above)} seeds >= {int(above[0])} — one gap holds '
