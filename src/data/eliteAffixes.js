@@ -134,13 +134,21 @@ export const ENDGAME_PEAK = 26;   /* Zot:5 — and reaches zotScale() here */
 
 export const ZOT_LETHALITY = 4.9;
 export const ZOT_EASE_FLOOR = 0.28;
+/* How far readiness may push the endgame UP. The easing was designed to work
+   downward: a young guild must not stall forever on its first Orb. It scales both ways
+   though, and a ceiling of 2.0 means a guild that invests in stars, Legends and Zot
+   upgrades meets a Zot:5 nearly four times harsher than a modest one does -- 8.5x
+   against 2.3x. Investment then buys nothing at the wall; you run to stand still, and
+   the Vaults-to-Zot stretch is where the t-squared ramp puts most of that increase.
+   Swept rather than argued, like the NG slopes: ZOT_TUNE='{"hardCeil":1.0}'. */
+export const ZOT_TUNE = { hardCeil: 2.0 };
 export const ZOT_HARD_CEIL = 2.0;
 /* The floor had to drop when lethality went up: multiplying it too meant even a
    struggling guild met a Realm ~1.9x harder than baseline, so the easing stopped
    easing and accounts died outright (2 of 12 never took an Orb at all). At 0.28
    a guild that cannot yet finish Zot meets it at roughly baseline strength,
    while a titan still faces the full multiple. */
-export const zotScale = s => ZOT_LETHALITY * Math.min(ZOT_HARD_CEIL,
+export const zotScale = s => ZOT_LETHALITY * Math.min(ZOT_TUNE.hardCeil,
   Math.max(ZOT_EASE_FLOOR, ZOT_EASE_FLOOR + readiness(s) / 55));
 /** endgame pressure at a given depth: 1x until Vaults, rising to zotScale at Zot:5 */
 /* The ramp is CONVEX, not linear, and that is the whole reason the peak can be

@@ -13,6 +13,7 @@
    Output: NDJSON, one line per session.  */
 import { session, TACTICS } from './worker.mjs';
 import { NG_TUNE } from '../../src/core/prestige.js';
+import { ZOT_TUNE } from '../../src/data/eliteAffixes.js';
 import { pathToFileURL } from 'node:url';
 
 const SEED_BASE = parseInt(process.env.SEED_BASE || '0', 10);
@@ -21,7 +22,13 @@ const SEED_BASE = parseInt(process.env.SEED_BASE || '0', 10);
    because the response is threshold-shaped: this project already once solved a
    lethality constant analytically, predicted 6.4 and measured zero. NG_TUNE='{"monSlope":0.3}' */
 const TUNE = process.env.NG_TUNE ? JSON.parse(process.env.NG_TUNE) : null;
-if (TUNE) Object.assign(NG_TUNE, TUNE);
+if (TUNE) {
+  /* one env knob, two tables: ng* keys go to the NG slopes, zot* keys to the endgame
+     ceiling, so a sweep can move either without a second workflow input */
+  const { hardCeil, ...ng } = TUNE;
+  Object.assign(NG_TUNE, ng);
+  if (hardCeil !== undefined) ZOT_TUNE.hardCeil = hardCeil;
+}
 export const tuneLabel = TUNE ? JSON.stringify(TUNE) : 'stock';
 
 /** Run `sessions` accounts of one tactic and return their per-day series. */
