@@ -242,3 +242,42 @@ describe('the roads keep their characters', () => {
     }
   });
 });
+
+describe('no weapon school disappears from the deep game', () => {
+  it('every school can still be found at the top tier', async () => {
+    /* The drop pool was a sliding window of two tiers, so at t=2 -- reached past D:16,
+       or from D:8 on any epic-or-better roll -- the whole of tier 0 vanished. Short
+       blades, bows and staves exist only there, so a hero trained in one of the three
+       could not find a weapon of their school at all. The quarterstaff is the sharpest
+       case: it carries the only `mag` in the game, which makes it the only caster
+       weapon, and six of the eleven classes are casters. */
+    const { WEP_BASES, randomItem } = await import('../src/data/items.js');
+    const { mulberry32 } = await import('../src/core/rng.js');
+    const schools = new Set(WEP_BASES.map(b => b.school));
+    for (const t of [0, 1, 2]) {
+      const seen = new Set();
+      const rng = mulberry32(7);
+      for (let i = 0; i < 4000; i++) {
+        const it = randomItem('weapon', t, rng);
+        const b = WEP_BASES.find(w => w.k === it.base);
+        if (b) seen.add(b.school);
+      }
+      for (const s of schools)
+        expect(seen.has(s), 'school ' + s + ' cannot drop at tier ' + t).toBe(true);
+    }
+  });
+
+  it('the only caster weapon can be found and can be rare', async () => {
+    const { WEP_BASES, randomItem } = await import('../src/data/items.js');
+    const mag = WEP_BASES.filter(b => b.mag);
+    expect(mag.length, 'no caster weapon at all').toBeGreaterThan(0);
+    const { mulberry32 } = await import('../src/core/rng.js');
+    const rng = mulberry32(11);
+    let found = false;
+    for (let i = 0; i < 4000 && !found; i++) {
+      const it = randomItem('weapon', 2, rng);
+      if (mag.some(b => b.k === it.base)) found = true;
+    }
+    expect(found, 'the caster weapon never drops at the top tier').toBe(true);
+  });
+});

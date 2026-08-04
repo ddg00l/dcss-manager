@@ -158,7 +158,19 @@ export function randomItem(slotChoice,tier,rng,luck=0){
   const t=Math.min(2,tier+(rar>=2?1:0));
   const it={slot,plus:0,ego:null,rar,rand:null,id:'i'+(itemSeq++)+'_'+Date.now()%1e5};
   if(slot==='weapon'){
-    const pool=WEP_BASES.filter(b=>b.tier<=t&&b.tier>=Math.max(0,t-1));
+    /* The pool used to be a sliding window of two tiers, which quietly deleted whole
+       weapon SCHOOLS from the deep game. At t=2 the window is tiers 1-2, and short
+       blades, bows and staves exist only at tier 0 -- so past D:16, and for any epic or
+       better roll from D:8, a hero trained in one of those three could not find a weapon
+       of their school at all. The quarterstaff is the sharpest case: it is the only
+       weapon in the game with mag, which makes it the only caster weapon, and six of
+       the eleven classes are casters.
+
+       A base whose school has nothing better stays eligible. The window still keeps
+       daggers out of deep drops when a school has grown past them. */
+    const bestOf={};
+    for(const b of WEP_BASES)bestOf[b.school]=Math.max(bestOf[b.school]??-1,b.tier);
+    const pool=WEP_BASES.filter(b=>b.tier<=t&&(b.tier>=Math.max(0,t-1)||bestOf[b.school]===b.tier));
     it.base=pool[Math.floor(rng()*pool.length)].k;
     it.plus=Math.floor(rng()*(3+rar*2.5));
     if(rng()<.25+rar*.2)it.ego=WEP_EGOS[Math.floor(rng()*WEP_EGOS.length)].k;
