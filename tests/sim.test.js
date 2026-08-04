@@ -298,3 +298,34 @@ describe('a legendary is never lost to one bad floor', () => {
     expect(recovered, 'a worn relic was lost at least once in forty deaths').toBe(40);
   });
 });
+
+describe('a unique is a long fight, not an unwinnable one', () => {
+  it('the nemesis ratchet stops', async () => {
+    /* Every hero a unique ate made it 15% stronger with no ceiling: losing to it was
+       how you made it unbeatable, and nothing on screen said so. */
+    const { nemesisLevel, recordNemesisKill, NEMESIS_CAP } = await import('../src/core/chronicle.js');
+    const s = makeState();
+    for (let i = 0; i < 40; i++) recordNemesisKill(s, 'lernaean');
+    expect(s.nemeses.lernaean).toBe(40);        /* the chronicle still remembers */
+    expect(nemesisLevel(s, 'lernaean')).toBe(NEMESIS_CAP);
+  });
+
+  it('a unique carries its multiplier in health, not in damage', async () => {
+    /* The Lernaean hydra hit for 50 against a well-equipped Lair-era hero's 203 health
+       while needing ten blows to fall -- four hits to die, ten to win. Endurance makes a
+       long fight, which potions and positioning can decide; a damage bump on top just
+       shortens it in the monster's favour. */
+    const { makeMon } = await import('../src/sim/mapgen.js');
+    const { UNIQUES, MONS } = await import('../src/data/monsters.js');
+    const { BR_OFFSET } = await import('../src/data/branches.js');
+    const u = UNIQUES.lernaean, depth = BR_OFFSET.lair + 6, rng = () => 0.5;
+    const plain = makeMon(u.base, depth, 1, 1, rng);
+    /* mapgen multiplies hp by u.mul and leaves dmg alone; assert the contract holds by
+       reading the source, since spawning a unique needs a whole floor */
+    const src = readFileSync(join(ROOT, 'src/sim/mapgen.js'), 'utf8');
+    const line = src.split('\n').find(l => l.includes('m.hp=Math.floor(m.hp*u.mul*nem)'));
+    expect(line, 'the unique spawn changed shape').toBeTruthy();
+    expect(line, 'damage is multiplied again').not.toContain('m.dmg=');
+    expect(plain.dmg).toBeGreaterThan(0);
+  });
+});

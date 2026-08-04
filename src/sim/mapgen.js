@@ -84,7 +84,17 @@ export function genFloor(h,s){
     const m=makeMon(u.base,depth,c[0],c[1],rng);
     /* a nemesis grows stronger with every hero it has slain */
     const nem=1+.15*nemesisLevel(s,uniq);
-    m.hp=Math.floor(m.hp*u.mul*nem);m.maxHp=m.hp;m.dmg=Math.floor(m.dmg*(1+u.mul*.25)*nem);
+    /* A unique is defined by ENDURANCE, not by sharpness, and a nemesis by more of the
+       same. Health carries the whole multiplier, which makes a long fight -- the kind
+       potions, positioning and a class's tricks decide. Damage is left at what the
+       monster's kind and depth already say.
+
+       Both used to be multiplied. The Lernaean hydra hit for 50 against a well-equipped
+       Lair-era hero's 203 health while needing ten blows to fall: it killed in four and
+       no amount of play won that. Worse, every hero it ate raised both by 15% with no
+       ceiling, so losing to it was how you made it unbeatable. Now it grows harder to
+       kill and no faster at killing, and it stops growing at five. */
+    m.hp=Math.floor(m.hp*u.mul*nem);m.maxHp=m.hp;
     if(nem>1)m.nem=nemesisLevel(s,uniq);
     m.xp*=u.mul*2;m.uniq=uniq;m.n=u.n;m.t=u.t;
     monsters.push(m);

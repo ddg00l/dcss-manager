@@ -80,8 +80,20 @@ export function chronicleGoals(s) {
 }
 
 /* ---------- Nemeses: uniques that slew your heroes grow into personal foes ---------- */
+/* A rival, not an unpayable debt.
+
+   Every hero a unique ate made it 15% stronger, with no ceiling. Failure raised the
+   difficulty, the raised difficulty made failure likelier, and nothing in the game
+   offered a way out: the Lernaean hydra measured 279 HP and 50 damage on a fresh
+   account against a well-equipped hero's 203 and 28 -- already a losing fight -- and
+   after ten deaths it stood at 698 and 125. A player who lost once was being pushed
+   further from ever winning.
+
+   The ratchet stays, because a monster that remembers you is worth having. It just
+   stops: five kills' worth of growth and no more. */
+export const NEMESIS_CAP = 5;
 export function nemesisLevel(s, uniqKey) {
-  return (s.nemeses && s.nemeses[uniqKey]) || 0;
+  return Math.min(NEMESIS_CAP, (s.nemeses && s.nemeses[uniqKey]) || 0);
 }
 export function recordNemesisKill(s, uniqKey) {
   s.nemeses = s.nemeses || {};
