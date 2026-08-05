@@ -75,8 +75,11 @@ export function itemInfo(it){
     Object.assign(out,{regen:b.regen,ac:b.ac,hp:b.hp,dmgP:b.dmg,ev:b.ev,retal:b.retal})}
   if(it.ego){
     const e=WEP_EGOS.find(q=>q.k===it.ego)||ARM_EGOS.find(q=>q.k===it.ego);
+    /* `mr` was missing from this list, which is why the willpower ego did nothing: the
+       property never left the item, so nothing downstream could read it however hard it
+       looked. A fixed copy list silently drops whatever it forgets. */
     if(e)Object.assign(out,{mul:e.mul,aspd:e.aspd,leech:e.leech,chill:e.chill,res:e.res||e.pois_res,
-      regen:out.regen||e.regen,ev:(out.ev||0)+(e.ev||0),ac:(out.ac||0)+(e.ac||0)});
+      mr:e.mr,regen:out.regen||e.regen,ev:(out.ev||0)+(e.ev||0),ac:(out.ac||0)+(e.ac||0)});
   }
   if(it.ego){
     const e2=WEP_EGOS.find(q=>q.k===it.ego)||ARM_EGOS.find(q=>q.k===it.ego);

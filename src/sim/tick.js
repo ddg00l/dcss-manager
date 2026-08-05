@@ -920,7 +920,7 @@ function monAttack(h,st,mo,s){
     const FXT={conj:'fx_iron_shot',fire:'fx_bolt_of_fire',ice:'fx_bolt_of_cold',necro:'fx_bolt_draining'};
     h.map.fx={tile:FXT[mo.cast]||'fx_magic_dart',x:h.map.px,y:h.map.py,t:4};
     dmg=mo.dmg*(0.8+rnd(h)*.5);
-    dmg=Math.max(1,dmg-st.ac*.35)*(1-st.resAll*.5);
+    dmg=Math.max(1,dmg-st.ac*.35)*(1-st.resAll*.5)*(1-(st.mrCut||0));
     if(RACES[h.race].shrug)dmg*=.9;
     h.curHp-=dmg;
     if(mo.cast==='necro')mo.hp=Math.min(mo.maxHp,mo.hp+dmg*.4);

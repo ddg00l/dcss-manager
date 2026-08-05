@@ -329,3 +329,25 @@ describe('a unique is a long fight, not an unwinnable one', () => {
     expect(plain.dmg).toBeGreaterThan(0);
   });
 });
+
+describe('a caster can be answered', () => {
+  it('willpower cuts spell damage, and armour still does not', async () => {
+    /* The ego "of willpower" was declared on armour, listed in the item table, and read
+       nowhere: the one property that should answer a caster did nothing. Zot is full of
+       them, a bolt already ignores half of armour and half of resistance, and a lich
+       heals itself for 40% of what it lands -- so a player who armoured up had nothing
+       to buy. A death screen showed +4 crystal plate and two bolts of 317 and 228. */
+    const { heroStats } = await import('../src/sim/hero.js');
+    const { ARM_EGOS } = await import('../src/data/items.js');
+    expect(ARM_EGOS.some(e => e.mr), 'no willpower ego to wire up').toBe(true);
+    const s = makeState();
+    const bare = newHero('minotaur', 'fighter', 2, s);
+    bare.gear = { armour: { slot: 'armour', base: 'plate', plus: 0, rar: 0, id: 'a1' } };
+    const willed = newHero('minotaur', 'fighter', 2, s);
+    willed.gear = { armour: { slot: 'armour', base: 'plate', plus: 0, rar: 0, ego: 'mr', id: 'a2' } };
+    const a = heroStats(bare, s), b = heroStats(willed, s);
+    expect(a.mrCut).toBe(0);
+    expect(b.mrCut).toBeGreaterThan(0);
+    expect(b.ac).toBeCloseTo(a.ac, 5);          /* willpower is not armour */
+  });
+});

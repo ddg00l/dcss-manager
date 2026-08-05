@@ -155,7 +155,7 @@ function heroStatsCompute(h,s){
   if(style!=='magic')aspd*=speedMul(wskill,wep?wep.mds:8);
   let mag=1*(rd.mag||1)*(cd.mag||1);
   let leech=cd.drain||0,critc=.05+(cd.crit||0),regen=(rd.regen||1);
-  let resAll=0,retal=rd.retal?1:0,evB=0;
+  let resAll=0,retal=rd.retal?1:0,evB=0,mr=0;
   const slots=['armour','shield',...ringSlotKeys(h,s),'amulet'];
   const seen=new Set();
   const twoHanded=!!(wep&&wep.h2);
@@ -170,6 +170,12 @@ function heroStatsCompute(h,s){
     if(info.regen)regen+=1;
     if(info.retal)retal=1;
     if(info.res)resAll+=.1;
+    /* Willpower. The ego existed on armour, was named in the item list, and was read
+       nowhere -- so the one property in the game that should answer a caster did
+       nothing at all. Zot is full of them, a monster's bolt already ignores half your
+       armour and half your resistance, and a lich heals itself for 40% of what it
+       lands. A player who armoured up had no answer to buy. */
+    if(info.mr)mr+=info.mr;
     if(info.acc)acc+=info.acc;
   }
   if(g.armour){ac+=h.skills.armour*.5}
@@ -245,7 +251,9 @@ function heroStatsCompute(h,s){
     if(ii.waders)waders=true;
   }
   if(rd.und)vsUndead=1; /* DCSS: the undead cannot channel holy wrath */
-  return {ac,ev,dmg,hpMax:Math.floor(hpMax),aspd,acc,leech,critc,regen,resAll,retal,dodge,chill,
+  /* each piece of willpower turns aside a fifth of a bolt, three pieces about half */
+  const mrCut=Math.min(.55,mr*.2);
+  return {ac,ev,dmg,hpMax:Math.floor(hpMax),aspd,acc,leech,critc,regen,resAll,retal,dodge,chill,mr,mrCut,
     vsUndead,venom,rPois,lantern,waders,twoHanded,
     caster:style==='magic',mpMax:mpMaxOf(h),
     style,school,rng:style!=='melee'?5:(wep&&wep.reach?2:1),spd:rd.spd*gSpd(s)};
