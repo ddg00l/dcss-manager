@@ -143,7 +143,11 @@ export const ZOT_EASE_FLOOR = 0.28;
    Swept rather than argued, like the NG slopes: ZOT_TUNE='{"hardCeil":1.0}'. */
 export const ZOT_TUNE = {
   hardCeil: 2.0,
-  density: 0,   /* extra monsters on a Zot floor, over the usual 5-10 */
+  /* Swept. Zot carried two extra bodies per floor and only 2.8% of the seekers who
+     reached the Gates came back out -- 131 deaths per Orb, an account that made its
+     target by feeding the branch bodies. At -2 the floor holds 3-8 instead of 7-12 and
+     the share doubles. */
+  density: -2,
   curve: 2,     /* how sharply the endgame ramp leans toward its peak */
   /* Fewer arrivals, better seekers. Orbs a day is arrivals at the Gates times the share
      that come back out, and at 2.8% the second term WAS the pacing: the guild made its
@@ -151,7 +155,7 @@ export const ZOT_TUNE = {
      nearly 7%, which is a fight rather than a queue -- and then the first term has to
      come down, or the loop runs four times its target. This scales how fast a seeker
      delves, so fewer runs finish per day without a single fight becoming harder. */
-  pace: 1,
+  pace: 0.35,
 };
 export const ZOT_HARD_CEIL = 2.0;
 /* The floor had to drop when lethality went up: multiplying it too meant even a
