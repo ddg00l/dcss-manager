@@ -926,6 +926,15 @@ export function giveRune(h,name,s){
   h.rep.notable.push(t('ᚱ obtained: ')+t(name));
 }
 function monAttack(h,st,mo,s){
+  /* Distance costs the shooter something. A ranged monster used to land its full blow
+     from five tiles away, which makes range a pure bonus: the same damage as a melee
+     hit, plus four free ones while the hero walks over. An orb of fire at Zot:3 opened
+     with roughly a fifth of a seeker's health before the fight began, and the seeker
+     killed it in one blow on arrival -- the whole contest was the approach.
+     Full strength at arm's length, half at the limit, straight line between. */
+  const reach=mo.rng||1;
+  const dist=cheb(mo.x,mo.y,h.map.px,h.map.py);
+  const rangeMul=reach>1?1-.5*Math.min(1,Math.max(0,(dist-1)/(reach-1))):1;
   const hit=rnd(h)<clamp((mo.acc+8)/(mo.acc+8+st.ev),.1,.92);
   if(!hit){hlog(h,t(mo.n)+t(' misses ')+h.name,'sys');return}
   if(st.dodge>0&&rnd(h)<st.dodge){
@@ -940,7 +949,7 @@ function monAttack(h,st,mo,s){
        shows its school's effect tile on the hero */
     const FXT={conj:'fx_iron_shot',fire:'fx_bolt_of_fire',ice:'fx_bolt_of_cold',necro:'fx_bolt_draining'};
     h.map.fx={tile:FXT[mo.cast]||'fx_magic_dart',x:h.map.px,y:h.map.py,t:4};
-    dmg=mo.dmg*(0.8+rnd(h)*.5);
+    dmg=mo.dmg*(0.8+rnd(h)*.5)*rangeMul;
     dmg=Math.max(1,dmg-st.ac*.35)*(1-st.resAll*.5)*(1-(st.mrCut||0));
     if(RACES[h.race].shrug)dmg*=.9;
     h.curHp-=dmg;
@@ -948,7 +957,7 @@ function monAttack(h,st,mo,s){
     if(mo.cast==='necro')mo.hp=Math.min(mo.maxHp,mo.hp+dmg*.2);
     hlog(h,'✦ '+t(mo.n)+t(' casts a bolt at ')+h.name+' ('+Math.round(dmg)+')','dmg');
   }else{
-    dmg=mo.dmg*(0.7+rnd(h)*.6);
+    dmg=mo.dmg*(0.7+rnd(h)*.6)*rangeMul;
     dmg=Math.max(1,dmg-st.ac*.7)*(1-st.resAll);
     if(RACES[h.race].shrug)dmg*=.9; /* the dwarf shrugs off part of the damage */
     h.curHp-=dmg;
