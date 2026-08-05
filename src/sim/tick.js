@@ -36,7 +36,7 @@ export const newTel=()=>({fallenXL:0,fallenDepth:0,fallenN:0,gearHome:0,artefact
   /* How strong a road delivers its seekers to the Gates. This turned out to be the
      thing that decides a road, far more than its loot: two roads with the same
      destinations differed 13x in Orbs while their hauls were interchangeable. */
-  zotXL:0,zotHp:0});
+  zotXL:0,zotHp:0,zotDmg:0});
 
 export const simHooks={onDeath:null,onWin:null};
 /* DCSS: movement and adjacency are 8-directional (Chebyshev metric) */
@@ -251,7 +251,7 @@ function nextFloor(h,s){
        full run took under an hour and the Orb showed up 14 times a day. */
     if(ns[0]==='zot'&&h.runes.length>=ZOT_RUNES){
       const tl=s.tel=s.tel||newTel();
-      tl.gateOk++;tl.zotXL+=h.xl;tl.zotHp+=(h.maxHpCache||0);
+      tl.gateOk++;tl.zotXL+=h.xl;tl.zotHp+=(h.maxHpCache||0);tl.zotDmg+=heroStats(h,s).dmg;
     }
     if(ns[0]==='zot'&&h.runes.length<ZOT_RUNES){
       (s.tel=s.tel||newTel()).sealed++;
