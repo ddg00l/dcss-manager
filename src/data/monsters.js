@@ -30,7 +30,7 @@ export const MONS={
   black_mamba:{n:'black mamba',t:'m_black_mamba',hp:26,dmg:12,ac:2,ev:13,xp:11,pois:1,spd:1.4},
   elephant:{n:'elephant',t:'m_elephant',hp:50,dmg:18,ac:5,ev:4,xp:16},
   death_yak:{n:'death yak',t:'m_death_yak',hp:44,dmg:17,ac:5,ev:6,xp:15},
-  hydra:{n:'hydra',t:'m_hydra',hp:70,dmg:22,ac:2,ev:4,xp:28,multi:3},
+  hydra:{n:'hydra',t:'m_hydra',hp:70,dmg:22,ac:2,ev:4,xp:28},
   orc_priest:{n:'orc priest',t:'m_orc_priest',hp:24,dmg:9,ac:2,ev:8,xp:10,rng:1,mag:1,cast:'necro'},
   orc_knight:{n:'orc knight',t:'m_orc_knight',hp:48,dmg:20,ac:7,ev:8,xp:20},
   de_mage:{n:'deep elf annihilator',t:'m_de_mage',hp:35,dmg:22,ac:2,ev:12,xp:26,rng:1,mag:1,cast:'conj'},
@@ -45,7 +45,7 @@ export const MONS={
   stone_giant:{n:'stone giant',t:'m_stone_giant',hp:96,dmg:35,ac:8,ev:2,xp:45,rng:1},
   fire_giant:{n:'fire giant',t:'m_fire_giant',hp:90,dmg:36,ac:8,ev:4,xp:48,mag:1,rng:1},
   frost_giant:{n:'frost giant',t:'m_frost_giant',hp:93,dmg:36,ac:9,ev:3,xp:48,mag:1,rng:1,chill:1},
-  ettin:{n:'ettin',t:'m_ettin',hp:88,dmg:38,ac:6,ev:4,xp:44,multi:2},
+  ettin:{n:'ettin',t:'m_ettin',hp:88,dmg:38,ac:6,ev:4,xp:44},
   ghost_moth:{n:'ghost moth',t:'m_ghost_moth',hp:70,dmg:26,ac:6,ev:10,xp:40,drain:1},
   /* dmg was 38, the highest in Zot bar the Orb of Fire itself, and it landed through
      armour twice as hard as anything else there: a caster's bolt already counts a third

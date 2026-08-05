@@ -730,7 +730,7 @@ export function heroAttack(h,st,mo,s){
     /* casters auto-cast the strongest affordable spell from their memorised set;
        out of MP → a weak fallback dart. The spell scales the base magic damage and
        carries its own side-effects (AOE splash, chill, drain-heal). */
-    let spellPow=1,spellAoe=false,spellSlow=false,spellHeal=0,spellName='';
+    let spellPow=1,spellAoe=false,spellSlow=false,spellHeal=0,spellName='',spellBurn=false,spellKnock=false;
     if(st.caster){
       const clustered=h.map.monsters.some(o=>o!==mo&&Math.abs(o.x-mo.x)<=1&&Math.abs(o.y-mo.y)<=1);
       const lowHp=h.curHp/(h.maxHpCache||h.curHp)<.4;
@@ -738,6 +738,10 @@ export function heroAttack(h,st,mo,s){
       if(sp){
         h.mp-=sp.mp;
         spellPow=sp.pow;spellAoe=(sp.type==='aoe');spellSlow=!!sp.slow;spellHeal=sp.heal||0;spellName=sp.n;
+        spellBurn=!!sp.burn;spellKnock=!!sp.knock;
+        /* Disjunction's only effect: without it the spell was eight mana and a turn for
+           nothing at all, the most expensive way in the game to do literally nothing. */
+        if(sp.slowall)for(const o of h.map.monsters)if(o.awake&&o.hp>0)o.chill=6;
         h.map.fx={tile:sp.fx,x:mo.x,y:mo.y,t:4}; /* transient effect tile for the canvas */
       }else spellPow=.5; /* mana-tapped: a feeble dart */
     }
@@ -753,6 +757,17 @@ export function heroAttack(h,st,mo,s){
       mo.awake=true;
     }
     if((st.chill||spellSlow)&&mo.hp>0)mo.chill=5; /* frost/ice spells slow */
+    /* Sticky Flame, Fireball and Starburst all carry `burn` and none of it burned:
+       fire's whole identity is that it keeps working after the hit. */
+    if(spellBurn&&mo.hp>0)mo.poisonA={dps:Math.max(1,st.dmg*spellPow*.10),t:5,fire:1};
+    /* Force Lance shoves. It is the one conjuration that buys a caster distance, which
+       is the resource a caster actually lacks. */
+    if(spellKnock&&mo.hp>0){
+      const dx=Math.sign(mo.x-h.map.px),dy=Math.sign(mo.y-h.map.py);
+      const nx=mo.x+dx,ny=mo.y+dy;
+      if(nx>=0&&nx<MW&&ny>=0&&ny<MH&&h.map.g[ny][nx]===0&&
+         !h.map.monsters.some(o=>o!==mo&&o.x===nx&&o.y===ny)){mo.x=nx;mo.y=ny;mo.chill=2}
+    }
     if(st.vsUndead>1&&mo.special&&mo.special.und)dmg*=st.vsUndead; /* holy wrath burns the undead */
     if(st.venom&&mo.hp>0&&!(mo.special&&mo.special.und))
       mo.poisonA={dps:Math.max(1,st.dmg*.12),t:4}; /* venom blade (undead are immune to poison) */
