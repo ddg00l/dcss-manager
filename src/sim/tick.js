@@ -326,6 +326,12 @@ function gainXp(h,xp,s){
   }
 }
 export function heroDie(h,killer,s){
+  /* A seeker cannot die twice. Two of the nine call sites do not return afterwards, so
+     execution carried on to the next health check -- still below zero -- and buried the
+     same hero again: two epitaphs in pendingDeaths and the death screen shown twice.
+     Guarding here rather than at those two sites, because the next one added would have
+     the same hole and nothing would catch it. */
+  if(h.state!=='run')return;
   if(h.lives>1){
     h.lives--;
     h.curHp=h.maxHpCache;

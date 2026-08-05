@@ -375,3 +375,22 @@ describe('a necromancer summons by the skill it actually trains', () => {
     expect(2 + Math.floor(skl / 4), 'still capped at two allies').toBeGreaterThan(2);
   });
 });
+
+describe('a seeker is buried once', () => {
+  it('dying twice leaves one epitaph', async () => {
+    /* Two of the nine call sites do not return after killing the hero, so execution
+       reached the next health check -- still below zero -- and buried the same seeker
+       again. The player saw the death screen twice. */
+    const { heroDie, startRun } = await import('../src/sim/tick.js');
+    const s = makeState();
+    const h = newHero('minotaur', 'fighter', 2, s);
+    s.heroes.push(h);
+    startRun(h, s);
+    h.curHp = -5;
+    heroDie(h, 'a lich', s);
+    heroDie(h, 'a lich', s);           /* the second call is the bug */
+    expect(s.pendingDeaths.length).toBe(1);
+    expect(s.stat.deaths).toBe(1);
+    expect(s.fame.length).toBe(1);
+  });
+});
