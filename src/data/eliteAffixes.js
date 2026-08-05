@@ -155,7 +155,14 @@ export const ZOT_TUNE = {
      nearly 7%, which is a fight rather than a queue -- and then the first term has to
      come down, or the loop runs four times its target. This scales how fast a seeker
      delves, so fewer runs finish per day without a single fight becoming harder. */
-  pace: 0.35,
+  /* Back to full speed. This was introduced to pay for a thinner Zot -- fewer runs
+     finishing, so fewer Orbs -- and on paper it was the only lever that lowered arrivals
+     without making a fight harder. In the hand it was the worst possible place to take
+     the payment: it slows the TURNS, so the player watches a seeker crawl across every
+     floor. An abstract "fewer Orbs per day" is a number; a dungeon that moves at a third
+     speed is the whole experience. The thinner Zot stays and the loop simply runs
+     faster than the old target, which is a trade worth making. */
+  pace: 1,
 };
 export const ZOT_HARD_CEIL = 2.0;
 /* The floor had to drop when lethality went up: multiplying it too meant even a
