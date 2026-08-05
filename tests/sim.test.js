@@ -351,3 +351,27 @@ describe('a caster can be answered', () => {
     expect(b.ac).toBeCloseTo(a.ac, 5);          /* willpower is not armour */
   });
 });
+
+describe('a necromancer summons by the skill it actually trains', () => {
+  it('the ally ladder and the ally cap both read necromancy', async () => {
+    /* Death Channel is a necromancy spell, and both the summon tier and the ally cap
+       read `summonings` alone -- which a necromancer never trains. It called rats at
+       Zot:4 with XL15 behind it, capped at two of them, for the whole game. The power
+       line beside the ladder already read either skill; the ladder and the cap did not. */
+    const src = readFileSync(join(ROOT, 'src/sim/tick.js'), 'utf8');
+    const cap = src.split('\n').find(l => l.includes('const sumCap='));
+    const tier = src.split('\n').find(l => l.includes('const skl=') && l.includes('summonings'));
+    expect(cap, 'the ally cap ignores necromancy').toMatch(/sumSkl|necromancy/);
+    expect(tier, 'the summon tier ignores necromancy').toMatch(/necromancy/);
+  });
+
+  it('a trained necromancer outgrows the rat', async () => {
+    const { newHero } = await import('../src/sim/hero.js');
+    const s = makeState();
+    const h = newHero('octopode', 'necromancer', 2, s);
+    h.skills.necromancy = 26;
+    const skl = Math.max(h.skills.summonings || 0, h.skills.necromancy || 0);
+    expect(skl, 'necromancy does not reach the ladder').toBeGreaterThanOrEqual(24);
+    expect(2 + Math.floor(skl / 4), 'still capped at two allies').toBeGreaterThan(2);
+  });
+});

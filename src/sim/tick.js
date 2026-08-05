@@ -611,7 +611,13 @@ export function simTick(h,s){
      it can afford when short of the ally cap, spending MP and scaling the ally by
      the spell's strength (hd). */
   m.allies=m.allies||[];
-  const sumCap=2+Math.floor((h.skills.summonings||0)/4);
+  /* A necromancer summons through Death Channel and trains NECROMANCY, so reading
+     summonings alone left it capped at two allies forever -- and the tier ladder below
+     did the same, so it called rats at Zot:4 with XL15 behind it. The power line right
+     beside that ladder already knew to read either skill; the cap and the tier did not.
+     Half a class's arsenal, dead from the first floor to the last. */
+  const sumSkl=Math.max(h.skills.summonings||0,h.skills.necromancy||0);
+  const sumCap=2+Math.floor(sumSkl/4);
   if(st.caster&&m.allies.length<sumCap){
     const ss=bestSummonSpell(h);
     if(ss){
@@ -1750,7 +1756,7 @@ export function summonAlly(h,s,forceKind,forceN,hdMul){
   m.allies=m.allies||[];
   let kind=forceKind,name=forceN;
   if(!kind){
-    const skl=h.skills.summonings||0;
+    const skl=Math.max(h.skills.summonings||0,h.skills.necromancy||0);
     const tier=[...SUMMON_TIERS].reverse().find(t=>skl>=t.min)||SUMMON_TIERS[0];
     kind=tier.kind;name=t(tier.n);
   }
