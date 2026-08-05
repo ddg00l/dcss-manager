@@ -1517,9 +1517,21 @@ function consumableAI(h,s,st,hpFrac,cautLim){
     if(hasC(h,'heal')&&h.known.includes('heal'))return drinkPotion(h,s,'heal');
   }
   if(h.poison&&hasC(h,'curing')&&h.known.includes('curing'))return drinkPotion(h,s,'curing');
-  /* buffs against a boss/unique */
+  /* When to spend a buff.
+
+     This used to require a boss or a unique to be awake, which reads sensibly and is
+     wrong where it matters most: Zot has a boss on its fifth floor only. A seeker
+     surrounded by liches on Zot:3 met the hardest fight in the game with a full pack of
+     potions and drank none of them, because nothing there was formally a boss. Players
+     found their dead carrying pockets of unused resistance.
+
+     Danger is what should open the pack, and in the endgame danger is the crowd. A boss
+     still counts; so do two awake threats within reach, and so does a caster in range --
+     bolts are what armour cannot answer, which is exactly what resistance is for. */
+  const casterNear=m.monsters.some(mo=>mo.awake&&mo.cast&&cheb(mo.x,mo.y,m.px,m.py)<=6);
   const bigTgt=m.monsters.some(mo=>(mo.boss||mo.uniq)&&mo.awake);
-  if(bigTgt){
+  const inTrouble=bigTgt||threats>=2||(casterNear&&hpFrac<.8);
+  if(inTrouble){
     if(hasC(h,'might')&&h.known.includes('might')&&!h.status.might)return drinkPotion(h,s,'might');
     if(hasC(h,'haste')&&h.known.includes('haste')&&!h.status.haste)return drinkPotion(h,s,'haste');
     if(hasC(h,'berserk')&&h.known.includes('berserk')&&!h.status.berserk&&
@@ -1531,7 +1543,10 @@ function consumableAI(h,s,st,hpFrac,cautLim){
        once identified they sat in the pack as cargo. */
     if(hasC(h,'brill')&&h.known.includes('brill')&&!h.status.brill&&
        CLASSES[h.cls].style==='magic')return drinkPotion(h,s,'brill');
-    if(hasC(h,'resist')&&h.known.includes('resist')&&!h.status.resist)return drinkPotion(h,s,'resist');
+    /* resistance answers the bolt, so it goes down when something is casting -- or
+       against a boss, where the damage is coming whatever its shape */
+    if((casterNear||bigTgt)&&hasC(h,'resist')&&h.known.includes('resist')&&!h.status.resist)
+      return drinkPotion(h,s,'resist');
   }
   /* Agility is defence, so it is drunk when defence is the problem: outnumbered and
      already hurt, where +5 evasion is worth more than any single attack. */
