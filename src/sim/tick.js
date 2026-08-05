@@ -923,7 +923,8 @@ function monAttack(h,st,mo,s){
     dmg=Math.max(1,dmg-st.ac*.35)*(1-st.resAll*.5)*(1-(st.mrCut||0));
     if(RACES[h.race].shrug)dmg*=.9;
     h.curHp-=dmg;
-    if(mo.cast==='necro')mo.hp=Math.min(mo.maxHp,mo.hp+dmg*.4);
+    /* a fifth, not two fifths: at 40% a lich out-sustained the hero it was hitting */
+    if(mo.cast==='necro')mo.hp=Math.min(mo.maxHp,mo.hp+dmg*.2);
     hlog(h,'✦ '+t(mo.n)+t(' casts a bolt at ')+h.name+' ('+Math.round(dmg)+')','dmg');
   }else{
     dmg=mo.dmg*(0.7+rnd(h)*.6);

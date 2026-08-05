@@ -47,7 +47,13 @@ export const MONS={
   frost_giant:{n:'frost giant',t:'m_frost_giant',hp:93,dmg:36,ac:9,ev:3,xp:48,mag:1,rng:1,chill:1},
   ettin:{n:'ettin',t:'m_ettin',hp:88,dmg:38,ac:6,ev:4,xp:44,multi:2},
   ghost_moth:{n:'ghost moth',t:'m_ghost_moth',hp:70,dmg:26,ac:6,ev:10,xp:40,drain:1},
-  lich:{n:'lich',t:'m_lich',hp:88,dmg:38,ac:10,ev:10,xp:60,mag:1,cast:'necro',rng:1,drain:1,und:1},
+  /* dmg was 38, the highest in Zot bar the Orb of Fire itself, and it landed through
+     armour twice as hard as anything else there: a caster's bolt already counts a third
+     of AC and half of resistance, and the necromantic drain healed it for another 40%
+     of that. Three advantages stacked on the branch's most common monster. 26 puts its
+     hit alongside the ghost moth, the other drainer, and lets the bolt and the drain
+     stay -- those are what makes a lich a lich. */
+  lich:{n:'lich',t:'m_lich',hp:88,dmg:26,ac:10,ev:10,xp:60,mag:1,cast:'necro',rng:1,drain:1,und:1},
   draconian_mon:{n:'draconian',t:'m_draconian',hp:70,dmg:30,ac:9,ev:9,xp:42,mag:1},
   orb_guardian:{n:'orb guardian',t:'m_orb_guardian',hp:130,dmg:45,ac:12,ev:6,xp:80},
   orb_of_fire:{n:'orb of fire',t:'m_orb_of_fire',hp:110,dmg:52,ac:20,ev:16,xp:100,mag:1,rng:1},
