@@ -91,6 +91,11 @@ def main():
                   f'(tail {tail:.1f}/day)')
         else:
             print(f'  stays within the target band  (tail {tail:.1f}/day)')
+        pr = [r for r in rows if r.get('passRate') is not None]
+        if pr:
+            m = lambda k: sum(r[k] for r in pr) / len(pr)
+            print('  of those who reach the Gates, %.1f%% come out  (%d deaths per Orb)'
+                  % (m('passRate') * 100, m('deathsPerOrb')))
         third = max(1, days // 3)
         early = sum(mean[:third]) / third
         late = sum(mean[-third:]) / third

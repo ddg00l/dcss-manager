@@ -3,7 +3,7 @@ import {GOLD_DEPTH_BASE} from '../core/economy.js';
 import {ngMonMul,inCycleMul,ngLevel} from '../core/prestige.js';
 import {nemesisLevel} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
-import {FLOOR_KEYS,floorAffixChance,eliteChance,rollEliteAffixes,affixLevel,endgamePressure, feltAffix} from '../data/eliteAffixes.js';
+import {FLOOR_KEYS,floorAffixChance,eliteChance,rollEliteAffixes,affixLevel,endgamePressure, feltAffix, ZOT_TUNE} from '../data/eliteAffixes.js';
 import {BRANCHES,brDepth,BR_OFFSET,BR_ORDER,BR_CORE} from '../data/branches.js';
 import {MONS,UNIQUES} from '../data/monsters.js';
 import {GODKEYS} from '../data/gods.js';
@@ -59,7 +59,10 @@ export function genFloor(h,s){
   const afx=feltAffix(s,todayAffix()); /* the day, as THIS guild feels it */
   let pool=P?br.mobs:br.mobs.filter(m=>h.floor>=m[1]&&h.floor<=m[2]);
   if(!pool.length)pool=br.mobs; /* floors past the branch's tabled depth still get its mobs, never an empty pool */
-  let n=P?(P.mobs.length?6+Math.floor(rng()*5):0):(5+Math.floor(rng()*5)+(h.branch==='zot'?2:0));
+  /* Zot carries extra bodies on every floor, and the crowd is what kills: only 1.9% of
+     the seekers who reach the Gates come back out, which is 160 deaths per Orb. The
+     account survives that statistically; the player watches a funeral procession. */
+  let n=P?(P.mobs.length?6+Math.floor(rng()*5):0):(5+Math.floor(rng()*5)+(h.branch==='zot'?ZOT_TUNE.density:0));
   if(n>0)n=Math.max(2,n+(afx.extraMobs||0)-(afx.lessMobs||0));
   for(let i=0;i<n&&free.length>4;i++){
     const mk=pool[Math.floor(rng()*pool.length)][0];

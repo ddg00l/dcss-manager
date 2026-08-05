@@ -141,7 +141,11 @@ export const ZOT_EASE_FLOOR = 0.28;
    against 2.3x. Investment then buys nothing at the wall; you run to stand still, and
    the Vaults-to-Zot stretch is where the t-squared ramp puts most of that increase.
    Swept rather than argued, like the NG slopes: ZOT_TUNE='{"hardCeil":1.0}'. */
-export const ZOT_TUNE = { hardCeil: 2.0 };
+export const ZOT_TUNE = {
+  hardCeil: 2.0,
+  density: 2,   /* extra monsters on a Zot floor, over the usual 5-10 */
+  curve: 2,     /* how sharply the endgame ramp leans toward its peak */
+};
 export const ZOT_HARD_CEIL = 2.0;
 /* The floor had to drop when lethality went up: multiplying it too meant even a
    struggling guild met a Realm ~1.9x harder than baseline, so the easing stopped
@@ -159,10 +163,10 @@ export const zotScale = s => ZOT_LETHALITY * Math.min(ZOT_TUNE.hardCeil,
    gentle (Lair ~x1.6 at the same peak) while the last floors carry nearly all of
    the increase, so raising the ceiling makes Zot harder instead of making the
    Lair lethal. */
-export const ENDGAME_CURVE = 2;
+export const ENDGAME_CURVE = 2; /* superseded by ZOT_TUNE.curve; kept for readers */
 export const endgamePressure = (s, depth) => {
   const t = Math.min(1, Math.max(0, (depth - ENDGAME_FROM) / (ENDGAME_PEAK - ENDGAME_FROM)));
-  return 1 + (zotScale(s) - 1) * Math.pow(t, ENDGAME_CURVE);
+  return 1 + (zotScale(s) - 1) * Math.pow(t, ZOT_TUNE.curve);
 };
 
 /* Affix level is capped by NG again.

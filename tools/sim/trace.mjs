@@ -25,9 +25,11 @@ const TUNE = process.env.NG_TUNE ? JSON.parse(process.env.NG_TUNE) : null;
 if (TUNE) {
   /* one env knob, two tables: ng* keys go to the NG slopes, zot* keys to the endgame
      ceiling, so a sweep can move either without a second workflow input */
-  const { hardCeil, ...ng } = TUNE;
+  const { hardCeil, density, curve, ...ng } = TUNE;
   Object.assign(NG_TUNE, ng);
   if (hardCeil !== undefined) ZOT_TUNE.hardCeil = hardCeil;
+  if (density !== undefined) ZOT_TUNE.density = density;
+  if (curve !== undefined) ZOT_TUNE.curve = curve;
 }
 export const tuneLabel = TUNE ? JSON.stringify(TUNE) : 'stock';
 
@@ -49,6 +51,12 @@ export function trace(name, sessions, days) {
     rows.push({
       tactic: name + (TUNE ? ' ' + tuneLabel : ''), seed: SEED_BASE + i, days,
       wins: r.wins, prestiges: r.prestiges,
+      /* the number that matches what a player sees: of the seekers who reach the
+         Gates, how many come back out. Orbs per day can look healthy while 98% of
+         everyone sent there dies -- the account survives by attrition, and attrition is
+         not an experience anyone is having a good time inside of. */
+      gateOk: r.gateOk, passRate: +(r.wins / Math.max(1, r.gateOk)).toFixed(4),
+      deathsPerOrb: Math.round(r.deaths / Math.max(1, r.wins)),
       perDay, prestPerDay,
       ng: r.byDay.map(d => d.ng),
       bar: r.byDay.map(d => d.bar),      /* the prestige requirement as it moved */
