@@ -21,7 +21,7 @@ import {canPrestige,doPrestige} from '../core/prestige.js';
 import {MONS,FAMILY_OF,familyDmgBonus} from '../data/monsters.js';
 import {recordVictory,recordRunnerWin,checkContract,recordNemesisKill,avengeNemesis} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
-import {ELITE_AFFIXES,FLOOR_AFFIXES} from '../data/eliteAffixes.js';
+import {ELITE_AFFIXES,FLOOR_AFFIXES,ZOT_TUNE} from '../data/eliteAffixes.js';
 import { hashSeed } from '../core/rng.js';
 import { t } from '../i18n/index.js';
 /** Per-axis telemetry. Every player control was measured only by Orbs per day,
@@ -36,7 +36,7 @@ export const newTel=()=>({fallenXL:0,fallenDepth:0,fallenN:0,gearHome:0,artefact
   /* How strong a road delivers its seekers to the Gates. This turned out to be the
      thing that decides a road, far more than its loot: two roads with the same
      destinations differed 13x in Orbs while their hauls were interchangeable. */
-  zotXL:0,zotHp:0});
+  zotXL:0,zotHp:0,zotDmg:0});
 
 export const simHooks={onDeath:null,onWin:null};
 /* DCSS: movement and adjacency are 8-directional (Chebyshev metric) */
@@ -251,7 +251,7 @@ function nextFloor(h,s){
        full run took under an hour and the Orb showed up 14 times a day. */
     if(ns[0]==='zot'&&h.runes.length>=ZOT_RUNES){
       const tl=s.tel=s.tel||newTel();
-      tl.gateOk++;tl.zotXL+=h.xl;tl.zotHp+=(h.maxHpCache||0);
+      tl.gateOk++;tl.zotXL+=h.xl;tl.zotHp+=(h.maxHpCache||0);tl.zotDmg+=heroStats(h,s).dmg;
     }
     if(ns[0]==='zot'&&h.runes.length<ZOT_RUNES){
       (s.tel=s.tel||newTel()).sealed++;
@@ -326,6 +326,12 @@ function gainXp(h,xp,s){
   }
 }
 export function heroDie(h,killer,s){
+  /* A seeker cannot die twice. Two of the nine call sites do not return afterwards, so
+     execution carried on to the next health check -- still below zero -- and buried the
+     same hero again: two epitaphs in pendingDeaths and the death screen shown twice.
+     Guarding here rather than at those two sites, because the next one added would have
+     the same hole and nothing would catch it. */
+  if(h.state!=='run')return;
   if(h.lives>1){
     h.lives--;
     h.curHp=h.maxHpCache;
@@ -611,7 +617,13 @@ export function simTick(h,s){
      it can afford when short of the ally cap, spending MP and scaling the ally by
      the spell's strength (hd). */
   m.allies=m.allies||[];
-  const sumCap=2+Math.floor((h.skills.summonings||0)/4);
+  /* A necromancer summons through Death Channel and trains NECROMANCY, so reading
+     summonings alone left it capped at two allies forever -- and the tier ladder below
+     did the same, so it called rats at Zot:4 with XL15 behind it. The power line right
+     beside that ladder already knew to read either skill; the cap and the tier did not.
+     Half a class's arsenal, dead from the first floor to the last. */
+  const sumSkl=Math.max(h.skills.summonings||0,h.skills.necromancy||0);
+  const sumCap=2+Math.floor(sumSkl/4);
   if(st.caster&&m.allies.length<sumCap){
     const ss=bestSummonSpell(h);
     if(ss){
@@ -724,7 +736,7 @@ export function heroAttack(h,st,mo,s){
     /* casters auto-cast the strongest affordable spell from their memorised set;
        out of MP → a weak fallback dart. The spell scales the base magic damage and
        carries its own side-effects (AOE splash, chill, drain-heal). */
-    let spellPow=1,spellAoe=false,spellSlow=false,spellHeal=0,spellName='';
+    let spellPow=1,spellAoe=false,spellSlow=false,spellHeal=0,spellName='',spellBurn=false,spellKnock=false;
     if(st.caster){
       const clustered=h.map.monsters.some(o=>o!==mo&&Math.abs(o.x-mo.x)<=1&&Math.abs(o.y-mo.y)<=1);
       const lowHp=h.curHp/(h.maxHpCache||h.curHp)<.4;
@@ -732,6 +744,10 @@ export function heroAttack(h,st,mo,s){
       if(sp){
         h.mp-=sp.mp;
         spellPow=sp.pow;spellAoe=(sp.type==='aoe');spellSlow=!!sp.slow;spellHeal=sp.heal||0;spellName=sp.n;
+        spellBurn=!!sp.burn;spellKnock=!!sp.knock;
+        /* Disjunction's only effect: without it the spell was eight mana and a turn for
+           nothing at all, the most expensive way in the game to do literally nothing. */
+        if(sp.slowall)for(const o of h.map.monsters)if(o.awake&&o.hp>0)o.chill=6;
         h.map.fx={tile:sp.fx,x:mo.x,y:mo.y,t:4}; /* transient effect tile for the canvas */
       }else spellPow=.5; /* mana-tapped: a feeble dart */
     }
@@ -747,6 +763,17 @@ export function heroAttack(h,st,mo,s){
       mo.awake=true;
     }
     if((st.chill||spellSlow)&&mo.hp>0)mo.chill=5; /* frost/ice spells slow */
+    /* Sticky Flame, Fireball and Starburst all carry `burn` and none of it burned:
+       fire's whole identity is that it keeps working after the hit. */
+    if(spellBurn&&mo.hp>0)mo.poisonA={dps:Math.max(1,st.dmg*spellPow*.10),t:5,fire:1};
+    /* Force Lance shoves. It is the one conjuration that buys a caster distance, which
+       is the resource a caster actually lacks. */
+    if(spellKnock&&mo.hp>0){
+      const dx=Math.sign(mo.x-h.map.px),dy=Math.sign(mo.y-h.map.py);
+      const nx=mo.x+dx,ny=mo.y+dy;
+      if(nx>=0&&nx<MW&&ny>=0&&ny<MH&&h.map.g[ny][nx]===0&&
+         !h.map.monsters.some(o=>o!==mo&&o.x===nx&&o.y===ny)){mo.x=nx;mo.y=ny;mo.chill=2}
+    }
     if(st.vsUndead>1&&mo.special&&mo.special.und)dmg*=st.vsUndead; /* holy wrath burns the undead */
     if(st.venom&&mo.hp>0&&!(mo.special&&mo.special.und))
       mo.poisonA={dps:Math.max(1,st.dmg*.12),t:4}; /* venom blade (undead are immune to poison) */
@@ -905,6 +932,15 @@ export function giveRune(h,name,s){
   h.rep.notable.push(t('ᚱ obtained: ')+t(name));
 }
 function monAttack(h,st,mo,s){
+  /* Distance costs the shooter something. A ranged monster used to land its full blow
+     from five tiles away, which makes range a pure bonus: the same damage as a melee
+     hit, plus four free ones while the hero walks over. An orb of fire at Zot:3 opened
+     with roughly a fifth of a seeker's health before the fight began, and the seeker
+     killed it in one blow on arrival -- the whole contest was the approach.
+     Full strength at arm's length, half at the limit, straight line between. */
+  const reach=mo.rng||1;
+  const dist=cheb(mo.x,mo.y,h.map.px,h.map.py);
+  const rangeMul=reach>1?1-.5*Math.min(1,Math.max(0,(dist-1)/(reach-1))):1;
   const hit=rnd(h)<clamp((mo.acc+8)/(mo.acc+8+st.ev),.1,.92);
   if(!hit){hlog(h,t(mo.n)+t(' misses ')+h.name,'sys');return}
   if(st.dodge>0&&rnd(h)<st.dodge){
@@ -919,7 +955,7 @@ function monAttack(h,st,mo,s){
        shows its school's effect tile on the hero */
     const FXT={conj:'fx_iron_shot',fire:'fx_bolt_of_fire',ice:'fx_bolt_of_cold',necro:'fx_bolt_draining'};
     h.map.fx={tile:FXT[mo.cast]||'fx_magic_dart',x:h.map.px,y:h.map.py,t:4};
-    dmg=mo.dmg*(0.8+rnd(h)*.5);
+    dmg=mo.dmg*(0.8+rnd(h)*.5)*rangeMul;
     dmg=Math.max(1,dmg-st.ac*.35)*(1-st.resAll*.5)*(1-(st.mrCut||0));
     if(RACES[h.race].shrug)dmg*=.9;
     h.curHp-=dmg;
@@ -927,7 +963,7 @@ function monAttack(h,st,mo,s){
     if(mo.cast==='necro')mo.hp=Math.min(mo.maxHp,mo.hp+dmg*.2);
     hlog(h,'✦ '+t(mo.n)+t(' casts a bolt at ')+h.name+' ('+Math.round(dmg)+')','dmg');
   }else{
-    dmg=mo.dmg*(0.7+rnd(h)*.6);
+    dmg=mo.dmg*(0.7+rnd(h)*.6)*rangeMul;
     dmg=Math.max(1,dmg-st.ac*.7)*(1-st.resAll);
     if(RACES[h.race].shrug)dmg*=.9; /* the dwarf shrugs off part of the damage */
     h.curHp-=dmg;
@@ -1183,7 +1219,10 @@ export function tryAutoEquip(h,it,s){
 }
 /* ===================== time & offline ===================== */
 export function heroTps(h,s){
-  return 1.4*(RACES[h.race].spd||1)*gSpd(s);
+  /* ZOT_TUNE.pace scales the whole guild's rate of delving: it changes how MANY runs
+     finish, never how any one of them goes. That is the only lever that lowers arrivals
+     at the Gates without touching a single fight. */
+  return 1.4*(RACES[h.race].spd||1)*gSpd(s)*ZOT_TUNE.pace;
 }
 let simAcc={};
 /* Sessions run back-to-back inside one process in the sim harness, and hero ids
@@ -1747,7 +1786,7 @@ export function summonAlly(h,s,forceKind,forceN,hdMul){
   m.allies=m.allies||[];
   let kind=forceKind,name=forceN;
   if(!kind){
-    const skl=h.skills.summonings||0;
+    const skl=Math.max(h.skills.summonings||0,h.skills.necromancy||0);
     const tier=[...SUMMON_TIERS].reverse().find(t=>skl>=t.min)||SUMMON_TIERS[0];
     kind=tier.kind;name=t(tier.n);
   }

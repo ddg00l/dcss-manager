@@ -18,7 +18,7 @@ export const BRANCHES={
     req:s=>s.progress.D>=8,reqTxt:'D:8',
     mobs:[['yak',1,4],['blink_frog',1,5],['komodo',2,5],['black_mamba',2,6],['elephant',3,6],
       ['death_yak',4,6],['hydra',4,6],['wolf_spider',2,6]],
-    boss:'lernaean',rune:'the serpentine rune',bossMulU:3.5,
+    boss:'lernaean',rune:'the serpentine rune',
     /* beasts hoard nothing: the Lair pays in reagents, not steel */
     /* Beasts carry nothing worth taking, so the Lair barely contributes gear at all
        -- which is what lets it sit on every road without blurring their characters. */

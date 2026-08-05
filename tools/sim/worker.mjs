@@ -391,6 +391,7 @@ function session(tactic, days = 1, seed = 0) {
     gateOk: s.tel ? s.tel.gateOk : 0,
     zotXL: s.tel && s.tel.gateOk ? +(s.tel.zotXL / s.tel.gateOk).toFixed(2) : 0,
     zotHp: s.tel && s.tel.gateOk ? Math.round(s.tel.zotHp / s.tel.gateOk) : 0,
+    zotDmg: s.tel && s.tel.gateOk ? Math.round(s.tel.zotDmg / s.tel.gateOk) : 0,
     deathBr: s.tel ? s.tel.deathBr : {},
     godKinds: s.tel ? Object.keys(s.tel.godWins).length : 0,
     greats: greatRaces(s).length + greatClasses(s).length,
