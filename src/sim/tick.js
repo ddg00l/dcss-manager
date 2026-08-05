@@ -21,7 +21,7 @@ import {canPrestige,doPrestige} from '../core/prestige.js';
 import {MONS,FAMILY_OF,familyDmgBonus} from '../data/monsters.js';
 import {recordVictory,recordRunnerWin,checkContract,recordNemesisKill,avengeNemesis} from '../core/chronicle.js';
 import {todayAffix} from '../data/affixes.js';
-import {ELITE_AFFIXES,FLOOR_AFFIXES} from '../data/eliteAffixes.js';
+import {ELITE_AFFIXES,FLOOR_AFFIXES,ZOT_TUNE} from '../data/eliteAffixes.js';
 import { hashSeed } from '../core/rng.js';
 import { t } from '../i18n/index.js';
 /** Per-axis telemetry. Every player control was measured only by Orbs per day,
@@ -1183,7 +1183,10 @@ export function tryAutoEquip(h,it,s){
 }
 /* ===================== time & offline ===================== */
 export function heroTps(h,s){
-  return 1.4*(RACES[h.race].spd||1)*gSpd(s);
+  /* ZOT_TUNE.pace scales the whole guild's rate of delving: it changes how MANY runs
+     finish, never how any one of them goes. That is the only lever that lowers arrivals
+     at the Gates without touching a single fight. */
+  return 1.4*(RACES[h.race].spd||1)*gSpd(s)*ZOT_TUNE.pace;
 }
 let simAcc={};
 /* Sessions run back-to-back inside one process in the sim harness, and hero ids

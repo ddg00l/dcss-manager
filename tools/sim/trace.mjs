@@ -25,11 +25,12 @@ const TUNE = process.env.NG_TUNE ? JSON.parse(process.env.NG_TUNE) : null;
 if (TUNE) {
   /* one env knob, two tables: ng* keys go to the NG slopes, zot* keys to the endgame
      ceiling, so a sweep can move either without a second workflow input */
-  const { hardCeil, density, curve, ...ng } = TUNE;
+  const { hardCeil, density, curve, pace, ...ng } = TUNE;
   Object.assign(NG_TUNE, ng);
   if (hardCeil !== undefined) ZOT_TUNE.hardCeil = hardCeil;
   if (density !== undefined) ZOT_TUNE.density = density;
   if (curve !== undefined) ZOT_TUNE.curve = curve;
+  if (pace !== undefined) ZOT_TUNE.pace = pace;
 }
 export const tuneLabel = TUNE ? JSON.stringify(TUNE) : 'stock';
 
